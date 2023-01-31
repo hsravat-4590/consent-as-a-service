@@ -33,12 +33,14 @@ yarn-error.log*
 .turbo
 
 # Project exclude paths
+/packages/database-prisma/dist
 /packages/database-prisma/src/mappers/txn-log.mapper.js
 /packages/database-prisma/src/mappers/util-type.mapper.js
 /packages/database-prisma/src/transactions/index.js
 /packages/database-prisma/src/transactions/transaction.da.js
 /packages/database-prisma/index.d.ts
 /packages/database-prisma/index.js
+/packages/domain/dist
 /packages/domain/src/domain/consent.model.js
 /packages/domain/src/domain/consent-data.model.js
 /packages/domain/src/domain/consent-data-schema.model.js

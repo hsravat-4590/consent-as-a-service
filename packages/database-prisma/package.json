@@ -1,0 +1,21 @@
+{
+  "name": "@consent-as-a-service/database-prisma",
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {
+    "build": "tsc -p tsconfig.json"
+  },
+  "keywords": [],
+  "author": "Hanzalah Ravat",
+  "license": "ISC",
+  "dependencies": {
+    "@consent-as-a-service/domain": "*workspace",
+    "@js-joda/core": "^5.5.2",
+    "@prisma/client": "^4.9.0",
+    "rxjs": "^7.8.0"
+  },
+  "devDependencies": {
+    "prisma": "^4.9.0",
+    "typescript": "^4.9.4"
+  }
+}

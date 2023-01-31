@@ -1,0 +1,21 @@
+import { Callout } from 'nextra-theme-docs'
+
+# Consent As a Service API
+
+The API provides organisations & services with the tools and data they need to request, read, view and disable consents.
+The project is OpenSource and can be viewed at GitHub (SOURCE).
+
+The API itself is built on top of a RPC architecture with a gateway server designed to handle requests made by users and organisations. You can request it directly using HTTP(S) requests or use our client
+
+## JavaScript Client
+
+The client is built using TypeScript although support using other platforms is being considered.
+We've kept it simple (just a script tag!) so that you can easily embed it into your site.
+Alternatively, developers can download the NPM package to allow for deeper integration with their site.
+
+## Java Client
+
+<Callout type="info" emoji="ℹ️">
+  The Java Client is only designed to work with Spring Cloud Servers to view consent statuses and read data
+</Callout>
+The Java Client can be added to your project using Maven or Gradle and will allow Server applications to communicate with the ConsentAsAService platform.

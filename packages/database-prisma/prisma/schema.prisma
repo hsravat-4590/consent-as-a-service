@@ -1,0 +1,88 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider     = "mysql"
+  url          = env("DATABASE_URL")
+  relationMode = "prisma"
+}
+
+model Consent {
+  id            Int                   @id
+  userid        Int?
+  orgid         String?               @db.VarChar(255)
+  expiry        DateTime?             @db.DateTime(0)
+  consentState  Consent_consentState?
+  consentDataId Int?
+}
+
+model ConsentData {
+  id          Int       @id
+  dataTypeRef Int?
+  dataRef     String?   @db.VarChar(255)
+  hash        String?   @db.VarChar(255)
+  sizeBytes   Int?
+  name        String?   @db.VarChar(255)
+  dateCreated DateTime? @db.DateTime(0)
+}
+
+model ConsentData_DataType {
+  ConsentData_dataTypeRef Int
+  DataType_id             Int
+
+  @@id([ConsentData_dataTypeRef, DataType_id])
+}
+
+model ConsentRequests {
+  id          Int     @id
+  txnId       String? @db.VarChar(255)
+  consentId   Int?
+  title       String? @db.VarChar(255)
+  description String? @db.VarChar(255)
+}
+
+model DataType {
+  id     Int     @id
+  schema String? @db.VarChar(255)
+}
+
+model Requester {
+  orgId       String  @id @db.VarChar(255)
+  email       String? @db.VarChar(255)
+  displayname String? @db.VarChar(255)
+}
+
+model TxnLog {
+  id        Int              @id @default(autoincrement())
+  txnId     String           @default(uuid())
+  TxnStatus TxnLog_TxnStatus
+  datetime  DateTime         @db.DateTime(0) @default(now())
+  parent    String?          @db.VarChar(255)
+}
+
+model User {
+  id              Int     @id @default(autoincrement())
+  firstname       String? @db.VarChar(255)
+  lastname        String? @db.VarChar(255)
+  email           String? @unique(map: "email") @db.VarChar(255)
+  telephone       String? @unique(map: "telephone") @db.VarChar(255)
+  userShaPassword String? @db.VarChar(255)
+}
+
+enum TxnLog_TxnStatus {
+  CREATED
+  IN_PROGRESS
+  ACCEPTED
+  REJECTED
+  FULFILLED
+  VOIDED
+}
+
+enum Consent_consentState {
+  CREATED
+  WAITING
+  ACCEPTED
+  REVOKED
+  EXPIRED
+}

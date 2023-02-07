@@ -20,23 +20,19 @@
  * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
+import React, { PropsWithChildren } from "react";
+import Head from "next/head";
+import ResponsiveAppBar from "./NavBar";
 
-// pages/index.js
-import { useUser } from "@auth0/nextjs-auth0/client";
+const Layout = ({ children }: PropsWithChildren) => (
+  <>
+    <Head>
+      <title>Consent As a Service</title>
+    </Head>
+    <ResponsiveAppBar></ResponsiveAppBar>
+    <div>{children}</div>
+    {/** TODO Add a Container here */}
+  </>
+);
 
-export default function Index() {
-  const { user, error, isLoading } = useUser();
-
-  if (isLoading) return <div>Loading...</div>;
-  if (error) return <div>{error.message}</div>;
-
-  if (user) {
-    return (
-      <div>
-        Welcome {user.name}! <a href="/api/auth/logout">Logout</a>
-      </div>
-    );
-  }
-
-  return <a href="/api/auth/login">Login</a>;
-}
+export default Layout;

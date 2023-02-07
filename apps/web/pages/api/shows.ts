@@ -21,22 +21,23 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-// pages/index.js
-import { useUser } from "@auth0/nextjs-auth0/client";
+import { getAccessToken, withApiAuthRequired } from "@auth0/nextjs-auth0";
 
-export default function Index() {
-  const { user, error, isLoading } = useUser();
+export default withApiAuthRequired(async function shows(req, res) {
+  try {
+    const { accessToken } = await getAccessToken(req, res, {
+      scopes: ["read:shows"],
+    });
+    const apiPort = process.env.API_PORT || 3001;
+    const response = await fetch(`http://localhost:${apiPort}/api/shows`, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
+    const shows = await response.json();
 
-  if (isLoading) return <div>Loading...</div>;
-  if (error) return <div>{error.message}</div>;
-
-  if (user) {
-    return (
-      <div>
-        Welcome {user.name}! <a href="/api/auth/logout">Logout</a>
-      </div>
-    );
+    res.status(200).json(shows);
+  } catch (error) {
+    res.status(error.status || 500).json({ error: error.message });
   }
-
-  return <a href="/api/auth/login">Login</a>;
-}
+});

@@ -21,22 +21,27 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-// pages/index.js
-import { useUser } from "@auth0/nextjs-auth0/client";
+import React from "react";
+import {
+  Category,
+  Component,
+  Palette,
+  Variant,
+} from "@react-buddy/ide-toolbox";
 
-export default function Index() {
-  const { user, error, isLoading } = useUser();
-
-  if (isLoading) return <div>Loading...</div>;
-  if (error) return <div>{error.message}</div>;
-
-  if (user) {
-    return (
-      <div>
-        Welcome {user.name}! <a href="/api/auth/logout">Logout</a>
-      </div>
-    );
-  }
-
-  return <a href="/api/auth/login">Login</a>;
-}
+export const PaletteTree = () => (
+  <Palette>
+    <Category name="HTML">
+      <Component name="a">
+        <Variant requiredParams={["href"]}>
+          <a>Link</a>
+        </Variant>
+      </Component>
+      <Component name="button">
+        <Variant>
+          <button>Button</button>
+        </Variant>
+      </Component>
+    </Category>
+  </Palette>
+);

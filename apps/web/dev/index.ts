@@ -21,22 +21,9 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-// pages/index.js
-import { useUser } from "@auth0/nextjs-auth0/client";
+import React from "react";
+import { useInitial } from "./useInitial";
 
-export default function Index() {
-  const { user, error, isLoading } = useUser();
+const ComponentPreviews = React.lazy(() => import("./previews"));
 
-  if (isLoading) return <div>Loading...</div>;
-  if (error) return <div>{error.message}</div>;
-
-  if (user) {
-    return (
-      <div>
-        Welcome {user.name}! <a href="/api/auth/logout">Logout</a>
-      </div>
-    );
-  }
-
-  return <a href="/api/auth/login">Login</a>;
-}
+export { ComponentPreviews, useInitial };

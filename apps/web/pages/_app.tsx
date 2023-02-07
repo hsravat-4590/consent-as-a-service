@@ -21,22 +21,22 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-// pages/index.js
-import { useUser } from "@auth0/nextjs-auth0/client";
+import { AppProps } from "next/app";
+import { Component } from "react";
+import { UserProvider } from "@auth0/nextjs-auth0/client";
+import Layout from "../components/Layout";
+import { ThemeProvider } from "@mui/material";
+import { lightTheme } from "../components/Theme";
+import "../styles/fonts.css";
 
-export default function Index() {
-  const { user, error, isLoading } = useUser();
-
-  if (isLoading) return <div>Loading...</div>;
-  if (error) return <div>{error.message}</div>;
-
-  if (user) {
-    return (
-      <div>
-        Welcome {user.name}! <a href="/api/auth/logout">Logout</a>
-      </div>
-    );
-  }
-
-  return <a href="/api/auth/login">Login</a>;
+export default function App({ Component, pageProps }: AppProps) {
+  return (
+    <ThemeProvider theme={lightTheme}>
+      <UserProvider>
+        <Layout>
+          <Component {...pageProps} />
+        </Layout>
+      </UserProvider>
+    </ThemeProvider>
+  );
 }

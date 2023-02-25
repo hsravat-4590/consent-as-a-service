@@ -22,7 +22,7 @@
  */
 
 import { singleton } from "tsyringe";
-import { Prisma, PrismaClient } from "@prisma/client";
+import { Consent, Prisma, PrismaClient } from "@prisma/client";
 import { PrismaClientService } from "./prisma-client.service";
 import { ConsentModel } from "@consent-as-a-service/domain";
 import { convertLocalDateTimeToDate } from "../mappers/util-type.mapper";
@@ -35,7 +35,7 @@ export class ConsentDaInternal {
     this.prismaClient = prismaClientService.prismaClient;
   }
 
-  async createConsent(options: CreateConsentOptions) {
+  async createConsent(options: CreateConsentOptions): Promise<Consent> {
     return await this.prismaClient.consent.create({
       data: {
         consentRequestId: options.consentRequestId,
@@ -45,7 +45,10 @@ export class ConsentDaInternal {
     });
   }
 
-  async updateConsent(id: string, options: UpdateConsentOptions) {
+  async updateConsent(
+    id: string,
+    options: UpdateConsentOptions
+  ): Promise<Consent> {
     const updateData: Prisma.ConsentUpdateInput = {};
     if (options.user) {
       updateData.userid = options.user.id;
@@ -56,11 +59,11 @@ export class ConsentDaInternal {
     if (options.expiry) {
       updateData.expiry = convertLocalDateTimeToDate(options.expiry);
     }
-    this.prismaClient.consent.update({
+    return await this.prismaClient.consent.update({
       where: {
-        consentId: id,
+        consentId: d,
       },
-      data: updateData,
+      data: updateDaa,
     });
   }
 }

@@ -21,23 +21,34 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { getAccessToken, withApiAuthRequired } from "@auth0/nextjs-auth0";
+import { singleton } from "tsyringe";
+import { PrismaClient } from "@prisma/client";
 
-export default withApiAuthRequired(async function shows(req, res) {
-  try {
-    const { accessToken } = await getAccessToken(req, res, {
-      scopes: ["read:shows"],
-    });
-    const apiPort = process.env.API_PORT || 3001;
-    const response = await fetch(`http://localhost:${apiPort}/api/shows`, {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
-    });
-    const shows = await response.json();
-
-    res.status(200).json(shows);
-  } catch (error) {
-    res.status(error.status || 500).json({ error: error.message });
+@singleton()
+export class PrismaClientService {
+  private _isConnected = false;
+  get isConnected(): boolean {
+    return this._isConnected;
   }
-});
+
+  private _prismaClient = new PrismaClient();
+  get prismaClient(): PrismaClient {
+    return this._prismaClient;
+  }
+
+  async connect() {
+    if (this._isConnected) {
+      return;
+    }
+    await this._prismaClient.$connect();
+    this._isConnected = true;
+  }
+
+  async disconnect() {
+    if (!this._isConnected) {
+      return;
+    }
+    await this._prismaClient.$disconnect();
+    this._isConnected = false;
+  }
+}

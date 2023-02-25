@@ -21,8 +21,12 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-export interface HealthStatus {
-  serverStatus: ServerStatus;
-}
+import { DataType } from "@prisma/client";
+import { DataSchema } from "@consent-as-a-service/domain";
 
-export type ServerStatus = 'UP' | 'DOWN';
+export const mapDataTypeToSchema = (data: DataType) => {
+  return {
+    id: data.typeId,
+    entries: JSON.parse(data.schema),
+  } as DataSchema;
+};

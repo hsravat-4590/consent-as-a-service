@@ -22,4 +22,5 @@
  */
 
 export * from "./domain";
+export * from "./network";
 export * from "./util";

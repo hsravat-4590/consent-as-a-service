@@ -21,13 +21,14 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { TransactionModel } from './transaction.model';
-import { ConsentModel } from './consent.model';
+import { TransactionModel } from "./transaction.model";
+import { DataSchema } from "./data-schema.model";
 
 export interface ConsentRequestModel {
   id: NonNullable<string>;
   txn: TransactionModel;
-  consent: ConsentModel;
   title: string;
   description: string;
+  schema: DataSchema;
+  callbackUrl: URL;
 }

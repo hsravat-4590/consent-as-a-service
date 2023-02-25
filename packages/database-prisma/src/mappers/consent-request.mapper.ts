@@ -21,12 +21,26 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-export * from "./consent.model";
-export * from "./consent-data.model";
-export * from "./consent-data-schema.model";
-export * from "./consent-request.model";
-export * from "./email.model";
-export * from "./org.model";
-export * from "./transaction.model";
-export * from "./user.model";
-export * from "./data-schema.model";
+import { ConsentRequests, DataType, TxnLog } from "@prisma/client";
+import { mapTxnLogToModel } from "./txn-log.mapper";
+import {
+  ConsentRequestModel,
+  TransactionModel,
+} from "@consent-as-a-service/domain";
+import { mapDataTypeToSchema } from "./schema.mapper";
+
+export const mapConsentRequestToModel = (
+  request: ConsentRequests,
+  txnLog: TxnLog,
+  schema: DataType
+): ConsentRequestModel => {
+  const model: TransactionModel = mapTxnLogToModel(txnLog);
+  return {
+    schema: mapDataTypeToSchema(schema),
+    id: request.consentRequestId,
+    txn: model,
+    title: request.title,
+    description: request.description,
+    callbackUrl: new URL(request.callbackUrl),
+  };
+};

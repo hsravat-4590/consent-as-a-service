@@ -21,12 +21,37 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-export * from "./consent.model";
-export * from "./consent-data.model";
-export * from "./consent-data-schema.model";
-export * from "./consent-request.model";
-export * from "./email.model";
-export * from "./org.model";
-export * from "./transaction.model";
-export * from "./user.model";
-export * from "./data-schema.model";
+import { singleton } from "tsyringe";
+import { Optional } from "@consent-as-a-service/domain";
+import { PrismaClientService } from "./prisma-client.service";
+import { DataType, PrismaClient } from "@prisma/client";
+import { DataEntry } from "@consent-as-a-service/domain/dist";
+
+@singleton()
+export class ConsentDataSchemaDaInternal {
+  private readonly prismaClient: PrismaClient;
+
+  constructor(private readonly prismaClientService: PrismaClientService) {
+    this.prismaClient = prismaClientService.prismaClient;
+  }
+
+  async createSchemaEntry(
+    entries: NonNullable<Array<DataEntry<any>>>
+  ): Promise<DataType> {
+    return await this.prismaClient.dataType.create({
+      data: {
+        schema: JSON.stringify(entries),
+      },
+    });
+  }
+
+  async readSchema(id: NonNullable<string>): Promise<Optional<DataType>> {
+    return Optional.ofNullable(
+      await this.prismaClient.dataType.findFirst({
+        where: {
+          typeId: id,
+        },
+      })
+    );
+  }
+}

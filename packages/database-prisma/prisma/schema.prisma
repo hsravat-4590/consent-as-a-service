@@ -9,12 +9,13 @@ datasource db {
 }
 
 model Consent {
-  id            Int                   @id
-  userid        Int?
-  orgid         String?               @db.VarChar(255)
-  expiry        DateTime?             @db.DateTime(0)
-  consentState  Consent_consentState?
-  consentDataId Int?
+  id            Int                   @id@default(autoincrement())
+  consentId     String                @default(uuid())
+  userid        String?
+  orgid         String                @db.VarChar(255)
+  expiry        DateTime?              @db.DateTime(0)
+  consentState  Consent_consentState
+  consentRequestId String
 }
 
 model ConsentData {
@@ -35,16 +36,19 @@ model ConsentData_DataType {
 }
 
 model ConsentRequests {
-  id          Int     @id
-  txnId       String? @db.VarChar(255)
-  consentId   Int?
-  title       String? @db.VarChar(255)
-  description String? @db.VarChar(255)
+  id          Int     @id @default(autoincrement())
+  txnId       String @db.VarChar(255)
+  consentRequestId   String  @default(uuid())
+  title       String @db.VarChar(255)
+  description String @db.VarChar(255)
+  dataId      String @db.VarChar(255)
+  callbackUrl String @db.VarChar(255)
 }
 
 model DataType {
-  id     Int     @id
-  schema String? @db.VarChar(255)
+  id     Int     @id @default(autoincrement())
+  typeId String  @default(uuid())
+  schema String @db.VarChar(255)
 }
 
 model Requester {

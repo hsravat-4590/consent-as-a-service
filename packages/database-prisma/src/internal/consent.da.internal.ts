@@ -20,3 +20,32 @@
  * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
+
+import { singleton } from "tsyringe";
+import { PrismaClient } from "@prisma/client";
+import { PrismaClientService } from "./prisma-client.service";
+import { ConsentModel } from "@consent-as-a-service/domain";
+
+@singleton()
+export class ConsentDaInternal {
+  private readonly prismaClient: PrismaClient;
+
+  constructor(private readonly prismaClientService: PrismaClientService) {
+    this.prismaClient = prismaClientService.prismaClient;
+  }
+
+  async createConsent(options: CreateConsentOptions) {
+    this.prismaClient.consent.create({
+      data: {
+        consentRequestId: options.consentRequestId,
+        orgid: options.org.orgId,
+        consentState: "CREATED",
+      },
+    });
+  }
+}
+
+export type CreateConsentOptions = Pick<
+  ConsentModel,
+  "expiry" | "consentRequestId" | "org"
+>;

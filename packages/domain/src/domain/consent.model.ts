@@ -30,8 +30,8 @@ export interface ConsentModel {
   user: UserModel; // Models have Deep links to objects
   org: OrgModel;
   expiry: LocalDateTime;
-  dataId: string;
   consentState: ConsentState;
+  consentRequestId: string;
 }
 
 export type ConsentState =

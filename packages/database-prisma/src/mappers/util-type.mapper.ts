@@ -25,3 +25,9 @@ import { convert, LocalDateTime } from "@js-joda/core";
 
 export const convertLocalDateTimeToDate = (dateTime: LocalDateTime): Date =>
   convert(dateTime).toDate();
+
+/**
+ * AutoMap works by automatically transforming one object to another providing keys match value types.
+ * @param object
+ */
+export const autoMap = <In, Out>(object: In) => {};

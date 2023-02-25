@@ -21,47 +21,44 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { PrismaClient, TxnLog, TxnLog_TxnStatus } from "@prisma/client";
+import { TxnLog, TxnLog_TxnStatus } from "@prisma/client";
 import {
   Optional,
   TransactionModel,
   ValidateState,
 } from "@consent-as-a-service/domain";
-import { convertLocalDateTimeToDate } from "../mappers/util-type.mapper";
 import { mapTxnLogToModel } from "../mappers/txn-log.mapper";
-
-const prismaClient = new PrismaClient();
+import {
+  CreateTransactionOptions,
+  TransactionDaInternal,
+  TxnOrderStrategy,
+  UpdateTransactionOptions,
+} from "../internal/transaction.da.internal";
+import "reflect-metadata";
+import { container } from "tsyringe";
+import { PrismaClientService } from "../internal/prisma-client.service";
 
 export const CreateTransaction = async (
-  options: Pick<TransactionModel, "txnStatus" | "dateTime">
+  options: CreateTransactionOptions
 ): Promise<string> => {
   console.log("Creating a TXN");
-  await prismaClient.$connect();
-  const created: TxnLog = await prismaClient.txnLog.create({
-    data: {
-      TxnStatus: TxnLog_TxnStatus[options.txnStatus],
-      datetime: convertLocalDateTimeToDate(options.dateTime),
-    },
-  });
-  await prismaClient.$disconnect();
-  return created.txnId;
+  const prismaClientService = container.resolve(PrismaClientService);
+  await prismaClientService.connect();
+  const internalDa = container.resolve(TransactionDaInternal);
+  const newTxn = await internalDa.createTxn(options);
+  await prismaClientService.disconnect();
+  return newTxn.txnId;
 };
 
 export const ReadTransaction = async (
   txnId: string
 ): Promise<TransactionModel> => {
   console.log("Reading A Txn");
-  await prismaClient.$connect();
-  const readOut: Optional<TxnLog> = Optional.ofNullable(
-    await prismaClient.txnLog.findFirst({
-      where: {
-        txnId: txnId,
-      },
-      orderBy: {
-        id: "desc",
-      },
-    })
-  );
+  const prismaClientService = container.resolve(PrismaClientService);
+  await prismaClientService.connect();
+  const internalDa = container.resolve(TransactionDaInternal);
+  const readOut: Optional<TxnLog> = await internalDa.readTxn(txnId);
+  await prismaClientService.disconnect();
   if (readOut.isPresent()) {
     return mapTxnLogToModel(readOut.get());
   } else {
@@ -71,38 +68,35 @@ export const ReadTransaction = async (
 
 export const ReadWholeTransaction = async (
   txnId: string,
-  order: "asc" | "desc"
+  order: TxnOrderStrategy
 ): Promise<Array<TransactionModel>> => {
-  await prismaClient.$connect();
-  let arr = new Array<TransactionModel>();
-  const result: TxnLog[] = await prismaClient.txnLog.findMany({
-    where: {
-      txnId: txnId,
-    },
-    orderBy: {
-      id: order,
-    },
-  });
+  const prismaClientService = container.resolve(PrismaClientService);
+  await prismaClientService.connect();
+  const internalDa = container.resolve(TransactionDaInternal);
+  let arr: TransactionModel[];
+  const result: TxnLog[] = await internalDa.readWholeTxn(txnId, order);
+  await prismaClientService.disconnect();
   arr = result.map(mapTxnLogToModel);
   return arr;
 };
 
 export const UpdateTransaction = async (
-  update: Pick<TransactionModel, "dateTime" | "txnStatus" | "txnId">
+  update: UpdateTransactionOptions,
+  txnId: NonNullable<string>
 ): Promise<string> => {
-  const parent = await ReadTransaction(update.txnId);
-  const parentId = parent.txnId;
+  const prismaClientService = container.resolve(PrismaClientService);
+  await prismaClientService.connect();
+  const internalDa = container.resolve(TransactionDaInternal);
+  const parent = await internalDa.readTxn(txnId);
+  if (parent.isPresent()) {
+    ValidateState(() => parent.get().TxnStatus !== TxnLog_TxnStatus.VOIDED, {
+      errorMessage:
+        "Transaction has been voided and therefore cannot be updated",
+    });
+  } else {
+    new Error("Transaction cannot be updated as there are no parents");
+  }
   console.log(JSON.stringify(update));
-  ValidateState(() => parent.txnStatus !== "VOIDED", {
-    errorMessage: "Transaction has been voided and therefore cannot be updated",
-  });
-  await prismaClient.$connect();
-  const newRecord: TxnLog = await prismaClient.txnLog.create({
-    data: {
-      parent: parentId,
-      TxnStatus: TxnLog_TxnStatus[update.txnStatus],
-      datetime: convertLocalDateTimeToDate(update.dateTime),
-    },
-  });
+  const newRecord: TxnLog = await internalDa.updateTxn(txnId, update);
   return newRecord.txnId;
 };

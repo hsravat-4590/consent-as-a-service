@@ -64,7 +64,7 @@ export class TransactionDaInternal {
         txnId: txnId,
       },
       orderBy: {
-        datetime: orer,
+        datetime: order,
       },
     });
   }

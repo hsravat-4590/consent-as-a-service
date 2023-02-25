@@ -22,7 +22,7 @@
  */
 
 import { singleton } from "tsyringe";
-import { PrismaClient } from "@prisma/client";
+import { Prisma, PrismaClient } from "@prisma/client";
 import { PrismaClientService } from "./prisma-client.service";
 import { ConsentModel } from "@consent-as-a-service/domain";
 
@@ -35,7 +35,7 @@ export class ConsentDaInternal {
   }
 
   async createConsent(options: CreateConsentOptions) {
-    this.prismaClient.consent.create({
+    return await this.prismaClient.consent.create({
       data: {
         consentRequestId: options.consentRequestId,
         orgid: options.org.orgId,
@@ -43,9 +43,23 @@ export class ConsentDaInternal {
       },
     });
   }
+
+  async updateConsent(id: string, options: UpdateConsentOptions) {
+    let updateData: Prisma.ConsentScalarFieldEnum;
+    this.prismaClient.consent.update({
+      where: {
+        consentId: id,
+      },
+      data: updateData,
+    });
+  }
 }
 
 export type CreateConsentOptions = Pick<
   ConsentModel,
   "expiry" | "consentRequestId" | "org"
+>;
+
+export type UpdateConsentOptions = Partial<
+  Pick<ConsentModel, "expiry" | "consentState" | "user">
 >;

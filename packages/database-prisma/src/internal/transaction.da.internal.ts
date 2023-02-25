@@ -25,7 +25,6 @@ import { singleton } from "tsyringe";
 import { PrismaClientService } from "./prisma-client.service";
 import { Optional, TransactionModel } from "@consent-as-a-service/domain";
 import { PrismaClient, TxnLog, TxnLog_TxnStatus } from "@prisma/client";
-import { convertLocalDateTimeToDate } from "../mappers/util-type.mapper";
 
 @singleton()
 export class TransactionDaInternal {
@@ -39,19 +38,18 @@ export class TransactionDaInternal {
     return await this.prismaClient.txnLog.create({
       data: {
         TxnStatus: TxnLog_TxnStatus[options.txnStatus],
-        datetime: convertLocalDateTimeToDate(options.dateTime),
       },
     });
   }
 
-  async readTxn(txnId: NonNullable<string>): Promise<Optional<TxnLog>> {
+  async readTxn(chainId: NonNullable<string>): Promise<Optional<TxnLog>> {
     return Optional.ofNullable(
       await this.prismaClient.txnLog.findFirst({
         where: {
-          txnId: txnId,
+          chainId: chainId,
         },
         orderBy: {
-          id: "desc",
+          datetime: "desc",
         },
       })
     );
@@ -66,7 +64,7 @@ export class TransactionDaInternal {
         txnId: txnId,
       },
       orderBy: {
-        id: order,
+        datetime: orer,
       },
     });
   }
@@ -79,20 +77,13 @@ export class TransactionDaInternal {
       data: {
         parent: txnId,
         TxnStatus: TxnLog_TxnStatus[options.txnStatus],
-        datetime: convertLocalDateTimeToDate(options.dateTime),
       },
     });
   }
 }
 
-export type CreateTransactionOptions = Pick<
-  TransactionModel,
-  "txnStatus" | "dateTime"
->;
+export type CreateTransactionOptions = Pick<TransactionModel, "txnStatus">;
 
-export type UpdateTransactionOptions = Pick<
-  TransactionModel,
-  "dateTime" | "txnStatus"
->;
+export type UpdateTransactionOptions = Pick<TransactionModel, "txnStatus">;
 
 export type TxnOrderStrategy = "asc" | "desc";

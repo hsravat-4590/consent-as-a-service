@@ -28,7 +28,6 @@ import {
   DataSchema,
   Optional,
 } from "@consent-as-a-service/domain";
-import { LocalDateTime } from "@js-joda/core";
 import { mapConsentRequestToModel } from "../mappers/consent-request.mapper";
 import { container } from "tsyringe";
 import { PrismaClientService } from "../internal/prisma-client.service";
@@ -64,7 +63,6 @@ export const CreateConsentRequestType = async (
   await prismaClientService.connect();
   const txn = await txnDa.createTxn({
     txnStatus: "CREATED",
-    dateTime: LocalDateTime.now(),
   });
   const schemaEntry = await schemaDa.createSchemaEntry(dataSchema);
   const schema = {
@@ -133,7 +131,6 @@ export const VoidConsentRequest = async (
   if (consentRequestModel.isPresent()) {
     const txnId = consentRequestModel.get().txnId;
     const newTxn = await txnDa.updateTxn(txnId, {
-      dateTime: LocalDateTime.now(),
       txnStatus: "VOIDED",
     });
     return newTxn.txnId;

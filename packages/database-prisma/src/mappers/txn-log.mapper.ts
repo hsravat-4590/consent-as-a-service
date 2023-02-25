@@ -21,14 +21,14 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { TxnLog, TxnLog_TxnStatus } from "@prisma/client";
+import { TxnLog } from "@prisma/client";
 import { nativeJs } from "@js-joda/core";
 import { Optional, TransactionModel } from "@consent-as-a-service/domain";
 
 export const mapTxnLogToModel = (record: TxnLog): TransactionModel => {
   return {
-    id: record.id,
     txnId: record.txnId,
+    chainId: record.chainId,
     // @ts-ignore
     txnStatus: record.TxnStatus.toString(),
     dateTime: nativeJs(record.datetime).toLocalDateTime(),

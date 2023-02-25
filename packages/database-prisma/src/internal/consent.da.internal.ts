@@ -25,6 +25,7 @@ import { singleton } from "tsyringe";
 import { Prisma, PrismaClient } from "@prisma/client";
 import { PrismaClientService } from "./prisma-client.service";
 import { ConsentModel } from "@consent-as-a-service/domain";
+import { convertLocalDateTimeToDate } from "../mappers/util-type.mapper";
 
 @singleton()
 export class ConsentDaInternal {
@@ -45,7 +46,16 @@ export class ConsentDaInternal {
   }
 
   async updateConsent(id: string, options: UpdateConsentOptions) {
-    let updateData: Prisma.ConsentScalarFieldEnum;
+    const updateData: Prisma.ConsentUpdateInput = {};
+    if (options.user) {
+      updateData.userid = options.user.id;
+    }
+    if (options.consentState) {
+      updateData.consentState = options.consentState;
+    }
+    if (options.expiry) {
+      updateData.expiry = convertLocalDateTimeToDate(options.expiry);
+    }
     this.prismaClient.consent.update({
       where: {
         consentId: id,

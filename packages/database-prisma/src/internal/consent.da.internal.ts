@@ -24,7 +24,7 @@
 import { singleton } from "tsyringe";
 import { Consent, Prisma, PrismaClient } from "@prisma/client";
 import { PrismaClientService } from "./prisma-client.service";
-import { ConsentModel } from "@consent-as-a-service/domain";
+import { ConsentModel, Optional } from "@consent-as-a-service/domain";
 import { convertLocalDateTimeToDate } from "../mappers/util-type.mapper";
 
 @singleton()
@@ -45,25 +45,52 @@ export class ConsentDaInternal {
     });
   }
 
+  async readConsent(options: ReadConsentOptions): Promise<Optional<Consent>> {
+    return Optional.ofNullable(
+      await this.prismaClient.consent.findFirst({
+        where: {
+          consentId: options.id,
+        },
+      })
+    );
+  }
+
+  async readConsentsMatching(
+    options: ReadAllConsentOptions
+  ): Promise<Array<Consent>> {
+    const readQuery: Prisma.ConsentWhereInput = {
+      consentRequestId: options.consentRequestId,
+      consentId: options.id,
+    };
+    return await this.prismaClient.consent.findMany({
+      where: readQuery,
+    });
+  }
+
   async updateConsent(
     id: string,
     options: UpdateConsentOptions
   ): Promise<Consent> {
     const updateData: Prisma.ConsentUpdateInput = {};
-    if (options.user) {
-      updateData.userid = options.user.id;
-    }
-    if (options.consentState) {
-      updateData.consentState = options.consentState;
-    }
-    if (options.expiry) {
-      updateData.expiry = convertLocalDateTimeToDate(options.expiry);
-    }
+    const insertData = <
+      K extends keyof Prisma.ConsentUpdateInput,
+      V extends (typeof updateData)[K]
+    >(
+      key: K,
+      value?: V
+    ) => {
+      if (value) {
+        updateData[key] = value;
+      }
+    };
+    insertData("userid", options.user.id);
+    insertData("consentState", options.consentState);
+    insertData("expiry", convertLocalDateTimeToDate(options.expiry));
     return await this.prismaClient.consent.update({
       where: {
-        consentId: d,
+        consentId: id,
       },
-      data: updateDaa,
+      data: updateData,
     });
   }
 }
@@ -71,6 +98,12 @@ export class ConsentDaInternal {
 export type CreateConsentOptions = Pick<
   ConsentModel,
   "expiry" | "consentRequestId" | "org"
+>;
+
+export type ReadConsentOptions = Pick<ConsentModel, "id">;
+
+export type ReadAllConsentOptions = Partial<
+  Pick<ConsentModel, "id" | "consentRequestId">
 >;
 
 export type UpdateConsentOptions = Partial<

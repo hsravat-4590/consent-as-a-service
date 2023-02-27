@@ -50,7 +50,6 @@ export class TransactionService {
   async createTransaction(enableSessionLinking = true): Promise<string> {
     const now = LocalDateTime.now();
     const transaction = await CreateTransaction({
-      dateTime: now,
       txnStatus: 'CREATED',
     });
     if (!enableSessionLinking) {
@@ -80,11 +79,12 @@ export class TransactionService {
     newStatus: Omit<TxnStatus, 'CREATED'>,
     enableSessionLinking = true,
   ): Promise<string> {
-    const newId = await UpdateTransaction({
-      txnId: txnId,
-      dateTime: LocalDateTime.now(),
-      txnStatus: newStatus as TxnStatus, //Ignore Omit here
-    });
+    const newId = await UpdateTransaction(
+      {
+        txnStatus: newStatus as TxnStatus, //Ignore Omit here
+      },
+      txnId,
+    );
     if (!enableSessionLinking) {
       this.sessionManagementService.serviceSessionModel.transaction =
         Optional.of(newId);

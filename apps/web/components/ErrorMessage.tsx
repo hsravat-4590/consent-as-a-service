@@ -21,14 +21,13 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { handleAuth, handleLogin } from "@auth0/nextjs-auth0";
+import { Alert } from "@mui/material";
+import React, { ReactNode } from "react";
 
-export default handleAuth({
-  login: handleLogin({
-    authorizationParams: {
-      audience: "http://localhost:3003", // or AUTH0_AUDIENCE
-      // Add the `offline_access` scope to also get a Refresh Token
-      scope: "openid profile email", // or AUTH0_SCOPE
-    },
-  }),
-});
+type Props = { children: ReactNode };
+
+const ErrorMessage = (props: Props) => (
+  <Alert severity="error">{props.children}</Alert>
+);
+
+export default ErrorMessage;

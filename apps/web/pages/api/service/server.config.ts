@@ -21,14 +21,29 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { handleAuth, handleLogin } from "@auth0/nextjs-auth0";
+export default {
+  baseUrl: "http://localhost",
+  port: "3003",
+  // services: mapOf<string, ServiceConfig<any>>(['health']),
+} as ServerConfig;
 
-export default handleAuth({
-  login: handleLogin({
-    authorizationParams: {
-      audience: "http://localhost:3003", // or AUTH0_AUDIENCE
-      // Add the `offline_access` scope to also get a Refresh Token
-      scope: "openid profile email", // or AUTH0_SCOPE
-    },
-  }),
-});
+export interface ServerConfig {
+  baseUrl: NonNullable<string>;
+  port: NonNullable<string>;
+  // services: NonNullable<Map<string, boolean>>;
+}
+
+export interface ServiceConfig<T> {
+  name: string;
+  enabled: boolean;
+  supported: boolean;
+  impl: () => ServiceWorker<T>;
+}
+
+export type ServiceWorker<T> = () => Promise<T> | Service<T>;
+
+export interface Service<T> {
+  getId(): string;
+
+  execute(): Promise<T>;
+}

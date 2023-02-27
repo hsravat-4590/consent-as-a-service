@@ -21,14 +21,25 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { handleAuth, handleLogin } from "@auth0/nextjs-auth0";
+import { getAccessToken, withApiAuthRequired } from "@auth0/nextjs-auth0";
+import ServerConfig from "../server.config";
+import { HealthStatus } from "@consent-as-a-service/domain";
 
-export default handleAuth({
-  login: handleLogin({
-    authorizationParams: {
-      audience: "http://localhost:3003", // or AUTH0_AUDIENCE
-      // Add the `offline_access` scope to also get a Refresh Token
-      scope: "openid profile email", // or AUTH0_SCOPE
-    },
-  }),
+export default withApiAuthRequired(async function getServerHealthWithAuth(
+  req,
+  res
+) {
+  const { accessToken } = await getAccessToken(req, res);
+  console.log(`Token is ${accessToken}`);
+  const response = await fetch(
+    `${ServerConfig.baseUrl}:${ServerConfig.port}/health/authenticated`,
+    {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    }
+  );
+  const result: HealthStatus = await response.json();
+  console.log(JSON.stringify(result));
+  res.status(response.status).json(result);
 });

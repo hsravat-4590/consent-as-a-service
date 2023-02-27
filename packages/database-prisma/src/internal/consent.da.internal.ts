@@ -91,9 +91,9 @@ export class ConsentDaInternal {
     insertData("consentDataId", options.consentDataId);
     return await this.prismaClient.consent.update({
       where: {
-        consentId: d,
+        consentId: id,
       },
-      data: updateDaa,
+      data: updateData,
     });
   }
 }

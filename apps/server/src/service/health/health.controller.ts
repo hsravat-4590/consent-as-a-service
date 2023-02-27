@@ -21,16 +21,34 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Get, Req, UseGuards } from '@nestjs/common';
 import { HealthService } from '../../core/services/health.service';
-import { HealthStatus } from '../../core/models/health-status';
+import { HealthStatus } from '@consent-as-a-service/domain';
+import { Request } from 'express';
+import { UserService } from '../../core/services/user.service';
+import { Auth0Guard } from '../../core/auth/auth0.guard';
 
 @Controller('health')
 export class HealthController {
-  constructor(private healthService: HealthService) {}
+  constructor(
+    private healthService: HealthService,
+    private userService: UserService,
+  ) {}
 
   @Get()
   getHealth(): HealthStatus {
     return this.healthService.getHealthStatus();
+  }
+
+  @UseGuards(Auth0Guard)
+  @Get('/authenticated')
+  async getHealthAuthenticated(@Req() request: Request): Promise<HealthStatus> {
+    const health = this.healthService.getHealthStatus();
+    // We can assume that we're already authenticated thanks to the guard, and therefore we can manually add the prop
+
+    console.log('User Authenticated!!!');
+    health.authenticated = true;
+    await this.userService.getUser();
+    return health;
   }
 }

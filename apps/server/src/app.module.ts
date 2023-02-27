@@ -29,15 +29,21 @@ import { TransactionService } from './core/services/transaction.service';
 import { DataModelService } from './core/services/datamodel.service';
 import { TransactionController } from './service/transaction.controller';
 import { AuthModule } from './core/auth/auth.module';
+import { UserService } from './core/services/user.service';
+import { HttpModule } from '@nestjs/axios';
+import { ConfigModule } from '@nestjs/config';
+import { Auth0Guard } from './core/auth/auth0.guard';
 
 @Module({
-  imports: [AuthModule],
+  imports: [AuthModule, HttpModule, ConfigModule.forRoot()],
   controllers: [TransactionController, HealthController],
   providers: [
     HealthService,
     SessionManagementService,
     TransactionService,
     DataModelService,
+    UserService,
+    Auth0Guard,
   ],
 })
 export class AppModule {}

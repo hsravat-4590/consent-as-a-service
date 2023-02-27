@@ -22,17 +22,16 @@
  */
 
 import { singleton } from "tsyringe";
-import { Consent, Prisma, PrismaClient } from "@prisma/client";
+import { Consent, Prisma } from "@prisma/client";
 import { PrismaClientService } from "../services/prisma-client.service";
 import { ConsentModel, Optional } from "@consent-as-a-service/domain";
 import { convertLocalDateTimeToDate } from "../mappers/util-type.mapper";
+import { PrismaDa } from "./prisma.da";
 
 @singleton()
-export class ConsentDaInternal {
-  private readonly prismaClient: PrismaClient;
-
-  constructor(private readonly prismaClientService: PrismaClientService) {
-    this.prismaClient = prismaClientService.prismaClient;
+export class ConsentDaInternal extends PrismaDa {
+  constructor(prismaClientService: PrismaClientService) {
+    super(prismaClientService);
   }
 
   async createConsent(

@@ -24,14 +24,13 @@
 import { singleton } from "tsyringe";
 import { PrismaClientService } from "../services/prisma-client.service";
 import { Optional, TransactionModel } from "@consent-as-a-service/domain";
-import { PrismaClient, TxnLog, TxnLog_TxnStatus } from "@prisma/client";
+import { TxnLog, TxnLog_TxnStatus } from "@prisma/client";
+import { PrismaDa } from "./prisma.da";
 
 @singleton()
-export class TransactionDaInternal {
-  private readonly prismaClient: PrismaClient;
-
-  constructor(private prismaClientService: PrismaClientService) {
-    this.prismaClient = prismaClientService.prismaClient;
+export class TransactionDaInternal extends PrismaDa {
+  constructor(prismaClientService: PrismaClientService) {
+    super(prismaClientService);
   }
 
   async createTxn(options: CreateTransactionOptions): Promise<TxnLog> {

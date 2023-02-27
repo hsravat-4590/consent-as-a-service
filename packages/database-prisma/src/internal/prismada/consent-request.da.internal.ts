@@ -23,15 +23,14 @@
 
 import { singleton } from "tsyringe";
 import { PrismaClientService } from "../services/prisma-client.service";
-import { ConsentRequests, PrismaClient } from "@prisma/client";
+import { ConsentRequests } from "@prisma/client";
 import { ConsentRequestModel, Optional } from "@consent-as-a-service/domain";
+import { PrismaDa } from "./prisma.da";
 
 @singleton()
-export class ConsentRequestDaInternal {
-  private readonly prismaClient: PrismaClient;
-
-  constructor(private prismaClientService: PrismaClientService) {
-    this.prismaClient = prismaClientService.prismaClient;
+export class ConsentRequestDaInternal extends PrismaDa {
+  constructor(prismaClientService: PrismaClientService) {
+    super(prismaClientService);
   }
 
   async createConsentRequestType(

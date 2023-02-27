@@ -27,76 +27,78 @@ import {
   TransactionModel,
   ValidateState,
 } from "@consent-as-a-service/domain";
-import { mapTxnLogToModel } from "../mappers/txn-log.mapper";
+import { mapTxnLogToModel } from "../internal/mappers/txn-log.mapper";
 import {
   CreateTransactionOptions,
   TransactionDaInternal,
   TxnOrderStrategy,
   UpdateTransactionOptions,
-} from "../internal/transaction.da.internal";
+} from "../internal/prismada/transaction.da.internal";
 import "reflect-metadata";
 import { container } from "tsyringe";
-import { PrismaClientService } from "../internal/prisma-client.service";
+import { PrismaClientService } from "../internal/services/prisma-client.service";
 
-export const CreateTransaction = async (
-  options: CreateTransactionOptions
-): Promise<string> => {
-  console.log("Creating a TXN");
-  const prismaClientService = container.resolve(PrismaClientService);
-  await prismaClientService.connect();
-  const internalDa = container.resolve(TransactionDaInternal);
-  const newTxn = await internalDa.createTxn(options);
-  await prismaClientService.disconnect();
-  return newTxn.txnId;
-};
+export namespace TransactionDA {
+  export const CreateTransaction = async (
+    options: CreateTransactionOptions
+  ): Promise<string> => {
+    console.log("Creating a TXN");
+    const prismaClientService = container.resolve(PrismaClientService);
+    await prismaClientService.connect();
+    const internalDa = container.resolve(TransactionDaInternal);
+    const newTxn = await internalDa.createTxn(options);
+    await prismaClientService.disconnect();
+    return newTxn.txnId;
+  };
 
-export const ReadTransaction = async (
-  txnId: string
-): Promise<TransactionModel> => {
-  console.log("Reading A Txn");
-  const prismaClientService = container.resolve(PrismaClientService);
-  await prismaClientService.connect();
-  const internalDa = container.resolve(TransactionDaInternal);
-  const readOut: Optional<TxnLog> = await internalDa.readTxn(txnId);
-  await prismaClientService.disconnect();
-  if (readOut.isPresent()) {
-    return mapTxnLogToModel(readOut.get());
-  } else {
-    throw new Error("No Entries Returned"); // TODO make a clearer exceptions
-  }
-};
+  export const ReadTransaction = async (
+    txnId: string
+  ): Promise<TransactionModel> => {
+    console.log("Reading A Txn");
+    const prismaClientService = container.resolve(PrismaClientService);
+    await prismaClientService.connect();
+    const internalDa = container.resolve(TransactionDaInternal);
+    const readOut: Optional<TxnLog> = await internalDa.readTxn(txnId);
+    await prismaClientService.disconnect();
+    if (readOut.isPresent()) {
+      return mapTxnLogToModel(readOut.get());
+    } else {
+      throw new Error("No Entries Returned"); // TODO make a clearer exceptions
+    }
+  };
 
-export const ReadWholeTransaction = async (
-  txnId: string,
-  order: TxnOrderStrategy
-): Promise<Array<TransactionModel>> => {
-  const prismaClientService = container.resolve(PrismaClientService);
-  await prismaClientService.connect();
-  const internalDa = container.resolve(TransactionDaInternal);
-  let arr: TransactionModel[];
-  const result: TxnLog[] = await internalDa.readWholeTxn(txnId, order);
-  await prismaClientService.disconnect();
-  arr = result.map(mapTxnLogToModel);
-  return arr;
-};
+  export const ReadWholeTransaction = async (
+    txnId: string,
+    order: TxnOrderStrategy
+  ): Promise<Array<TransactionModel>> => {
+    const prismaClientService = container.resolve(PrismaClientService);
+    await prismaClientService.connect();
+    const internalDa = container.resolve(TransactionDaInternal);
+    let arr: TransactionModel[];
+    const result: TxnLog[] = await internalDa.readWholeTxn(txnId, order);
+    await prismaClientService.disconnect();
+    arr = result.map(mapTxnLogToModel);
+    return arr;
+  };
 
-export const UpdateTransaction = async (
-  update: UpdateTransactionOptions,
-  txnId: NonNullable<string>
-): Promise<string> => {
-  const prismaClientService = container.resolve(PrismaClientService);
-  await prismaClientService.connect();
-  const internalDa = container.resolve(TransactionDaInternal);
-  const parent = await internalDa.readTxn(txnId);
-  if (parent.isPresent()) {
-    ValidateState(() => parent.get().TxnStatus !== TxnLog_TxnStatus.VOIDED, {
-      errorMessage:
-        "Transaction has been voided and therefore cannot be updated",
-    });
-  } else {
-    new Error("Transaction cannot be updated as there are no parents");
-  }
-  console.log(JSON.stringify(update));
-  const newRecord: TxnLog = await internalDa.updateTxn(txnId, update);
-  return newRecord.txnId;
-};
+  export const UpdateTransaction = async (
+    update: UpdateTransactionOptions,
+    txnId: NonNullable<string>
+  ): Promise<string> => {
+    const prismaClientService = container.resolve(PrismaClientService);
+    await prismaClientService.connect();
+    const internalDa = container.resolve(TransactionDaInternal);
+    const parent = await internalDa.readTxn(txnId);
+    if (parent.isPresent()) {
+      ValidateState(() => parent.get().TxnStatus !== TxnLog_TxnStatus.VOIDED, {
+        errorMessage:
+          "Transaction has been voided and therefore cannot be updated",
+      });
+    } else {
+      new Error("Transaction cannot be updated as there are no parents");
+    }
+    console.log(JSON.stringify(update));
+    const newRecord: TxnLog = await internalDa.updateTxn(txnId, update);
+    return newRecord.txnId;
+  };
+}

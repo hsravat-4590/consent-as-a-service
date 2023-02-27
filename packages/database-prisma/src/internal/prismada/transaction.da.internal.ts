@@ -22,7 +22,7 @@
  */
 
 import { singleton } from "tsyringe";
-import { PrismaClientService } from "./prisma-client.service";
+import { PrismaClientService } from "../services/prisma-client.service";
 import { Optional, TransactionModel } from "@consent-as-a-service/domain";
 import { PrismaClient, TxnLog, TxnLog_TxnStatus } from "@prisma/client";
 

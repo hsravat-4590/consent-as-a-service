@@ -23,7 +23,7 @@
 
 import { singleton } from "tsyringe";
 import { Consent, Prisma, PrismaClient } from "@prisma/client";
-import { PrismaClientService } from "./prisma-client.service";
+import { PrismaClientService } from "../services/prisma-client.service";
 import { ConsentModel, Optional } from "@consent-as-a-service/domain";
 import { convertLocalDateTimeToDate } from "../mappers/util-type.mapper";
 

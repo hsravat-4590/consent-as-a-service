@@ -22,36 +22,52 @@
  */
 
 import { singleton } from "tsyringe";
-import { Optional } from "@consent-as-a-service/domain";
-import { PrismaClientService } from "./prisma-client.service";
-import { DataType, PrismaClient } from "@prisma/client";
-import { DataEntry } from "@consent-as-a-service/domain/dist";
+import { PrismaClientService } from "../services/prisma-client.service";
+import { ConsentRequests, PrismaClient } from "@prisma/client";
+import { ConsentRequestModel, Optional } from "@consent-as-a-service/domain";
 
 @singleton()
-export class ConsentDataSchemaDaInternal {
+export class ConsentRequestDaInternal {
   private readonly prismaClient: PrismaClient;
 
-  constructor(private readonly prismaClientService: PrismaClientService) {
+  constructor(private prismaClientService: PrismaClientService) {
     this.prismaClient = prismaClientService.prismaClient;
   }
 
-  async createSchemaEntry(
-    entries: NonNullable<Array<DataEntry<any>>>
-  ): Promise<DataType> {
-    return await this.prismaClient.dataType.create({
+  async createConsentRequestType(
+    txnId: NonNullable<string>,
+    options: CreateConsentRequestOptions
+  ): Promise<ConsentRequests> {
+    return await this.prismaClient.consentRequests.create({
       data: {
-        schema: JSON.stringify(entries),
+        txnId: txnId,
+        title: options.title,
+        description: options.description,
+        dataId: options.schema.id,
+        callbackUrl: options.callbackUrl.toString(),
       },
     });
   }
 
-  async readSchema(id: NonNullable<string>): Promise<Optional<DataType>> {
+  async readConsentRequest(
+    requestId: NonNullable<string>
+  ): Promise<Optional<ConsentRequests>> {
     return Optional.ofNullable(
-      await this.prismaClient.dataType.findFirst({
+      await this.prismaClient.consentRequests.findFirst({
         where: {
-          typeId: id,
+          consentRequestId: requestId,
         },
       })
     );
   }
 }
+
+export type CreateConsentRequestOptions = Pick<
+  ConsentRequestModel,
+  "title" | "description" | "schema" | "callbackUrl"
+>;
+export type CreateConsentResultType = {
+  txnId: string;
+  consentRequestId: string;
+  schemaId: string;
+};

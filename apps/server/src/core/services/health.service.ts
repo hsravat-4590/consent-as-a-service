@@ -22,7 +22,7 @@
  */
 
 import { Injectable } from '@nestjs/common';
-import { HealthStatus } from '../models/health-status';
+import { HealthStatus } from '@consent-as-a-service/domain';
 
 @Injectable()
 export class HealthService {

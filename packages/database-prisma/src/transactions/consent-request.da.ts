@@ -31,13 +31,13 @@ import {
 import { mapConsentRequestToModel } from "../internal/mappers/consent-request.mapper";
 import { container } from "tsyringe";
 import { PrismaClientService } from "../internal/services/prisma-client.service";
-import { TransactionDaInternal } from "../internal/prismada/transaction.da.internal";
+import { TransactionDaInternal } from "../internal/prisma-da/transaction.da.internal";
 import {
   ConsentRequestDaInternal,
   CreateConsentRequestOptions,
   CreateConsentResultType,
-} from "../internal/prismada/consent-request.da.internal";
-import { ConsentDataSchemaDaInternal } from "../internal/prismada/consent-data-schema.da.internal";
+} from "../internal/prisma-da/consent-request.da.internal";
+import { ConsentDataSchemaDaInternal } from "../internal/prisma-da/consent-data-schema.da.internal";
 
 export namespace ConsentRequestDA {
   async function getServices() {

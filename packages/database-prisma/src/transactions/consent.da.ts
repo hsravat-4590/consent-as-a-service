@@ -23,13 +23,13 @@
 
 import { container } from "tsyringe";
 import { PrismaClientService } from "../internal/services/prisma-client.service";
-import { TransactionDaInternal } from "../internal/prismada/transaction.da.internal";
+import { TransactionDaInternal } from "../internal/prisma-da/transaction.da.internal";
 import {
   ConsentDaInternal,
   CreateConsentOptions,
   UpdateConsentOptions,
-} from "../internal/prismada/consent.da.internal";
-import { ConsentRequestDaInternal } from "../internal/prismada/consent-request.da.internal";
+} from "../internal/prisma-da/consent.da.internal";
+import { ConsentRequestDaInternal } from "../internal/prisma-da/consent-request.da.internal";
 import { mapConsentToModel } from "../internal/mappers/consent.mapper";
 import {
   ConsentModel,

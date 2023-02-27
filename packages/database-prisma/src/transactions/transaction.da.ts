@@ -33,7 +33,7 @@ import {
   TransactionDaInternal,
   TxnOrderStrategy,
   UpdateTransactionOptions,
-} from "../internal/prismada/transaction.da.internal";
+} from "../internal/prisma-da/transaction.da.internal";
 import "reflect-metadata";
 import { container } from "tsyringe";
 import { PrismaClientService } from "../internal/services/prisma-client.service";

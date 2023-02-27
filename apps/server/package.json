@@ -41,7 +41,8 @@
     "rimraf": "^3.0.2",
     "rxjs": "^7.2.0",
     "@js-joda/core": "^5.5.2",
-    "axios": "1.3.3"
+    "axios": "1.3.3",
+    "auth0": "3.2.0"
   },
   "devDependencies": {
     "@consent-as-a-service/domain": "workspace:*",
@@ -56,6 +57,7 @@
     "@types/passport": "^1.0.11",
     "@types/passport-jwt": "^3.0.8",
     "@types/supertest": "^2.0.11",
+    "@types/auth0": "^2.35.9",
     "@types/express-session": "^1.17.5",
     "@typescript-eslint/eslint-plugin": "^5.0.0",
     "@typescript-eslint/parser": "^5.0.0",

@@ -10,11 +10,12 @@ datasource db {
 
 model Consent {
   consentId     String                @id @unique @default(uuid())
+  txnId         String
   userid        String?
   orgid         String                @db.VarChar(255)
   expiry        DateTime?              @db.DateTime(0)
-  consentState  Consent_consentState
   consentRequestId String
+  consentDataId String?
 }
 
 model ConsentData {
@@ -79,12 +80,4 @@ enum TxnLog_TxnStatus {
   REJECTED
   FULFILLED
   VOIDED
-}
-
-enum Consent_consentState {
-  CREATED
-  WAITING
-  ACCEPTED
-  REVOKED
-  EXPIRED
 }

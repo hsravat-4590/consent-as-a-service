@@ -35,12 +35,15 @@ export class ConsentDaInternal {
     this.prismaClient = prismaClientService.prismaClient;
   }
 
-  async createConsent(options: CreateConsentOptions): Promise<Consent> {
+  async createConsent(
+    txnId: string,
+    options: CreateConsentOptions
+  ): Promise<Consent> {
     return await this.prismaClient.consent.create({
       data: {
+        txnId: txnId,
         consentRequestId: options.consentRequestId,
         orgid: options.org.orgId,
-        consentState: "CREATED",
       },
     });
   }
@@ -84,16 +87,20 @@ export class ConsentDaInternal {
       }
     };
     insertData("userid", options.user.id);
-    insertData("consentState", options.consentState);
     insertData("expiry", convertLocalDateTimeToDate(options.expiry));
+    insertData("consentDataId", options.consentDataId);
     return await this.prismaClient.consent.update({
       where: {
-        consentId: id,
+        consentId: d,
       },
-      data: updateData,
+      data: updateDaa,
     });
   }
 }
+
+export type UpdateConsentOptions = Partial<
+  Pick<ConsentModel, "expiry" | "user" | "consentDataId">
+>;
 
 export type CreateConsentOptions = Pick<
   ConsentModel,
@@ -104,8 +111,4 @@ export type ReadConsentOptions = Pick<ConsentModel, "id">;
 
 export type ReadAllConsentOptions = Partial<
   Pick<ConsentModel, "id" | "consentRequestId">
->;
-
-export type UpdateConsentOptions = Partial<
-  Pick<ConsentModel, "expiry" | "consentState" | "user">
 >;

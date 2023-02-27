@@ -21,11 +21,13 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { convert, LocalDateTime } from "@js-joda/core";
+import { convert, LocalDateTime, nativeJs } from "@js-joda/core";
 
 export const convertLocalDateTimeToDate = (dateTime: LocalDateTime): Date =>
   convert(dateTime).toDate();
 
+export const convertDateToLocalDateTime = (date: Date): LocalDateTime =>
+  nativeJs(date).toLocalDateTime();
 /**
  * AutoMap works by automatically transforming one object to another providing keys match value types.
  * @param object

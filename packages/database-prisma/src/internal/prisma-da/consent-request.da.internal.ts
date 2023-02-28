@@ -24,7 +24,7 @@
 import { singleton } from "tsyringe";
 import { PrismaClientService } from "../services/prisma-client.service";
 import { ConsentRequests } from "@prisma/client";
-import { ConsentRequestModel, Optional } from "@consent-as-a-service/domain";
+import { AsyncOptional, ConsentRequestModel, Optional } from "@consent-as-a-service/domain";
 import { PrismaDa } from "./prisma.da";
 
 @singleton()
@@ -50,12 +50,12 @@ export class ConsentRequestDaInternal extends PrismaDa {
 
   async readConsentRequest(
     requestId: NonNullable<string>
-  ): Promise<Optional<ConsentRequests>> {
+  ): AsyncOptional<ConsentRequests> {
     return Optional.ofNullable(
       await this.prismaClient.consentRequests.findFirst({
         where: {
-          consentRequestId: requestId,
-        },
+          consentRequestId: requestI,
+        ,
       })
     );
   }

@@ -22,7 +22,7 @@
  */
 
 import { singleton } from "tsyringe";
-import { Optional } from "@consent-as-a-service/domain";
+import { AsyncOptional, Optional } from "@consent-as-a-service/domain";
 import { PrismaClientService } from "../services/prisma-client.service";
 import { DataType } from "@prisma/client";
 import { DataEntry } from "@consent-as-a-service/domain/dist";
@@ -44,7 +44,7 @@ export class ConsentDataSchemaDaInternal extends PrismaDa {
     });
   }
 
-  async readSchema(id: NonNullable<string>): Promise<Optional<DataType>> {
+  async readSchema(id: NonNullable<string>): AsyncOptional<DataType> {
     return Optional.ofNullable(
       await this.prismaClient.dataType.findFirst({
         where: {

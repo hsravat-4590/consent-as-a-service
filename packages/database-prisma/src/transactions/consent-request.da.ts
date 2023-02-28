@@ -23,6 +23,7 @@
 
 import { ConsentRequests, TxnLog } from "@prisma/client";
 import {
+  AsyncOptional,
   ConsentRequestModel,
   DataEntry,
   DataSchema,
@@ -95,7 +96,7 @@ export namespace ConsentRequestDA {
    */
   export const ReadConsentRequest = async (
     consentRequestId: NonNullable<string>
-  ): Promise<Optional<ConsentRequestModel>> => {
+  ): AsyncOptional<ConsentRequestModel> => {
     console.log("Reading a ConsentRequest");
     const { prismaClientService, txnDa, internalDa, schemaDa } =
       await getServices();

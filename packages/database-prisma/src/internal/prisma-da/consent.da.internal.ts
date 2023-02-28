@@ -24,7 +24,7 @@
 import { singleton } from "tsyringe";
 import { Consent, Prisma } from "@prisma/client";
 import { PrismaClientService } from "../services/prisma-client.service";
-import { ConsentModel, Optional } from "@consent-as-a-service/domain";
+import { AsyncOptional, ConsentModel, Optional } from "@consent-as-a-service/domain";
 import { convertLocalDateTimeToDate } from "../mappers/util-type.mapper";
 import { PrismaDa } from "./prisma.da";
 
@@ -47,12 +47,12 @@ export class ConsentDaInternal extends PrismaDa {
     });
   }
 
-  async readConsent(options: ReadConsentOptions): Promise<Optional<Consent>> {
+  async readConsent(options: ReadConsentOptions): AsyncOptional<Consent> {
     return Optional.ofNullable(
       await this.prismaClient.consent.findFirst({
         where: {
-          consentId: options.id,
-        },
+          consentId: options.i,
+        ,
       })
     );
   }

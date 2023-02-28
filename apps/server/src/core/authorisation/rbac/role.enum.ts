@@ -22,9 +22,8 @@
  */
 
 export enum Role {
-  BASIC = 'basic', //BASIC user who can access generic endpoints such as health
-  ORG = 'org', //ORGs can send requests for consents and view the data held by a consent
-  ORGU = 'orgu', // Organisation user who can create consents
-  USER = 'user', //Users can view existing consents & accept/deny new ones
-  ADMIN = 'admin', // Admins can manage Users and Orgs
+  USER = 'User', //The end-user. This role allows one to view/accept and fulfill consents
+  ADMIN = 'Admin', // Mostly for the API itself and any dashboards that may come in the future to manage the overall system
+  CREATE_CONSENTS = 'CreateConsents', //Users with this role can create ConsentRequests
+  REQUEST_CONSENTS = 'RequestConsents', //Users with this role can use ConsentRequestModels to send ConsentRequests to users
 }

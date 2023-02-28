@@ -21,30 +21,24 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { EmailModel } from "./email.model";
+import { UserModel } from "./user.model";
 
-export interface UserModel {
+export interface RequesterModel {
   id: NonNullable<string>;
-  firstName?: string;
-  lastName?: string; //TODO Domain Primitive for Name types
-  nickname: string;
-  email: NonNullable<EmailModel>;
-  emailVerified: NonNullable<boolean>;
-
-  requesterId?: string;
-}
-
-export type NonDBUser = Omit<UserModel, "id">;
-
-export namespace UserModel {
-  export const getDisplayName = (model: UserModel): string => {
-    let returnStr = model.nickname;
-    if (model.firstName) {
-      returnStr = model.firstName;
-      if (model.lastName) {
-        returnStr = `${returnStr} ${model.lastName}`;
-      }
-    }
-    return returnStr;
-  };
+  /**
+   * UserModel linked with Requester
+   */
+  user: UserModel;
+  /**
+   * DisplayName for Requester
+   */
+  displayName: NonNullable<string>;
+  /**
+   * Url to Banner Resource
+   */
+  banner?: string;
+  /**
+   * URL to logo resource
+   */
+  logo?: string;
 }

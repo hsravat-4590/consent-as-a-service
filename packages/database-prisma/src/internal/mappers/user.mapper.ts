@@ -21,30 +21,29 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { EmailModel } from "./email.model";
+import { EmailModel, UserModel } from "@consent-as-a-service/domain";
+import { User } from "@prisma/client";
 
-export interface UserModel {
-  id: NonNullable<string>;
-  firstName?: string;
-  lastName?: string; //TODO Domain Primitive for Name types
-  nickname: string;
-  email: NonNullable<EmailModel>;
-  emailVerified: NonNullable<boolean>;
-
-  requesterId?: string;
-}
-
-export type NonDBUser = Omit<UserModel, "id">;
-
-export namespace UserModel {
-  export const getDisplayName = (model: UserModel): string => {
-    let returnStr = model.nickname;
-    if (model.firstName) {
-      returnStr = model.firstName;
-      if (model.lastName) {
-        returnStr = `${returnStr} ${model.lastName}`;
-      }
-    }
-    return returnStr;
+export const mapUserModelToORM = (user: UserModel): User => {
+  return {
+    id: user.id,
+    firstname: user.firstName,
+    lastname: user.lastName,
+    nickname: user.nickname,
+    requesterId: user.requesterId,
+    email: user.email.email,
+    emailVerified: user.emailVerified,
   };
-}
+};
+
+export const mapUserToModel = (user: User): UserModel => {
+  return {
+    id: user.id,
+    firstname: user.firstname,
+    lastname: user.lastname,
+    nickname: user.nickname,
+    requesterId: user.requesterId,
+    email: new EmailModel(user.email),
+    emailVerified: user.emailVerified,
+  } as UserModel;
+};

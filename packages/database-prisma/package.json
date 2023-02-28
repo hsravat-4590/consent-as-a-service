@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "",
   "scripts": {
-    "build": "tsc -p tsconfig.json"
+    "build": "prisma generate && tsc -p tsconfig.json"
   },
   "keywords": [],
   "author": "Hanzalah Ravat",

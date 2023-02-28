@@ -27,7 +27,8 @@ import { PrismaClientService } from "../services/prisma-client.service";
 import { Requester } from "@prisma/client";
 import { AsyncOptional, Optional } from "@consent-as-a-service/domain";
 import { UserDA } from "../../transactions";
-import UpdatableRequesterOptions = UserDA.UpdatableRequesterOptions;
+import { RequesterDA } from "../../transactions/requester.da";
+import UpdatableRequesterOptions = RequesterDA.UpdatableRequesterOptions;
 import CreateRequesterOptions = UserDA.CreateRequesterOptions;
 
 @singleton()

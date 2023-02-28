@@ -54,7 +54,7 @@ export namespace UserDA {
   export const CreateUser = async (
     userModel: UserModel
   ): Promise<UserModel> => {
-    const { prismaClientService, txnDa, internalDa } = await getServices();
+    const { txnDa, internalDa } = await getServices();
     // CHECK db for any existing users
     const optionalUsr = await internalDa.readUser(userModel.id);
     ValidateOptional(optionalUsr, {

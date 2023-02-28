@@ -21,7 +21,7 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { Controller, Get, Req, UseGuards } from '@nestjs/common';
+import { Controller, Get, Req, Request, UseGuards } from '@nestjs/common';
 import { HealthService } from '../../core/services/health.service';
 import { HealthStatus } from '@consent-as-a-service/domain';
 import { UserService } from '../../core/services/user.service';

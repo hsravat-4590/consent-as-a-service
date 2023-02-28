@@ -34,8 +34,8 @@ yarn-error.log*
 
 # Project exclude paths
 /packages/database-prisma/dist
-/packages/database-prisma/src/mappers/txn-log.mapper.js
-/packages/database-prisma/src/mappers/util-type.mapper.js
+/packages/database-prisma/src/internal/mappers/txn-log.mapper.js
+/packages/database-prisma/src/internal/mappers/util-type.mapper.js
 /packages/database-prisma/src/transactions/index.js
 /packages/database-prisma/src/transactions/transaction.da.js
 /packages/database-prisma/index.d.ts
@@ -51,3 +51,6 @@ yarn-error.log*
 /packages/domain/src/domain/user.model.js
 /packages/domain/index.d.ts
 /packages/domain/index.js
+
+dist/
+index.js

@@ -21,27 +21,24 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { Test, TestingModule } from '@nestjs/testing';
-import { INestApplication } from '@nestjs/common';
-import request from 'supertest';
-import { AppModule } from '../src/app.module';
+import { UserModel } from "./user.model";
 
-describe('AppController (e2e)', () => {
-  let app: INestApplication;
-
-  beforeEach(async () => {
-    const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [AppModule],
-    }).compile();
-
-    app = moduleFixture.createNestApplication();
-    await app.init();
-  });
-
-  it('/ (GET)', () => {
-    return request(app.getHttpServer())
-      .get('/')
-      .expect(200)
-      .expect('Hello World!');
-  });
-});
+export interface RequesterModel {
+  id: NonNullable<string>;
+  /**
+   * UserModel linked with Requester
+   */
+  user: UserModel;
+  /**
+   * DisplayName for Requester
+   */
+  displayName: NonNullable<string>;
+  /**
+   * Url to Banner Resource
+   */
+  banner?: string;
+  /**
+   * URL to logo resource
+   */
+  logo?: string;
+}

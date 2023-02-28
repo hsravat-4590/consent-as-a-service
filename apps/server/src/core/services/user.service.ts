@@ -20,3 +20,22 @@
  * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
+
+import { Inject, Injectable } from '@nestjs/common';
+import { REQUEST } from '@nestjs/core';
+import { Request } from 'express';
+
+@Injectable()
+export class UserService {
+  constructor(@Inject(REQUEST) private request: Request) {}
+
+  async getUser() {
+    // Get the user from AuthToken
+    // Fetch
+    this.getUserFromAuth0();
+  }
+
+  getUserRoles() {}
+
+  private getUserFromAuth0() {}
+}

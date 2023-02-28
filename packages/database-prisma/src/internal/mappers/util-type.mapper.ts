@@ -21,17 +21,15 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { TxnLog, TxnLog_TxnStatus } from "@prisma/client";
-import { nativeJs } from "@js-joda/core";
-import { Optional, TransactionModel } from "@consent-as-a-service/domain";
+import { convert, LocalDateTime, nativeJs } from "@js-joda/core";
 
-export const mapTxnLogToModel = (record: TxnLog): TransactionModel => {
-  return {
-    id: record.id,
-    txnId: record.txnId,
-    // @ts-ignore
-    txnStatus: record.TxnStatus.toString(),
-    dateTime: nativeJs(record.datetime).toLocalDateTime(),
-    parent: Optional.ofNullable(record.parent),
-  };
-};
+export const convertLocalDateTimeToDate = (dateTime: LocalDateTime): Date =>
+  convert(dateTime).toDate();
+
+export const convertDateToLocalDateTime = (date: Date): LocalDateTime =>
+  nativeJs(date).toLocalDateTime();
+/**
+ * AutoMap works by automatically transforming one object to another providing keys match value types.
+ * @param object
+ */
+export const autoMap = <In, Out>(object: In) => {};

@@ -21,27 +21,36 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { Test, TestingModule } from '@nestjs/testing';
-import { INestApplication } from '@nestjs/common';
-import request from 'supertest';
-import { AppModule } from '../src/app.module';
+import { singleton } from "tsyringe";
+import { AsyncOptional, Optional } from "@consent-as-a-service/domain";
+import { PrismaClientService } from "../services/prisma-client.service";
+import { DataType } from "@prisma/client";
+import { DataEntry } from "@consent-as-a-service/domain/dist";
+import { PrismaDa } from "./prisma.da";
 
-describe('AppController (e2e)', () => {
-  let app: INestApplication;
+@singleton()
+export class ConsentDataSchemaDaInternal extends PrismaDa {
+  constructor(prismaClientService: PrismaClientService) {
+    super(prismaClientService);
+  }
 
-  beforeEach(async () => {
-    const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [AppModule],
-    }).compile();
+  async createSchemaEntry(
+    entries: NonNullable<Array<DataEntry<any>>>
+  ): Promise<DataType> {
+    return await this.prismaClient.dataType.create({
+      data: {
+        schema: JSON.stringify(entries),
+      },
+    });
+  }
 
-    app = moduleFixture.createNestApplication();
-    await app.init();
-  });
-
-  it('/ (GET)', () => {
-    return request(app.getHttpServer())
-      .get('/')
-      .expect(200)
-      .expect('Hello World!');
-  });
-});
+  async readSchema(id: NonNullable<string>): AsyncOptional<DataType> {
+    return Optional.ofNullable(
+      await this.prismaClient.dataType.findFirst({
+        where: {
+          typeId: id,
+        },
+      })
+    );
+  }
+}

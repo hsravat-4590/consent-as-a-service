@@ -21,27 +21,14 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { Test, TestingModule } from '@nestjs/testing';
-import { INestApplication } from '@nestjs/common';
-import request from 'supertest';
-import { AppModule } from '../src/app.module';
+import { Requester } from "@prisma/client";
+import { RequesterModel } from "@consent-as-a-service/domain";
 
-describe('AppController (e2e)', () => {
-  let app: INestApplication;
-
-  beforeEach(async () => {
-    const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [AppModule],
-    }).compile();
-
-    app = moduleFixture.createNestApplication();
-    await app.init();
-  });
-
-  it('/ (GET)', () => {
-    return request(app.getHttpServer())
-      .get('/')
-      .expect(200)
-      .expect('Hello World!');
-  });
-});
+export const mapRequesterToModel = (requester: Requester): RequesterModel => {
+  return {
+    id: requester.id,
+    displayName: requester.displayname,
+    banner: requester.banner,
+    logo: requester.logo,
+  } as RequesterModel;
+};

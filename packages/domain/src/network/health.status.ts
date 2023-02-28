@@ -23,6 +23,7 @@
 
 export interface HealthStatus {
   serverStatus: ServerStatus;
+  authenticated?: boolean;
 }
 
-export type ServerStatus = 'UP' | 'DOWN';
+export type ServerStatus = "UP" | "DOWN";

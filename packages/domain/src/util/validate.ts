@@ -36,6 +36,16 @@ export namespace Validate {
     );
   }
 
+  export const ValidateOptional = (
+    optional: Optional<any>,
+    errorHandler: Partial<ValidateErrorHandlers>,
+    expectedState: boolean = true
+  ) => {
+    if (optional.isPresent() == !expectedState) {
+      handleValidationError(errorHandler);
+    }
+  };
+
   export const ValidateState = (
     check: () => boolean,
     errorHandler: Partial<ValidateErrorHandlers>
@@ -45,13 +55,6 @@ export namespace Validate {
     } else {
       handleValidationError(errorHandler);
     }
-  };
-
-  export const ValidateOptional = (
-    optional: Optional<any>,
-    errorHandler: Partial<ValidateErrorHandlers>
-  ) => {
-    ValidateState(optional.isPresent, errorHandler);
   };
 
   export interface Comparable<T> {

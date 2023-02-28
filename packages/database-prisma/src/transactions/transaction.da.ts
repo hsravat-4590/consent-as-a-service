@@ -25,7 +25,7 @@ import { TxnLog, TxnLog_TxnStatus } from "@prisma/client";
 import {
   Optional,
   TransactionModel,
-  ValidateState,
+  Validate,
 } from "@consent-as-a-service/domain";
 import { mapTxnLogToModel } from "../internal/mappers/txn-log.mapper";
 import {
@@ -37,17 +37,25 @@ import {
 import "reflect-metadata";
 import { container } from "tsyringe";
 import { PrismaClientService } from "../internal/services/prisma-client.service";
+import ValidateState = Validate.ValidateState;
 
 export namespace TransactionDA {
+  import ValidateOptional = Validate.ValidateOptional;
+
+  async function getServices(connect: boolean = true) {
+    const prismaClientService = container.resolve(PrismaClientService);
+    const internalDa = container.resolve(TransactionDaInternal);
+    if (connect) {
+      await prismaClientService.connect();
+    }
+    return { prismaClientService, internalDa };
+  }
   export const CreateTransaction = async (
     options: CreateTransactionOptions
   ): Promise<string> => {
     console.log("Creating a TXN");
-    const prismaClientService = container.resolve(PrismaClientService);
-    await prismaClientService.connect();
-    const internalDa = container.resolve(TransactionDaInternal);
+    const { internalDa } = await getServices();
     const newTxn = await internalDa.createTxn(options);
-
     return newTxn.txnId;
   };
 
@@ -55,28 +63,21 @@ export namespace TransactionDA {
     txnId: string
   ): Promise<TransactionModel> => {
     console.log("Reading A Txn");
-    const prismaClientService = container.resolve(PrismaClientService);
-    await prismaClientService.connect();
-    const internalDa = container.resolve(TransactionDaInternal);
+    const { internalDa } = await getServices();
     const readOut: Optional<TxnLog> = await internalDa.readTxn(txnId);
-
-    if (readOut.isPresent()) {
-      return mapTxnLogToModel(readOut.get());
-    } else {
-      throw new Error("No Entries Returned"); // TODO make a clearer exceptions
-    }
+    ValidateOptional(readOut, {
+      errorMessage: "No Entries Returned",
+    });
+    return mapTxnLogToModel(readOut.get());
   };
 
   export const ReadWholeTransaction = async (
     txnId: string,
     order: TxnOrderStrategy
   ): Promise<Array<TransactionModel>> => {
-    const prismaClientService = container.resolve(PrismaClientService);
-    await prismaClientService.connect();
-    const internalDa = container.resolve(TransactionDaInternal);
+    const { internalDa } = await getServices();
     let arr: TransactionModel[];
     const result: TxnLog[] = await internalDa.readWholeTxn(txnId, order);
-
     arr = result.map(mapTxnLogToModel);
     return arr;
   };
@@ -85,9 +86,7 @@ export namespace TransactionDA {
     update: UpdateTransactionOptions,
     txnId: NonNullable<string>
   ): Promise<string> => {
-    const prismaClientService = container.resolve(PrismaClientService);
-    await prismaClientService.connect();
-    const internalDa = container.resolve(TransactionDaInternal);
+    const { internalDa } = await getServices();
     const parent = await internalDa.readTxn(txnId);
     if (parent.isPresent()) {
       ValidateState(() => parent.get().TxnStatus !== TxnLog_TxnStatus.VOIDED, {

@@ -23,7 +23,7 @@
 
 import { Controller, Get } from '@nestjs/common';
 import { HealthService } from '../../core/services/health.service';
-import { HealthStatus } from '../../core/models/health-status';
+import { HealthStatus } from '@consent-as-a-service/domain';
 
 @Controller('health')
 export class HealthController {

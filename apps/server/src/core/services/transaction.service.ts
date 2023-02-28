@@ -23,18 +23,13 @@
 
 import { Injectable } from '@nestjs/common';
 import { LocalDateTime } from '@js-joda/core';
-import {
-  CreateTransaction,
-  ReadTransaction,
-  ReadWholeTransaction,
-  UpdateTransaction,
-} from '@consent-as-a-service/database-prisma';
+import { TransactionDA } from '@consent-as-a-service/database-prisma';
 import { SessionManagementService } from './session/session-management.service';
 import {
   Optional,
   TransactionModel,
   TxnStatus,
-  ValidateState,
+  Validate,
 } from '@consent-as-a-service/domain';
 
 /**
@@ -49,7 +44,7 @@ export class TransactionService {
    */
   async createTransaction(enableSessionLinking = true): Promise<string> {
     const now = LocalDateTime.now();
-    const transaction = await CreateTransaction({
+    const transaction = await TransactionDA.CreateTransaction({
       txnStatus: 'CREATED',
     });
     if (!enableSessionLinking) {
@@ -64,14 +59,14 @@ export class TransactionService {
    * @param transactionId Will try to use Session if not provided
    */
   async readTransaction(transactionId: string): Promise<TransactionModel> {
-    return await ReadTransaction(transactionId);
+    return await TransactionDA.ReadTransaction(transactionId);
   }
 
   async readAllTransactions(
     transactionId: string = this.getTransactionFromSession(),
     order: 'asc' | 'desc',
   ): Promise<Array<TransactionModel>> {
-    return ReadWholeTransaction(transactionId, order);
+    return TransactionDA.ReadWholeTransaction(transactionId, order);
   }
 
   async updateTransaction(
@@ -79,7 +74,7 @@ export class TransactionService {
     newStatus: Omit<TxnStatus, 'CREATED'>,
     enableSessionLinking = true,
   ): Promise<string> {
-    const newId = await UpdateTransaction(
+    const newId = await TransactionDA.UpdateTransaction(
       {
         txnStatus: newStatus as TxnStatus, //Ignore Omit here
       },
@@ -102,7 +97,7 @@ export class TransactionService {
   private getTransactionFromSession(): string {
     const transactionOptional =
       this.sessionManagementService.serviceSessionModel.transaction;
-    ValidateState(transactionOptional.isPresent, {
+    Validate.ValidateState(transactionOptional.isPresent, {
       errorMessage: 'Expected a Transaction on the Session',
     });
     return transactionOptional.get();

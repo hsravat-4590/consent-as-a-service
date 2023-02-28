@@ -24,14 +24,10 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { REQUEST } from '@nestjs/core';
 import { Request } from 'express';
-import { HttpService } from '@nestjs/axios';
 
 @Injectable()
 export class UserService {
-  constructor(
-    @Inject(REQUEST) private request: Request,
-    private readonly httpService: HttpService,
-  ) {}
+  constructor(@Inject(REQUEST) private request: Request) {}
 
   async getUser() {
     // Get the user from AuthToken
@@ -41,27 +37,5 @@ export class UserService {
 
   getUserRoles() {}
 
-  private getUserFromAuth0() {
-    this.httpService
-      .get('https://dev-oixkoo26y6fn8sbd.uk.auth0.com/userinfo', {
-        headers: {
-          'content-type': 'application/json',
-          Authorization: this.request.headers.authorization,
-        },
-      })
-      .subscribe(
-        (res) => {
-          const responseData = res.data;
-          console.log(JSON.stringify(responseData));
-          // const user: NonDBUser = {
-          //   nickname: responseData.nickname,
-          //   email: responseData.email,
-          //   emailVerified: responseData.emailVerified,
-          // };
-        },
-        (error) => {
-          console.log(error);
-        },
-      );
-  }
+  private getUserFromAuth0() {}
 }

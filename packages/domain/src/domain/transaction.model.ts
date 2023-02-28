@@ -22,11 +22,11 @@
  */
 
 import { LocalDateTime } from "@js-joda/core";
-import { Optional } from "../util/optional";
+import { Optional } from "../util";
 
 export interface TransactionModel {
-  id: NonNullable<number>;
-  txnId: string;
+  txnId: NonNullable<string>;
+  chainId: NonNullable<string>;
   txnStatus: TxnStatus;
   dateTime: LocalDateTime;
   parent: Optional<string>;

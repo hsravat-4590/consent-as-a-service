@@ -21,9 +21,26 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import React from "react";
-import { useInitial } from "./useInitial";
+import { ConsentRequests, DataType, TxnLog } from "@prisma/client";
+import { mapTxnLogToModel } from "./txn-log.mapper";
+import {
+  ConsentRequestModel,
+  TransactionModel,
+} from "@consent-as-a-service/domain";
+import { mapDataTypeToSchema } from "./schema.mapper";
 
-const ComponentPreviews = React.lazy(() => import("./previews"));
-
-export { ComponentPreviews, useInitial };
+export const mapConsentRequestToModel = (
+  request: ConsentRequests,
+  txnLog: TxnLog,
+  schema: DataType
+): ConsentRequestModel => {
+  const model: TransactionModel = mapTxnLogToModel(txnLog);
+  return {
+    schema: mapDataTypeToSchema(schema),
+    id: request.consentRequestId,
+    txn: model,
+    title: request.title,
+    description: request.description,
+    callbackUrl: new URL(request.callbackUrl),
+  };
+};

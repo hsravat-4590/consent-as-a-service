@@ -87,3 +87,8 @@ export class Optional<T> {
     return Optional.EMPTY;
   }
 }
+
+/**
+ * This type wraps an optional in a promise for Asynchronous uses
+ */
+export type AsyncOptional<T> = Promise<Optional<T>>;

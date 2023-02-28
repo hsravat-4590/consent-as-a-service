@@ -21,19 +21,17 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { useState } from "react";
-import { InitialHookStatus } from "@react-buddy/ide-toolbox";
+import { TxnLog } from "@prisma/client";
+import { nativeJs } from "@js-joda/core";
+import { Optional, TransactionModel } from "@consent-as-a-service/domain";
 
-export const useInitial: () => InitialHookStatus = () => {
-  const [status, setStatus] = useState<InitialHookStatus>({
-    loading: false,
-    error: false,
-  });
-  /*
-    Implement hook functionality here.
-    If you need to execute async operation, set loading to true and when it's over, set loading to false.
-    If you caught some errors, set error status to true.
-    Initial hook is considered to be successfully completed if it will return {loading: false, error: false}.
-  */
-  return status;
+export const mapTxnLogToModel = (record: TxnLog): TransactionModel => {
+  return {
+    txnId: record.txnId,
+    chainId: record.chainId,
+    // @ts-ignore
+    txnStatus: record.TxnStatus.toString(),
+    dateTime: nativeJs(record.datetime).toLocalDateTime(),
+    parent: Optional.ofNullable(record.parent),
+  };
 };

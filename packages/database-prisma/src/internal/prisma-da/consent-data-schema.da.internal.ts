@@ -21,33 +21,36 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { Controller, Get, Req, UseGuards } from '@nestjs/common';
-import { HealthService } from '../../core/services/health.service';
-import { HealthStatus } from '@consent-as-a-service/domain';
-import { UserService } from '../../core/services/user.service';
-import { Auth0Guard } from '../../core/auth/auth0.guard';
+import { singleton } from "tsyringe";
+import { AsyncOptional, Optional } from "@consent-as-a-service/domain";
+import { PrismaClientService } from "../services/prisma-client.service";
+import { DataType } from "@prisma/client";
+import { DataEntry } from "@consent-as-a-service/domain/dist";
+import { PrismaDa } from "./prisma.da";
 
-@Controller('health')
-export class HealthController {
-  constructor(
-    private healthService: HealthService,
-    private userService: UserService,
-  ) {}
-
-  @Get()
-  getHealth(): HealthStatus {
-    return this.healthService.getHealthStatus();
+@singleton()
+export class ConsentDataSchemaDaInternal extends PrismaDa {
+  constructor(prismaClientService: PrismaClientService) {
+    super(prismaClientService);
   }
 
-  @UseGuards(Auth0Guard)
-  @Get('/authenticated')
-  async getHealthAuthenticated(@Req() request: Request): Promise<HealthStatus> {
-    const health = this.healthService.getHealthStatus();
-    // We can assume that we're already authenticated thanks to the guard, and therefore we can manually add the prop
+  async createSchemaEntry(
+    entries: NonNullable<Array<DataEntry<any>>>
+  ): Promise<DataType> {
+    return await this.prismaClient.dataType.create({
+      data: {
+        schema: JSON.stringify(entries),
+      },
+    });
+  }
 
-    console.log('User Authenticated!!!');
-    health.authenticated = true;
-    await this.userService.getUser();
-    return health;
+  async readSchema(id: NonNullable<string>): AsyncOptional<DataType> {
+    return Optional.ofNullable(
+      await this.prismaClient.dataType.findFirst({
+        where: {
+          typeId: id,
+        },
+      })
+    );
   }
 }

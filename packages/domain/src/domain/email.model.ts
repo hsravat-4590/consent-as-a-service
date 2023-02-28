@@ -21,7 +21,7 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { ValidateState } from "../util/validate";
+import { Validate } from "../util";
 
 export class EmailModel {
   _email: string;
@@ -44,7 +44,7 @@ export class EmailModel {
   }
 
   private checkAndSet(email: string) {
-    ValidateState(() => this.regexp.test(email), {
+    Validate.ValidateState(() => this.regexp.test(email), {
       errorException: new InvalidEmailAddressError("Email Address Invalid"),
     });
     this._email = email;

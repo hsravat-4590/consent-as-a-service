@@ -21,33 +21,19 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { Controller, Get, Req, UseGuards } from '@nestjs/common';
-import { HealthService } from '../../core/services/health.service';
-import { HealthStatus } from '@consent-as-a-service/domain';
-import { UserService } from '../../core/services/user.service';
-import { Auth0Guard } from '../../core/auth/auth0.guard';
+import { Consent, TxnLog } from "@prisma/client";
+import { mapTxnLogToModel } from "./txn-log.mapper";
+import { ConsentModel } from "@consent-as-a-service/domain";
+import { convertDateToLocalDateTime } from "./util-type.mapper";
 
-@Controller('health')
-export class HealthController {
-  constructor(
-    private healthService: HealthService,
-    private userService: UserService,
-  ) {}
-
-  @Get()
-  getHealth(): HealthStatus {
-    return this.healthService.getHealthStatus();
-  }
-
-  @UseGuards(Auth0Guard)
-  @Get('/authenticated')
-  async getHealthAuthenticated(@Req() request: Request): Promise<HealthStatus> {
-    const health = this.healthService.getHealthStatus();
-    // We can assume that we're already authenticated thanks to the guard, and therefore we can manually add the prop
-
-    console.log('User Authenticated!!!');
-    health.authenticated = true;
-    await this.userService.getUser();
-    return health;
-  }
-}
+export const mapConsentToModel = (consent: Consent, txnLog: TxnLog) => {
+  const txnModel = mapTxnLogToModel(txnLog);
+  return {
+    id: consent.consentId,
+    consentRequestId: consent.consentRequestId,
+    //TODO UserDeepMapping
+    //TODO OrgDeepMapping
+    expiry: convertDateToLocalDateTime(consent.expiry),
+    transaction: txnModel,
+  } as ConsentModel;
+};

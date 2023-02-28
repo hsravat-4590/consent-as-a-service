@@ -21,17 +21,13 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { TxnLog, TxnLog_TxnStatus } from "@prisma/client";
-import { nativeJs } from "@js-joda/core";
-import { Optional, TransactionModel } from "@consent-as-a-service/domain";
+import { PrismaClient } from "@prisma/client";
+import { PrismaClientService } from "../services/prisma-client.service";
 
-export const mapTxnLogToModel = (record: TxnLog): TransactionModel => {
-  return {
-    id: record.id,
-    txnId: record.txnId,
-    // @ts-ignore
-    txnStatus: record.TxnStatus.toString(),
-    dateTime: nativeJs(record.datetime).toLocalDateTime(),
-    parent: Optional.ofNullable(record.parent),
-  };
-};
+export abstract class PrismaDa {
+  protected readonly prismaClient: PrismaClient;
+
+  protected constructor(private prismaClientService: PrismaClientService) {
+    this.prismaClient = prismaClientService.prismaClient;
+  }
+}

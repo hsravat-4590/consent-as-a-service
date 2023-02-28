@@ -22,3 +22,7 @@
  */
 
 export * from "./transaction.da";
+export * from "./consent-request.da";
+export * from "./transaction.da";
+export * from "./consent.da";
+export * from "./user.da";

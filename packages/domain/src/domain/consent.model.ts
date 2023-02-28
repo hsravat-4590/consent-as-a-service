@@ -24,19 +24,18 @@
 import { UserModel } from "./user.model";
 import { OrgModel } from "./org.model";
 import { LocalDateTime } from "@js-joda/core";
+import { TransactionModel } from "./transaction.model";
 
 export interface ConsentModel {
   id: NonNullable<string>;
   user: UserModel; // Models have Deep links to objects
   org: OrgModel;
   expiry: LocalDateTime;
-  dataId: string;
-  consentState: ConsentState;
-}
+  consentRequestId: string;
 
-export type ConsentState =
-  | "CREATED"
-  | "WAITING"
-  | "ACCEPTED"
-  | "REVOKED"
-  | "EXPIRED";
+  transaction: TransactionModel;
+
+  consentDataId: string;
+
+  consentData: any; // TODO(Add Real Object which conforms to Schema)
+}

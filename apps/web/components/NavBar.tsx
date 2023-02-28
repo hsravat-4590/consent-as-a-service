@@ -55,6 +55,8 @@ function userSettingsBox(
     <>
       <Tooltip title="Open settings">
         <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
+          {/*
+      // @ts-ignore */}
           <Avatar alt={userProfile.nickname} src={userProfile.picture} />
         </IconButton>
       </Tooltip>
@@ -105,6 +107,7 @@ function quickLinksBar(handleCloseNavMenu: () => void) {
 
 function ResponsiveAppBar() {
   router = useRouter();
+  const { user, error, isLoading } = useUser();
   const [anchorElNav, setAnchorElNav] = React.useState<null | HTMLElement>(
     null
   );
@@ -128,7 +131,6 @@ function ResponsiveAppBar() {
   };
 
   function getSettingsBox() {
-    const { user, error, isLoading } = useUser();
     if (user) {
       return (
         <>

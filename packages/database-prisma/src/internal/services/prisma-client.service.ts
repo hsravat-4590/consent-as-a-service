@@ -21,18 +21,34 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import React from "react";
-import { ComponentPreview, Previews } from "@react-buddy/ide-toolbox";
-import { PaletteTree } from "./palette";
+import { singleton } from "tsyringe";
+import { PrismaClient } from "@prisma/client";
 
-const ComponentPreviews = () => {
-  return (
-    <Previews palette={<PaletteTree />}>
-      <ComponentPreview path="/NavigationMenuDemo">
-        <NavigationMenuDemo />
-      </ComponentPreview>
-    </Previews>
-  );
-};
+@singleton()
+export class PrismaClientService {
+  private _isConnected = false;
+  get isConnected(): boolean {
+    return this._isConnected;
+  }
 
-export default ComponentPreviews;
+  private _prismaClient = new PrismaClient();
+  get prismaClient(): PrismaClient {
+    return this._prismaClient;
+  }
+
+  async connect() {
+    if (this._isConnected) {
+      return;
+    }
+    await this._prismaClient.$connect();
+    this._isConnected = true;
+  }
+
+  async disconnect() {
+    if (!this._isConnected) {
+      return;
+    }
+    await this._prismaClient.$disconnect();
+    this._isConnected = false;
+  }
+}

@@ -21,9 +21,18 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-export enum RoleEnum {
-  USER = 'rol_nC8LU4dTm4YxBVUg', //The end-user. This role allows one to view/accept and fulfill consents
-  ADMIN = 'rol_ENSgDb7teIi3dvGJ', // Mostly for the API itself and any dashboards that may come in the future to manage the overall system
-  CREATE_CONSENTS = 'rol_8Z8L1mJBgE6vo1Mn', //Users with this role can create ConsentRequests
-  REQUEST_CONSENTS = 'rol_CjrrzjExOXBd3bq4', //Users with this role can use ConsentRequestModels to send ConsentRequests to users
+import { Controller, Get, UseGuards } from '@nestjs/common';
+import { UserService } from '../../core/services/user.service';
+import { Auth0Guard } from '../../core/auth/auth0.guard';
+
+@Controller('user/login')
+export class LoginController {
+  constructor(private userService: UserService) {}
+
+  @Get()
+  @UseGuards(Auth0Guard)
+  async login() {
+    const user = await this.userService.getUser();
+    return user;
+  }
 }

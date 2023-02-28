@@ -21,9 +21,31 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-export enum RoleEnum {
-  USER = 'rol_nC8LU4dTm4YxBVUg', //The end-user. This role allows one to view/accept and fulfill consents
-  ADMIN = 'rol_ENSgDb7teIi3dvGJ', // Mostly for the API itself and any dashboards that may come in the future to manage the overall system
-  CREATE_CONSENTS = 'rol_8Z8L1mJBgE6vo1Mn', //Users with this role can create ConsentRequests
-  REQUEST_CONSENTS = 'rol_CjrrzjExOXBd3bq4', //Users with this role can use ConsentRequestModels to send ConsentRequests to users
+import { Injectable } from '@nestjs/common';
+import { AuthenticationClient, ManagementClient } from 'auth0';
+import { ConfigService } from '@nestjs/config';
+
+@Injectable()
+export class Auth0ClientService {
+  private readonly _managementClient: ManagementClient;
+  private readonly _authenticationClient: AuthenticationClient;
+  constructor(configService: ConfigService) {
+    this._managementClient = new ManagementClient({
+      domain: configService.get('AUTH0_ISSUER_URL'),
+      clientId: configService.get('AUTH0_CLIENT_ID'),
+      clientSecret: configService.get('AUTH0_CLIENT_SECRET'),
+    });
+    this._authenticationClient = new AuthenticationClient({
+      domain: configService.get('AUTH0_ISSUER_URL'),
+      clientId: configService.get('AUTH0_CLIENT_ID'),
+      clientSecret: configService.get('AUTH0_CLIENT_SECRET'),
+    });
+  }
+  public get managementClient(): ManagementClient {
+    return this._managementClient;
+  }
+
+  public get authenticationClient(): AuthenticationClient {
+    return this._authenticationClient;
+  }
 }

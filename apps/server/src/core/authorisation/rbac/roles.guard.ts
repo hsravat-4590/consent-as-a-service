@@ -23,22 +23,40 @@
 
 import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { Role } from './role.enum';
+import { RoleEnum } from './role.enum';
 import { ROLES_KEY } from './roles.decorator';
+import { Auth0RolesService } from '../../services/auth0/auth0-roles.service';
+import { UserService } from '../../services/user.service';
+import { UserModel } from '@consent-as-a-service/domain';
+import { Role } from 'auth0';
 
 @Injectable()
 export class RolesGuard implements CanActivate {
-  constructor(private reflector: Reflector) {}
+  constructor(
+    private reflector: Reflector,
+    private auth0RolesService: Auth0RolesService,
+    private userService: UserService,
+  ) {}
 
-  canActivate(context: ExecutionContext): boolean {
-    const requiredRoles = this.reflector.getAllAndOverride<Role[]>(ROLES_KEY, [
-      context.getHandler(),
-      context.getClass(),
-    ]);
+  async canActivate(context: ExecutionContext): Promise<boolean> {
+    const requiredRoles = this.reflector.getAllAndOverride<RoleEnum[]>(
+      ROLES_KEY,
+      [context.getHandler(), context.getClass()],
+    );
     if (!requiredRoles) {
       return true;
     }
-    const { user } = context.switchToHttp().getRequest();
-    return requiredRoles.some((role) => user.roles?.includes(role));
+    const user: UserModel = await this.userService.getUser();
+    const userRoles: Awaited<Role[]> =
+      await this.auth0RolesService.getRolesForUser(user);
+    const userRoleIds = userRoles.map((it) => it.id);
+    const hasRoles = [];
+    requiredRoles.forEach((r) => {
+      const id = r.valueOf();
+      if (userRoleIds.includes(id)) {
+        hasRoles.push(r);
+      }
+    });
+    return requiredRoles.length === hasRoles.length;
   }
 }

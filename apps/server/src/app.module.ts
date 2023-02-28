@@ -33,10 +33,15 @@ import { UserService } from './core/services/user.service';
 import { HttpModule } from '@nestjs/axios';
 import { ConfigModule } from '@nestjs/config';
 import { Auth0Guard } from './core/auth/auth0.guard';
+import { LoginController } from './service/user/login.controller';
+import { UserMapper } from './core/mappers/user.mapper';
+import { RolesGuard } from './core/authorisation/rbac/roles.guard';
+import { Auth0ClientService } from './core/services/auth0/auth0-client.service';
+import { Auth0RolesService } from './core/services/auth0/auth0-roles.service';
 
 @Module({
   imports: [AuthModule, HttpModule, ConfigModule.forRoot()],
-  controllers: [TransactionController, HealthController],
+  controllers: [TransactionController, HealthController, LoginController],
   providers: [
     HealthService,
     SessionManagementService,
@@ -44,6 +49,11 @@ import { Auth0Guard } from './core/auth/auth0.guard';
     DataModelService,
     UserService,
     Auth0Guard,
+    UserMapper,
+    RolesGuard,
+    Auth0ClientService,
+    Auth0RolesService,
+    UserMapper,
   ],
 })
 export class AppModule {}

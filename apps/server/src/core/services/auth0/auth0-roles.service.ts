@@ -21,9 +21,18 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-export enum RoleEnum {
-  USER = 'rol_nC8LU4dTm4YxBVUg', //The end-user. This role allows one to view/accept and fulfill consents
-  ADMIN = 'rol_ENSgDb7teIi3dvGJ', // Mostly for the API itself and any dashboards that may come in the future to manage the overall system
-  CREATE_CONSENTS = 'rol_8Z8L1mJBgE6vo1Mn', //Users with this role can create ConsentRequests
-  REQUEST_CONSENTS = 'rol_CjrrzjExOXBd3bq4', //Users with this role can use ConsentRequestModels to send ConsentRequests to users
+import { Injectable } from '@nestjs/common';
+import { Auth0ClientService } from './auth0-client.service';
+import { UserModel } from '@consent-as-a-service/domain';
+import { Role } from 'auth0';
+
+@Injectable()
+export class Auth0RolesService {
+  constructor(private readonly auth0Client: Auth0ClientService) {}
+
+  async getRolesForUser(userModel: UserModel): Promise<Role[]> {
+    return await this.auth0Client.managementClient.getUserRoles({
+      id: userModel.id,
+    });
+  }
 }

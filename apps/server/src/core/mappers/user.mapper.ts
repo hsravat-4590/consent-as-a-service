@@ -21,9 +21,20 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-export enum RoleEnum {
-  USER = 'rol_nC8LU4dTm4YxBVUg', //The end-user. This role allows one to view/accept and fulfill consents
-  ADMIN = 'rol_ENSgDb7teIi3dvGJ', // Mostly for the API itself and any dashboards that may come in the future to manage the overall system
-  CREATE_CONSENTS = 'rol_8Z8L1mJBgE6vo1Mn', //Users with this role can create ConsentRequests
-  REQUEST_CONSENTS = 'rol_CjrrzjExOXBd3bq4', //Users with this role can use ConsentRequestModels to send ConsentRequests to users
+import { UserInfoModel } from '../models/auth0/userInfoModel';
+import { Injectable } from '@nestjs/common';
+import { EmailModel, UserModel } from '@consent-as-a-service/domain';
+
+@Injectable()
+export class UserMapper {
+  mapUserInfoToUserModel(userInfo: UserInfoModel): UserModel {
+    return {
+      id: userInfo.sub,
+      email: new EmailModel(userInfo.email),
+      emailVerified: userInfo.email_verified,
+      firstName: userInfo.given_name,
+      lastName: userInfo.family_name,
+      nickname: userInfo.nickname,
+    } as UserModel;
+  }
 }

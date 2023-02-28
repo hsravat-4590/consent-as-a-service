@@ -21,21 +21,21 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { Optional } from '../../../../../packages/domain/src/util/optional';
-import { NullPointerException } from '@js-joda/core';
+import { Optional } from "../../src/util/optional";
+import { NullPointerException } from "@js-joda/core";
 
-describe('Optional', () => {
+describe("Optional", () => {
   let fixture;
   beforeEach(() => {
     fixture = new FixtureClass();
   });
 
-  describe('isPresent', () => {
-    it('Should return true as there is a value present', () => {
+  describe("isPresent", () => {
+    it("Should return true as there is a value present", () => {
       const { optional } = givenOptionalString();
       expect(optional.isPresent()).toBe(true);
     });
-    it('Should return false as no values exist', () => {
+    it("Should return false as no values exist", () => {
       jest.fn(FixtureClass.prototype.optionalOf);
       expect(() => {
         fixture.optionalOf(null);
@@ -48,32 +48,32 @@ describe('Optional', () => {
       }).toThrow(NullPointerException);
     });
   });
-  describe('get', () => {
-    it('Should provide the value given', () => {
+  describe("get", () => {
+    it("Should provide the value given", () => {
       const { value, optional } = givenOptionalString();
       expect(optional.get() == value).toBe(true);
     });
   });
 
-  describe('orElse', () => {
+  describe("orElse", () => {
     it("As it's a truthy value, it should return the same", () => {
       const { value, optional } = givenOptionalString();
-      expect(optional.orElse('Other') == value).toBe(true);
+      expect(optional.orElse("Other") == value).toBe(true);
     });
     it("As it's a falsy value, it should return the same", () => {
       const optional: Optional<string> = Optional.empty();
-      expect(optional.orElse('Other') == 'Other').toBe(true);
+      expect(optional.orElse("Other") == "Other").toBe(true);
     });
   });
 
-  describe('orElseGet', () => {
+  describe("orElseGet", () => {
     it("As it's a truthy value, it should return the same", async () => {
       const { value, optional } = givenOptionalString();
       FixtureClass.prototype.orElseGetSupplier = jest.fn(
-        FixtureClass.prototype.orElseGetSupplier,
+        FixtureClass.prototype.orElseGetSupplier
       );
       const orElseFnRes = await optional.orElseGet(
-        FixtureClass.prototype.orElseGetSupplier,
+        FixtureClass.prototype.orElseGetSupplier
       );
       expect(orElseFnRes === value).toBe(true);
       expect(FixtureClass.prototype.orElseGetSupplier).toBeCalledTimes(0);
@@ -81,23 +81,23 @@ describe('Optional', () => {
     it("As it's a falsy value, it should return the same", async () => {
       const optional = Optional.empty();
       FixtureClass.prototype.orElseGetSupplier = jest.fn(
-        FixtureClass.prototype.orElseGetSupplier,
+        FixtureClass.prototype.orElseGetSupplier
       );
       const orElseFnRes = await optional.orElseGet(
-        FixtureClass.prototype.orElseGetSupplier,
+        FixtureClass.prototype.orElseGetSupplier
       );
       expect(orElseFnRes === FixtureClass.orElseGetRetValue).toBe(true);
       expect(FixtureClass.prototype.orElseGetSupplier).toBeCalledTimes(1);
     });
   });
-  describe('orElseRun', () => {
+  describe("orElseRun", () => {
     it("As it's a truthy value, it should return the same", async () => {
       const { value, optional } = givenOptionalString();
       FixtureClass.prototype.orElseRunSupplier = jest.fn(
-        FixtureClass.prototype.orElseRunSupplier,
+        FixtureClass.prototype.orElseRunSupplier
       );
       const orElseFnRes = await optional.orElseRun(
-        FixtureClass.prototype.orElseRunSupplier,
+        FixtureClass.prototype.orElseRunSupplier
       );
       expect(orElseFnRes === value).toBe(true);
       expect(FixtureClass.prototype.orElseRunSupplier).toBeCalledTimes(0);
@@ -105,7 +105,7 @@ describe('Optional', () => {
     it("As it's a falsy value, it should return the same", async () => {
       const optional = Optional.empty();
       FixtureClass.prototype.orElseRunSupplier = jest.fn(
-        FixtureClass.prototype.orElseRunSupplier,
+        FixtureClass.prototype.orElseRunSupplier
       );
       await optional.orElseRun(FixtureClass.prototype.orElseRunSupplier);
       expect(FixtureClass.prototype.orElseRunSupplier).toBeCalledTimes(1);
@@ -113,14 +113,14 @@ describe('Optional', () => {
   });
 
   function givenOptionalString() {
-    const value = 'Hello World';
+    const value = "Hello World";
     const optional = Optional.of(value);
     return { value, optional };
   }
 });
 
 const FixtureClass = class {
-  static readonly orElseGetRetValue = 'orElseGet';
+  static readonly orElseGetRetValue = "orElseGet";
 
   async orElseGetSupplier(): Promise<string> {
     return FixtureClass.orElseGetRetValue;

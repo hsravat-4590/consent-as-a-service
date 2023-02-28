@@ -23,7 +23,11 @@
 
 import { singleton } from "tsyringe";
 import { PrismaClientService } from "../services/prisma-client.service";
-import { AsyncOptional, Optional, TransactionModel } from "@consent-as-a-service/domain";
+import {
+  AsyncOptional,
+  Optional,
+  TransactionModel,
+} from "@consent-as-a-service/domain";
 import { TxnLog, TxnLog_TxnStatus } from "@prisma/client";
 import { PrismaDa } from "./prisma.da";
 
@@ -45,11 +49,11 @@ export class TransactionDaInternal extends PrismaDa {
     return Optional.ofNullable(
       await this.prismaClient.txnLog.findFirst({
         where: {
-          chainId: chainI,
+          chainId: chainId,
         },
         orderBy: {
-          datetime: "desc,
-        ,
+          datetime: "desc",
+        },
       })
     );
   }

@@ -81,7 +81,7 @@ export namespace ConsentRequestDA {
         callbackUrl: options.callbackUrl,
       }
     );
-    await prismaClientService.disconnect();
+
     return {
       txnId: txn.txnId,
       consentRequestId: dbR.consentRequestId,
@@ -104,7 +104,7 @@ export namespace ConsentRequestDA {
     const req: Optional<ConsentRequests> = await internalDa.readConsentRequest(
       consentRequestId
     );
-    await prismaClientService.disconnect();
+
     if (!req.isPresent()) {
       return Optional.empty();
     }
@@ -129,7 +129,7 @@ export namespace ConsentRequestDA {
     await prismaClientService.connect();
     const consentRequestModel: Optional<ConsentRequests> =
       await internalDa.readConsentRequest(consentRequestId);
-    await prismaClientService.disconnect();
+
     if (consentRequestModel.isPresent()) {
       const txnId = consentRequestModel.get().txnId;
       const newTxn = await txnDa.updateTxn(txnId, {

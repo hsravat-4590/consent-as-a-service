@@ -47,7 +47,7 @@ export namespace TransactionDA {
     await prismaClientService.connect();
     const internalDa = container.resolve(TransactionDaInternal);
     const newTxn = await internalDa.createTxn(options);
-    await prismaClientService.disconnect();
+
     return newTxn.txnId;
   };
 
@@ -59,7 +59,7 @@ export namespace TransactionDA {
     await prismaClientService.connect();
     const internalDa = container.resolve(TransactionDaInternal);
     const readOut: Optional<TxnLog> = await internalDa.readTxn(txnId);
-    await prismaClientService.disconnect();
+
     if (readOut.isPresent()) {
       return mapTxnLogToModel(readOut.get());
     } else {
@@ -76,7 +76,7 @@ export namespace TransactionDA {
     const internalDa = container.resolve(TransactionDaInternal);
     let arr: TransactionModel[];
     const result: TxnLog[] = await internalDa.readWholeTxn(txnId, order);
-    await prismaClientService.disconnect();
+
     arr = result.map(mapTxnLogToModel);
     return arr;
   };

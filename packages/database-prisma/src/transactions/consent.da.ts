@@ -77,7 +77,7 @@ export namespace ConsentDA {
     // Create record with provided options
     const consent = await internalDa.createConsent(txn.txnId, options);
     // Map (Requires Deep Map to Txn)
-    await prismaClientService.disconnect();
+
     return mapConsentToModel(consent, txn);
     // Return ConsentModel with completed values
   };
@@ -123,7 +123,6 @@ export namespace ConsentDA {
       updateConsentOptions
     );
     if (shouldDisconnect) {
-      await prismaClientService.disconnect();
     }
     return mapConsentToModel(mConsent, updatedTxn);
   }
@@ -165,7 +164,7 @@ export namespace ConsentDA {
     const voidedTxn = await txnDa.updateTxn(mConsent.txnId, {
       txnStatus: "VOIDED",
     });
-    await prismaClientService.disconnect();
+
     return mapTxnLogToModel(voidedTxn);
   };
 

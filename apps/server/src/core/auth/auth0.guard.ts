@@ -31,6 +31,7 @@ import { ConfigService } from '@nestjs/config';
 import { promisify } from 'util';
 import { expressJwtSecret } from 'jwks-rsa';
 import { expressjwt, GetVerificationKey } from 'express-jwt';
+import { UserService } from '../services/user.service';
 
 @Injectable()
 export class Auth0Guard implements CanActivate {
@@ -38,7 +39,10 @@ export class Auth0Guard implements CanActivate {
 
   private readonly AUTH0_ISSUER;
 
-  constructor(private configService: ConfigService) {
+  constructor(
+    private configService: ConfigService,
+    private userService: UserService,
+  ) {
     this.AUTH0_AUDIENCE = configService.get('AUTH0_AUDIENCE');
     this.AUTH0_ISSUER = configService.get('AUTH0_ISSUER_URL');
   }
@@ -61,6 +65,7 @@ export class Auth0Guard implements CanActivate {
     );
     try {
       await checkJwt(req, res);
+      await this.userService.getUser();
       return true;
     } catch (e) {
       throw new UnauthorizedException(e);

@@ -25,37 +25,61 @@ import { Inject, Injectable } from '@nestjs/common';
 import { REQUEST } from '@nestjs/core';
 import { Request } from 'express';
 import { HttpService } from '@nestjs/axios';
+import { ConfigService } from '@nestjs/config';
+import { UserModel } from '@consent-as-a-service/domain';
+import { UserMapper } from '../mappers/user.mapper';
+import { UserDA } from '@consent-as-a-service/database-prisma';
 
 @Injectable()
 export class UserService {
+  private readonly AUTH0_ISSUER;
+
+  private requestUser: UserModel;
+
   constructor(
     @Inject(REQUEST) private request: Request,
     private readonly httpService: HttpService,
-  ) {}
-
-  async getUser() {
-    // Get the user from AuthToken
-    // Fetch
-    this.getUserFromAuth0();
+    private readonly configService: ConfigService,
+    private readonly userMapper: UserMapper,
+  ) {
+    this.AUTH0_ISSUER = configService.get('AUTH0_ISSUER_URL');
   }
 
-  getUserRoles() {}
+  async getUser(): Promise<UserModel> {
+    // Get the user from AuthToken
+    // Fetch
+    const mUser = await this.getUserFromAuth0();
+    const userModelPromise = await this.checkAndAddUserToDB(mUser);
+    this.requestUser = userModelPromise;
+    return userModelPromise;
+  }
 
-  private getUserFromAuth0() {
-    // this.httpService
-    //   .get('https://dev-oixkoo26y6fn8sbd.uk.auth0.com/userinfo', {
-    //     headers: {
-    //       'content-type': 'application/json',
-    //       Authorization: this.request.headers.authorization,
-    //     },
-    //   })
-    //   .subscribe(
-    //     (res) => {
-    //       console.log(JSON.stringify(res));
-    //     },
-    //     (error) => {
-    //       console.log(error);
-    //     },
-    //   );
+  private getUserFromAuth0(): Promise<UserModel> {
+    return new Promise((resolve, reject) => {
+      this.httpService
+        .get('https://dev-oixkoo26y6fn8sbd.uk.auth0.com/userinfo', {
+          headers: {
+            'content-type': 'application/json',
+            Authorization: this.request.headers.authorization,
+          },
+        })
+        .subscribe(
+          (res) => {
+            resolve(this.userMapper.mapUserInfoToUserModel(res.data));
+          },
+          (error) => {
+            console.log('have an error :-(');
+            reject(error);
+          },
+        );
+    });
+  }
+
+  private async checkAndAddUserToDB(user: UserModel): Promise<UserModel> {
+    const userModelOptional = await UserDA.GetUser(user.id);
+    if (userModelOptional.isPresent()) {
+      return userModelOptional.get();
+    }
+    return await UserDA.CreateUser(user);
   }
 }

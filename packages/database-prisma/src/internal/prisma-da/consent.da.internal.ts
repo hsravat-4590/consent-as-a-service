@@ -24,7 +24,11 @@
 import { singleton } from "tsyringe";
 import { Consent, Prisma } from "@prisma/client";
 import { PrismaClientService } from "../services/prisma-client.service";
-import { AsyncOptional, ConsentModel, Optional } from "@consent-as-a-service/domain";
+import {
+  AsyncOptional,
+  ConsentModel,
+  Optional,
+} from "@consent-as-a-service/domain";
 import { convertLocalDateTimeToDate } from "../mappers/util-type.mapper";
 import { PrismaDa } from "./prisma.da";
 
@@ -51,8 +55,8 @@ export class ConsentDaInternal extends PrismaDa {
     return Optional.ofNullable(
       await this.prismaClient.consent.findFirst({
         where: {
-          consentId: options.i,
-        ,
+          consentId: options.id,
+        },
       })
     );
   }

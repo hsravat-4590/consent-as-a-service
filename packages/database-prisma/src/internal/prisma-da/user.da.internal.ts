@@ -72,7 +72,7 @@ export class UserDaInternal extends PrismaDa {
 
   async updateUserDetails(
     userId: string,
-    options: UpdatableUserFields
+    options: UpdatableUserFieldsInternal
   ): Promise<User> {
     return await this.prismaClient.user.update({
       where: {
@@ -91,6 +91,9 @@ export class UserDaInternal extends PrismaDa {
   }
 }
 
-export type UpdatableUserFields = Partial<
-  Pick<UserModel, "firstName" | "lastName" | "nickname" | "emailVerified">
+export type UpdatableUserFieldsInternal = Partial<
+  Pick<
+    UserModel,
+    "firstName" | "lastName" | "nickname" | "emailVerified" | "requesterId"
+  >
 >;

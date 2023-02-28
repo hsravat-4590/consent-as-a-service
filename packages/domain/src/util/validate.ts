@@ -21,47 +21,59 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-export type ValidateErrorHandlers = {
-  errorMessage: string;
-  errorException: Error;
-};
+import { Optional } from "./optional";
 
-function handleValidationError(errorHandler: Partial<ValidateErrorHandlers>) {
-  throw (
-    errorHandler.errorMessage ??
-    new Error(errorHandler.errorMessage ?? 'Invalid State')
-  );
-}
+export namespace Validate {
+  export type ValidateErrorHandlers = {
+    errorMessage: string;
+    errorException: Error;
+  };
 
-export const ValidateState = (
-  check: () => boolean,
-  errorHandler: Partial<ValidateErrorHandlers>,
-) => {
-  if (check()) {
-    return;
-  } else {
-    handleValidationError(errorHandler);
+  function handleValidationError(errorHandler: Partial<ValidateErrorHandlers>) {
+    throw (
+      errorHandler.errorMessage ??
+      new Error(errorHandler.errorMessage ?? "Invalid State")
+    );
   }
-};
 
-export interface Comparable<T> {
-  equals(other: T): boolean;
-}
-export const ValidateEquals = <T extends Comparable<T>>(
-  values: T[] | [T, T],
-  errorHandler: Partial<ValidateErrorHandlers>,
-) => {
-  try {
-    let equality = true;
-    values.forEach((a) => {
-      values.filter((b) => {
-        equality = b.equals(a);
-        if (!equality) {
-          throw Error('Not Equal!');
-        }
+  export const ValidateState = (
+    check: () => boolean,
+    errorHandler: Partial<ValidateErrorHandlers>
+  ) => {
+    if (check()) {
+      return;
+    } else {
+      handleValidationError(errorHandler);
+    }
+  };
+
+  export const ValidateOptional = (
+    optional: Optional<any>,
+    errorHandler: Partial<ValidateErrorHandlers>
+  ) => {
+    ValidateState(optional.isPresent, errorHandler);
+  };
+
+  export interface Comparable<T> {
+    equals(other: T): boolean;
+  }
+
+  export const ValidateEquals = <T extends Comparable<T>>(
+    values: T[] | [T, T],
+    errorHandler: Partial<ValidateErrorHandlers>
+  ) => {
+    try {
+      let equality = true;
+      values.forEach((a) => {
+        values.filter((b) => {
+          equality = b.equals(a);
+          if (!equality) {
+            throw Error("Not Equal!");
+          }
+        });
       });
-    });
-  } catch (e) {
-    handleValidationError(errorHandler);
-  }
-};
+    } catch (e) {
+      handleValidationError(errorHandler);
+    }
+  };
+}

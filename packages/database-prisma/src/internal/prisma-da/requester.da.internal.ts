@@ -24,9 +24,11 @@
 import { singleton } from "tsyringe";
 import { PrismaDa } from "./prisma.da";
 import { PrismaClientService } from "../services/prisma-client.service";
-import { RequesterModel } from "@consent-as-a-service/domain/dist/domain/requester.model";
 import { Requester } from "@prisma/client";
 import { AsyncOptional, Optional } from "@consent-as-a-service/domain";
+import { UserDA } from "../../transactions";
+import UpdatableRequesterOptions = UserDA.UpdatableRequesterOptions;
+import CreateRequesterOptions = UserDA.CreateRequesterOptions;
 
 @singleton()
 export class RequesterDaInternal extends PrismaDa {
@@ -76,7 +78,3 @@ export class RequesterDaInternal extends PrismaDa {
     });
   }
 }
-
-export type CreateRequesterOptions = Omit<RequesterModel, "id">;
-
-export type UpdatableRequesterOptions = Omit<Requester, "id" | "user">;

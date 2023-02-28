@@ -21,8 +21,21 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-export * from "./transaction.da";
-export * from "./consent-request.da";
-export * from "./transaction.da";
-export * from "./consent.da";
-export * from "./user.da";
+import { container } from "tsyringe";
+import { PrismaClientService } from "../internal/services/prisma-client.service";
+import { TransactionDaInternal } from "../internal/prisma-da/transaction.da.internal";
+import { UserDaInternal } from "../internal/prisma-da/user.da.internal";
+import { RequesterDaInternal } from "../internal/prisma-da/requester.da.internal";
+
+export namespace UserDA {
+  async function getServices(connect: boolean = true) {
+    const prismaClientService = container.resolve(PrismaClientService);
+    const txnDa = container.resolve(TransactionDaInternal);
+    const internalDa = container.resolve(UserDaInternal);
+    const requesterDa = container.resolve(RequesterDaInternal);
+    if (connect) {
+      await prismaClientService.connect();
+    }
+    return { prismaClientService, txnDa, internalDa, requestDa: requesterDa };
+  }
+}

@@ -21,7 +21,7 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { ValidateState } from "../util";
+import { Validate } from "../util";
 
 export interface DataEntry<T extends EntryTypes> {
   title: string;
@@ -58,7 +58,7 @@ export class ShortStringImpl implements ShortString {
   max: 255;
 
   constructor(string: string) {
-    ValidateState(() => string.length <= 255, {
+    Validate.ValidateState(() => string.length <= 255, {
       errorMessage: `String is longer than the maximum size ${this.max}`,
     });
     this.length = string.length;

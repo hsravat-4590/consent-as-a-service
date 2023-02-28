@@ -36,12 +36,10 @@ import {
   Validate,
 } from "@consent-as-a-service/domain";
 import { mapUserToModel } from "../internal/mappers/user.mapper";
-import { Requester } from "@prisma/client";
 import { RequesterModel } from "@consent-as-a-service/domain/dist/domain/requester.model";
+import ValidateOptional = Validate.ValidateOptional;
 
 export namespace UserDA {
-  import ValidateOptional = Validate.ValidateOptional;
-
   async function getServices(connect: boolean = true) {
     const prismaClientService = container.resolve(PrismaClientService);
     const txnDa = container.resolve(TransactionDaInternal);
@@ -126,8 +124,6 @@ export namespace UserDA {
   };
 
   export type CreateRequesterOptions = Omit<RequesterModel, "id">;
-
-  export type UpdatableRequesterOptions = Omit<Requester, "id" | "user">;
 
   export type UpdatableUserFields = Omit<
     UpdatableUserFieldsInternal,

@@ -44,8 +44,6 @@ export class HealthController {
   async getHealthAuthenticated(@Req() request: Request): Promise<HealthStatus> {
     const health = this.healthService.getHealthStatus();
     // We can assume that we're already authenticated thanks to the guard, and therefore we can manually add the prop
-
-    console.log('User Authenticated!!!');
     health.authenticated = true;
     await this.userService.getUser();
     return health;

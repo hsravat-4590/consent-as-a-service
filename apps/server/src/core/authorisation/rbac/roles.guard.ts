@@ -50,13 +50,7 @@ export class RolesGuard implements CanActivate {
     const userRoles: Awaited<Role[]> =
       await this.auth0RolesService.getRolesForUser(user);
     const userRoleIds = userRoles.map((it) => it.id);
-    const hasRoles = [];
-    requiredRoles.forEach((r) => {
-      const id = r.valueOf();
-      if (userRoleIds.includes(id)) {
-        hasRoles.push(r);
-      }
-    });
-    return requiredRoles.length === hasRoles.length;
+    const requiredRoleMap = requiredRoles.map((it) => it.valueOf());
+    return requiredRoleMap.some((r) => userRoleIds.includes(r));
   }
 }

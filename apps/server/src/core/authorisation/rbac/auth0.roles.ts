@@ -21,7 +21,7 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-export enum RoleEnum {
+export enum Auth0Roles {
   USER = 'rol_nC8LU4dTm4YxBVUg', //The end-user. This role allows one to view/accept and fulfill consents
   ADMIN = 'rol_ENSgDb7teIi3dvGJ', // Mostly for the API itself and any dashboards that may come in the future to manage the overall system
   CREATE_CONSENTS = 'rol_8Z8L1mJBgE6vo1Mn', //Users with this role can create ConsentRequests

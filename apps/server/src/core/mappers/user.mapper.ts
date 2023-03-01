@@ -21,10 +21,20 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-export enum Role {
-  BASIC = 'basic', //BASIC user who can access generic endpoints such as health
-  ORG = 'org', //ORGs can send requests for consents and view the data held by a consent
-  ORGU = 'orgu', // Organisation user who can create consents
-  USER = 'user', //Users can view existing consents & accept/deny new ones
-  ADMIN = 'admin', // Admins can manage Users and Orgs
+import { UserInfoModel } from '../models/auth0/userInfoModel';
+import { Injectable } from '@nestjs/common';
+import { EmailModel, UserModel } from '@consent-as-a-service/domain';
+
+@Injectable()
+export class UserMapper {
+  mapUserInfoToUserModel(userInfo: UserInfoModel): UserModel {
+    return {
+      id: userInfo.sub,
+      email: new EmailModel(userInfo.email),
+      emailVerified: userInfo.email_verified,
+      firstName: userInfo.given_name,
+      lastName: userInfo.family_name,
+      nickname: userInfo.nickname,
+    } as UserModel;
+  }
 }

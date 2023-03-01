@@ -23,17 +23,32 @@
 
 // pages/index.js
 import { useUser } from "@auth0/nextjs-auth0/client";
+import { useEffect, useState } from "react";
 
 export default function Index() {
   const { user, error, isLoading } = useUser();
+  const [data, setData] = useState(null);
+
+  useEffect(() => {
+    fetch("/api/service/health/server-health")
+      .then((res) => res.json())
+      .then((data) => {
+        setData(data);
+      });
+  }, []);
 
   if (isLoading) return <div>Loading...</div>;
   if (error) return <div>{error.message}</div>;
-
+  if (!data) {
+    return "Can't connect to Server";
+  }
   if (user) {
     return (
       <div>
-        Welcome {user.name}! <a href="/api/auth/logout">Logout</a>
+        <div>
+          Welcome {user.name}! <a href="/api/auth/logout">Logout</a>
+        </div>
+        <div>{JSON.stringify(data)}</div>
       </div>
     );
   }

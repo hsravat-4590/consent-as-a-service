@@ -21,36 +21,54 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
-import { Reflector } from '@nestjs/core';
-import { ROLES_KEY } from './roles.decorator';
-import { Auth0RolesService } from '../../services/auth0/auth0-roles.service';
-import { UserService } from '../../services/user.service';
-import { UserModel } from '@consent-as-a-service/domain';
-import { Role } from 'auth0';
-import { Auth0Roles } from './auth0.roles';
+import {
+  CanActivate,
+  ExecutionContext,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import { promisify } from 'util';
+import { expressJwtSecret } from 'jwks-rsa';
+import { expressjwt, GetVerificationKey } from 'express-jwt';
+import { UserService } from '../services/user.service';
 
 @Injectable()
-export class RolesGuard implements CanActivate {
+export class Auth0Guard implements CanActivate {
+  private readonly AUTH0_AUDIENCE;
+
+  private readonly AUTH0_ISSUER;
+
   constructor(
-    private reflector: Reflector,
-    private auth0RolesService: Auth0RolesService,
+    private configService: ConfigService,
     private userService: UserService,
-  ) {}
+  ) {
+    this.AUTH0_AUDIENCE = configService.get('AUTH0_AUDIENCE');
+    this.AUTH0_ISSUER = configService.get('AUTH0_ISSUER_URL');
+  }
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const requiredRoles = this.reflector.get<Auth0Roles[]>(
-      ROLES_KEY,
-      context.getHandler(),
+    const req = context.getArgByIndex(0);
+    const res = context.getArgByIndex(1);
+    const checkJwt = promisify(
+      expressjwt({
+        secret: expressJwtSecret({
+          cache: true,
+          rateLimit: true,
+          jwksRequestsPerMinute: 5,
+          jwksUri: `${this.AUTH0_ISSUER}.well-known/jwks.json`,
+        }) as GetVerificationKey,
+        audience: this.AUTH0_AUDIENCE,
+        issuer: this.AUTH0_ISSUER,
+        algorithms: ['RS256'],
+      }),
     );
-    if (!requiredRoles) {
+    try {
+      await checkJwt(req, res);
+      await this.userService.getUser();
       return true;
+    } catch (e) {
+      throw new UnauthorizedException(e);
     }
-    const user: UserModel = await this.userService.getUser();
-    const userRoles: Awaited<Role[]> =
-      await this.auth0RolesService.getRolesForUser(user);
-    const userRoleIds = userRoles.map((it) => it.id);
-    const requiredRoleMap = requiredRoles.map((it) => it.valueOf());
-    return requiredRoleMap.some((r) => userRoleIds.includes(r));
   }
 }

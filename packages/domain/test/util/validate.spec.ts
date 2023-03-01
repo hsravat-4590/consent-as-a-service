@@ -21,18 +21,26 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { Injectable } from '@nestjs/common';
-import { SessionManagementService } from '../services/session/session-management.service';
+import { Optional, Validate } from "../../src";
+import ValidateOptional = Validate.ValidateOptional;
 
-@Injectable()
-export class UserService {
-  constructor(private sessionManagementService: SessionManagementService) {}
+describe("Validate", () => {
+  describe("ValidateOptional", () => {
+    it("Should not throw an error as the optional contains a value", () => {
+      const mOptional = Optional.of("Hello World");
+      ValidateOptional(mOptional, {
+        errorMessage: "This shouldn't run",
+      });
+    });
+    it("Should throw an error as the optional doesn't have a value", () => {
+      const mOptional = Optional.empty();
+      expect(() =>
+        ValidateOptional(mOptional, {
+          errorMessage: "This should run",
+        })
+      ).toThrowError();
+    });
+  });
+});
 
-  async getSessionUser(): Promise<void> {
-    return;
-  }
-
-  async findUserForName(userName: string): Promise<void> {
-    return;
-  }
-}
+class FixtureClass {}

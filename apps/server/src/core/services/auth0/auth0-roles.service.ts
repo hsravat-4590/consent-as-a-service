@@ -21,14 +21,18 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { handleAuth, handleLogin } from "@auth0/nextjs-auth0";
+import { Injectable } from '@nestjs/common';
+import { Auth0ClientService } from './auth0-client.service';
+import { UserModel } from '@consent-as-a-service/domain';
+import { Role } from 'auth0';
 
-export default handleAuth({
-  login: handleLogin({
-    authorizationParams: {
-      audience: "http://localhost:3003", // or AUTH0_AUDIENCE
-      // Add the `offline_access` scope to also get a Refresh Token
-      scope: "openid profile email", // or AUTH0_SCOPE
-    },
-  }),
-});
+@Injectable()
+export class Auth0RolesService {
+  constructor(private readonly auth0Client: Auth0ClientService) {}
+
+  async getRolesForUser(userModel: UserModel): Promise<Role[]> {
+    return await this.auth0Client.managementClient.getUserRoles({
+      id: userModel.id,
+    });
+  }
+}

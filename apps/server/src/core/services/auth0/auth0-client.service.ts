@@ -21,31 +21,33 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { Controller, Get, Req, Request, UseGuards } from '@nestjs/common';
-import { HealthService } from '../../core/services/health.service';
-import { HealthStatus } from '@consent-as-a-service/domain';
-import { UserService } from '../../core/services/user.service';
-import { Auth0Guard } from '../../core/auth/auth0.guard';
+import { Injectable } from '@nestjs/common';
+import { AuthenticationClient, ManagementClient } from 'auth0';
+import { ConfigService } from '@nestjs/config';
 
-@Controller('health')
-export class HealthController {
-  constructor(
-    private healthService: HealthService,
-    private userService: UserService,
-  ) {}
-
-  @Get()
-  getHealth(): HealthStatus {
-    return this.healthService.getHealthStatus();
+@Injectable()
+export class Auth0ClientService {
+  private readonly _managementClient: ManagementClient;
+  private readonly _authenticationClient: AuthenticationClient;
+  constructor(configService: ConfigService) {
+    this._managementClient = new ManagementClient({
+      domain: configService.get('AUTH0_ISSUER'),
+      clientId: configService.get('AUTH0_CLIENT_ID'),
+      clientSecret: configService.get('AUTH0_CLIENT_SECRET'),
+      audience: configService.get('AUTH0_CLIENT_AUDIENCE'),
+      scope: 'read:roles read:users read:role_members',
+    });
+    this._authenticationClient = new AuthenticationClient({
+      domain: configService.get('AUTH0_ISSUER'),
+      clientId: configService.get('AUTH0_CLIENT_ID'),
+      clientSecret: configService.get('AUTH0_CLIENT_SECRET'),
+    });
+  }
+  public get managementClient(): ManagementClient {
+    return this._managementClient;
   }
 
-  @UseGuards(Auth0Guard)
-  @Get('/authenticated')
-  async getHealthAuthenticated(@Req() request: Request): Promise<HealthStatus> {
-    const health = this.healthService.getHealthStatus();
-    // We can assume that we're already authenticated thanks to the guard, and therefore we can manually add the prop
-    health.authenticated = true;
-    await this.userService.getUser();
-    return health;
+  public get authenticationClient(): AuthenticationClient {
+    return this._authenticationClient;
   }
 }

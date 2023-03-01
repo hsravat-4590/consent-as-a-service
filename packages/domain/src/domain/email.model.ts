@@ -21,7 +21,7 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { Validate } from "../util/validate";
+import { Validate } from "../util";
 
 export class EmailModel {
   _email: string;

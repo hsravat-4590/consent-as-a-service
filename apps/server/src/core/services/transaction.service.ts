@@ -22,7 +22,6 @@
  */
 
 import { Injectable } from '@nestjs/common';
-import { LocalDateTime } from '@js-joda/core';
 import { TransactionDA } from '@consent-as-a-service/database-prisma';
 import { SessionManagementService } from './session/session-management.service';
 import {
@@ -43,7 +42,6 @@ export class TransactionService {
    * Creates a new Transaction and assigns the txnId to the session for future use & linking
    */
   async createTransaction(enableSessionLinking = true): Promise<string> {
-    const now = LocalDateTime.now();
     const transaction = await TransactionDA.CreateTransaction({
       txnStatus: 'CREATED',
     });

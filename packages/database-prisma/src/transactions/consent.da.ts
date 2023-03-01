@@ -59,8 +59,7 @@ export namespace ConsentDA {
   export const CreatePendingConsent = async (
     options: CreateConsentOptions
   ): Promise<ConsentModel> => {
-    const { prismaClientService, txnDa, internalDa, requestDa } =
-      await getServices();
+    const { txnDa, internalDa, requestDa } = await getServices();
     // Validate against consent request
     const consentRequest = await requestDa.readConsentRequest(
       options.consentRequestId
@@ -114,7 +113,7 @@ export namespace ConsentDA {
     updateConsentOptions: UpdateConsentOptions,
     shouldDisconnect: boolean = true
   ): Promise<ConsentModel> {
-    const { txnDa, internalDa, prismaClientService } = await getServices(false);
+    const { txnDa, internalDa } = await getServices(false);
     const updatedTxn = await txnDa.updateTxn(mConsent.txnId, {
       txnStatus: txnStatus,
     });
@@ -124,15 +123,14 @@ export namespace ConsentDA {
     );
     if (shouldDisconnect) {
     }
-    return mapConsentToModel(mConsent, updatedTxn);
+    return mapConsentToModel(updatedConsent, updatedTxn);
   }
 
   export const AddUserToConsent = async (
     consentId: string,
     user: UserModel
   ): Promise<ConsentModel> => {
-    const { prismaClientService, txnDa, internalDa, requestDa } =
-      await getServices();
+    await getServices();
     const mConsent = await getConsentAndValidate(consentId);
     if (mConsent.userid) {
       throw new Error("Error: Consent is already linked to a user");

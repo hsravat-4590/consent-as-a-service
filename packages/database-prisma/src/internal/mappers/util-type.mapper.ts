@@ -28,8 +28,3 @@ export const convertLocalDateTimeToDate = (dateTime: LocalDateTime): Date =>
 
 export const convertDateToLocalDateTime = (date: Date): LocalDateTime =>
   nativeJs(date).toLocalDateTime();
-/**
- * AutoMap works by automatically transforming one object to another providing keys match value types.
- * @param object
- */
-export const autoMap = <In, Out>(object: In) => {};

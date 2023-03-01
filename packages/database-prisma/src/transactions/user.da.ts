@@ -57,9 +57,13 @@ export namespace UserDA {
     const { txnDa, internalDa } = await getServices();
     // CHECK db for any existing users
     const optionalUsr = await internalDa.readUser(userModel.id);
-    ValidateOptional(optionalUsr, {
-      errorMessage: "User already exists with this ID",
-    });
+    ValidateOptional(
+      optionalUsr,
+      {
+        errorMessage: "User already exists with this ID",
+      },
+      false
+    );
     // Create a new Txn
     await txnDa.createTxn({
       txnStatus: "CREATED",
@@ -74,8 +78,7 @@ export namespace UserDA {
     userModel: UserModel,
     createRequester: CreateRequesterOptions
   ): Promise<UserModel> => {
-    const { prismaClientService, txnDa, internalDa, requesterDa } =
-      await getServices();
+    const { internalDa, requesterDa } = await getServices();
     // Check the user exists
     const userOptional = await internalDa.readUser(userModel.id);
     ValidateOptional(userOptional, {

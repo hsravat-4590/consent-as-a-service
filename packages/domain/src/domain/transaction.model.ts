@@ -22,7 +22,7 @@
  */
 
 import { LocalDateTime } from "@js-joda/core";
-import { Optional } from "../util/optional";
+import { Optional } from "../util";
 
 export interface TransactionModel {
   txnId: NonNullable<string>;

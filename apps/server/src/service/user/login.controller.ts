@@ -21,14 +21,18 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { handleAuth, handleLogin } from "@auth0/nextjs-auth0";
+import { Controller, Get, UseGuards } from '@nestjs/common';
+import { UserService } from '../../core/services/user.service';
+import { Auth0Guard } from '../../core/auth/auth0.guard';
 
-export default handleAuth({
-  login: handleLogin({
-    authorizationParams: {
-      audience: "http://localhost:3003", // or AUTH0_AUDIENCE
-      // Add the `offline_access` scope to also get a Refresh Token
-      scope: "openid profile email", // or AUTH0_SCOPE
-    },
-  }),
-});
+@Controller('user/login')
+export class LoginController {
+  constructor(private userService: UserService) {}
+
+  @Get()
+  @UseGuards(Auth0Guard)
+  async login() {
+    const user = await this.userService.getUser();
+    return user;
+  }
+}

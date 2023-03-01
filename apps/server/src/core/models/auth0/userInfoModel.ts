@@ -21,14 +21,12 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { handleAuth, handleLogin } from "@auth0/nextjs-auth0";
-
-export default handleAuth({
-  login: handleLogin({
-    authorizationParams: {
-      audience: "http://localhost:3003", // or AUTH0_AUDIENCE
-      // Add the `offline_access` scope to also get a Refresh Token
-      scope: "openid profile email", // or AUTH0_SCOPE
-    },
-  }),
-});
+export interface UserInfoModel {
+  email: string;
+  email_verified: boolean;
+  family_name?: string;
+  given_name?: string;
+  nickname: string;
+  sub: string;
+  picture: string;
+}

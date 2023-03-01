@@ -31,12 +31,14 @@ export class Auth0ClientService {
   private readonly _authenticationClient: AuthenticationClient;
   constructor(configService: ConfigService) {
     this._managementClient = new ManagementClient({
-      domain: configService.get('AUTH0_ISSUER_URL'),
+      domain: configService.get('AUTH0_ISSUER'),
       clientId: configService.get('AUTH0_CLIENT_ID'),
       clientSecret: configService.get('AUTH0_CLIENT_SECRET'),
+      audience: configService.get('AUTH0_CLIENT_AUDIENCE'),
+      scope: 'read:roles read:users read:role_members',
     });
     this._authenticationClient = new AuthenticationClient({
-      domain: configService.get('AUTH0_ISSUER_URL'),
+      domain: configService.get('AUTH0_ISSUER'),
       clientId: configService.get('AUTH0_CLIENT_ID'),
       clientSecret: configService.get('AUTH0_CLIENT_SECRET'),
     });

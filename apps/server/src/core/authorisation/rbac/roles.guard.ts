@@ -23,12 +23,12 @@
 
 import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { RoleEnum } from './role.enum';
 import { ROLES_KEY } from './roles.decorator';
 import { Auth0RolesService } from '../../services/auth0/auth0-roles.service';
 import { UserService } from '../../services/user.service';
 import { UserModel } from '@consent-as-a-service/domain';
 import { Role } from 'auth0';
+import { Auth0Roles } from './auth0.roles';
 
 @Injectable()
 export class RolesGuard implements CanActivate {
@@ -39,9 +39,9 @@ export class RolesGuard implements CanActivate {
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const requiredRoles = this.reflector.getAllAndOverride<RoleEnum[]>(
+    const requiredRoles = this.reflector.get<Auth0Roles[]>(
       ROLES_KEY,
-      [context.getHandler(), context.getClass()],
+      context.getHandler(),
     );
     if (!requiredRoles) {
       return true;

@@ -53,7 +53,6 @@ import { Auth0RolesService } from './core/services/auth0/auth0-roles.service';
     RolesGuard,
     Auth0ClientService,
     Auth0RolesService,
-    UserMapper,
   ],
 })
 export class AppModule {}

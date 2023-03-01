@@ -21,8 +21,11 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { SetMetadata } from '@nestjs/common';
-import { RoleEnum } from './role.enum';
+import { applyDecorators, SetMetadata, UseGuards } from '@nestjs/common';
+import { Auth0Roles } from './auth0.roles';
+import { RolesGuard } from './roles.guard';
 
 export const ROLES_KEY = 'roles';
-export const Roles = (...roles: RoleEnum[]) => SetMetadata(ROLES_KEY, roles);
+export const Roles = (...roles: Auth0Roles[]) => {
+  return applyDecorators(UseGuards(RolesGuard), SetMetadata(ROLES_KEY, roles));
+};

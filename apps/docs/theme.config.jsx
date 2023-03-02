@@ -50,12 +50,12 @@ export default {
           display: { xs: "none", md: "flex" },
           fontFamily: "Quicksand",
           fontWeight: 700,
-          letterSpacing: ".2rem",
+          letterSpacing: ".0rem",
           color: "inherit",
           textDecoration: "none",
         }}
       >
-        CAAS Docs
+        Documentation
       </span>
     </>
   ),
@@ -65,6 +65,10 @@ export default {
         MIT {new Date().getFullYear()} ©{" Hanzalah Ravat"}.
       </span>
     ),
+  },
+  navigation: {
+    prev: false,
+    next: false,
   },
   // ...
 };

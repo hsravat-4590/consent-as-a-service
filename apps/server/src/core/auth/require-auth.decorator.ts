@@ -21,16 +21,7 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { applyDecorators, SetMetadata, UseGuards } from '@nestjs/common';
-import { Auth0Roles } from './auth0.roles';
-import { RolesGuard } from './roles.guard';
-import { RequireAuth } from '../../auth/require-auth.decorator';
+import { applyDecorators, UseGuards } from '@nestjs/common';
+import { Auth0Guard } from './auth0.guard';
 
-export const ROLES_KEY = 'roles';
-export const Roles = (...roles: Auth0Roles[]) => {
-  return applyDecorators(
-    UseGuards(RolesGuard),
-    SetMetadata(ROLES_KEY, roles),
-    RequireAuth(),
-  );
-};
+export const RequireAuth = () => applyDecorators(UseGuards(Auth0Guard));

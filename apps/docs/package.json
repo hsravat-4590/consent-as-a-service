@@ -1,9 +1,9 @@
 {
-  "name": "docs",
+  "name": "@consent-as-a-service/docs",
   "version": "1.0.0",
-  "private": true,
+  "private": false,
   "scripts": {
-    "dev": "next dev --port 3001",
+    "dev": "next dev --port 3005",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"

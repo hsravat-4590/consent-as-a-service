@@ -1,0 +1,67 @@
+## Building from Source
+
+It's easy to build the platform from source. The entire project is stored within a Monorepo meaning that it's easy to obtain and manage the codebase.
+
+## Prerequisites
+
+CAAS Requires the following tools to be installed on your computer in order to build correctly
+* Node.JS (16.16.0)
+* PNPM Package Manager
+
+## Clone the Repository from GitHub
+
+To begin, clone the repository from GitHub
+
+```bash
+$ git clone git@github.com:hsravat-4590/consent-as-a-service.git
+```
+Once cloned, navigate into the source root using the command:
+```bash
+$ cd consent-as-a-service
+```
+
+## Install the required dependencies
+
+Once in the repository root, you can install the required dependencies using the command:
+
+```bash
+pnpm install
+```
+## Environment Configuration
+
+CAAS Requires some environment configurations in order to function correctly. For security purposes, these aren't bundled with the repository and require setting manually
+
+### AUTH0 Environment Variables
+
+#### Server
+Create a `.env` file in `apps/server` and include the following information:
+
+```env
+PORT=3003
+AUTH0_ISSUER_URL=https://<YOUR_ISSUER_URL>/
+AUTH0_ISSUER=<YOUR_ISSUER_URL>
+AUTH0_AUDIENCE=http://localhost:3003 # This should be your audience set up on Auth0. For local deployment this has been set to localhost:3003
+AUTH0_CLIENT_AUDIENCE=http://localhost:3003 # Audience for Auth0 Management API
+AUTH0_CLIENT_ID=<YOUR_CLIENT_ID>
+AUTH0_CLIENT_SECRET=<YOUR_CLIENT_SECRET>
+```
+### Web Frontend
+Create a `.env.local` file in `apps/web` and include the following information:
+```env
+AUTH0_SECRET=replace-with-your-own-secret-generated-with-openssl
+AUTH0_BASE_URL=http://localhost:3001 #Base URL for your site
+AUTH0_ISSUER_BASE_URL='<YOUR_ISSUER_URL>'
+AUTH0_CLIENT_ID=<YOUR_CLIENT_ID>
+AUTH0_CLIENT_SECRET=<YOUR_CLIENT_SECRET>
+AUTH0_AUDIENCE=
+AUTH0_SCOPE='openid profile'
+```
+
+### Database
+
+In order to connect to your `SQL` Database, create a `.env` file in `packages/database-prisma` and add the following:
+
+```env
+DATABASE_URL = 'mysql://root@127.0.0.1:3309/consent-as-a-service-cdb'
+```
+Where `DATABASE_URL` corresponds to the URL for your database

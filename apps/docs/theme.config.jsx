@@ -23,9 +23,48 @@
 
 // eslint-disable-next-line import/no-anonymous-default-export
 export default {
-  logo: <h1>Consent As A Service</h1>,
   project: {
-    link: "https://github.com/hsravat-4590/ConsentAsAService",
+    link: "https://github.com/hsravat-4590/consent-as-a-service",
+  },
+  docsRepositoryBase: "https://github.com/hsravat-4590/consent-as-a-service/",
+  head: (
+    <>
+      <link rel="preconnect" href="https://fonts.googleapis.com" />
+      <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin />
+      <link
+        href="https://fonts.googleapis.com/css2?family=Quicksand:wght@700&family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;1,100;1,300;1,400&display=swap"
+        rel="stylesheet"
+      />
+      <link
+        rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@48,400,1,0"
+      />
+    </>
+  ),
+  logo: (
+    <>
+      <span className="material-symbols-outlined">shield</span>
+      <span
+        style={{
+          mr: 2,
+          display: { xs: "none", md: "flex" },
+          fontFamily: "Quicksand",
+          fontWeight: 700,
+          letterSpacing: ".2rem",
+          color: "inherit",
+          textDecoration: "none",
+        }}
+      >
+        CAAS Docs
+      </span>
+    </>
+  ),
+  footer: {
+    text: (
+      <span>
+        MIT {new Date().getFullYear()} ©{" Hanzalah Ravat"}.
+      </span>
+    ),
   },
   // ...
 };

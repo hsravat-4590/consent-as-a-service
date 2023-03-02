@@ -25,7 +25,7 @@
 export default {
   logo: <h1>Consent As A Service</h1>,
   project: {
-    link: "https://github.com/hsravat-4590/ConsentAsAService",
+    link: "https://github.com/hsravat-4590/consent-as-a-service",
   },
   // ...
 };

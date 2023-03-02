@@ -38,10 +38,16 @@ import { UserMapper } from './core/mappers/user.mapper';
 import { RolesGuard } from './core/authorisation/rbac/roles.guard';
 import { Auth0ClientService } from './core/services/auth0/auth0-client.service';
 import { Auth0RolesService } from './core/services/auth0/auth0-roles.service';
+import { ConsentRequestController } from './service/consent/consent-request.controller';
 
 @Module({
   imports: [AuthModule, HttpModule, ConfigModule.forRoot()],
-  controllers: [TransactionController, HealthController, LoginController],
+  controllers: [
+    TransactionController,
+    HealthController,
+    LoginController,
+    ConsentRequestController,
+  ],
   providers: [
     HealthService,
     SessionManagementService,

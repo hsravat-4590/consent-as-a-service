@@ -26,8 +26,7 @@ export default {
   project: {
     link: "https://github.com/hsravat-4590/consent-as-a-service",
   },
-  docsRepositoryBase:
-    "https://github.com/hsravat-4590/consent-as-a-service/apps/docs",
+  docsRepositoryBase: "https://github.com/hsravat-4590/consent-as-a-service/",
   head: (
     <>
       <link rel="preconnect" href="https://fonts.googleapis.com" />

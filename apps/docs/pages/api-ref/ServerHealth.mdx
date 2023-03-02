@@ -1,0 +1,42 @@
+# Server Health
+
+This endpoint provides information regarding the health of the service. It can also be used to test the authentication token
+
+```bash
+curl --request GET \
+  --url http://localhost:3003/health
+```
+
+### Example Response
+
+```json
+{
+  "serverStatus": "UP"
+}
+```
+
+| Key           | Value                                                                          | Type     |
+| ------------- |:------------------------------------------------------------------------------:| --------:|
+| serverStatus  | The status of the server                                                       | string   |
+| authenticated | If the user has passed the correct authentication token, this will return true | boolean? |
+
+## Authenticated Endpoint
+
+The `/authenticated` endpoint is guarded by Auth0 and will return a `401 UnauthorizedError` Error
+
+### Request
+
+```bash
+curl --request GET \
+  --url http://localhost:3003/health/authenticated \
+  --header 'Authorization: Bearer YOUR_TOKEN_HERE'
+```
+
+### Example Response
+
+```json
+{
+  "serverStatus": "UP",
+  "authenticated": true
+}
+```

@@ -30,13 +30,10 @@ import { Requester } from "@prisma/client";
 import ValidateOptional = Validate.ValidateOptional;
 
 export namespace RequesterDA {
-  async function getServices(connect: boolean = true) {
+  async function getServices() {
     const prismaClientService = container.resolve(PrismaClientService);
     const txnDa = container.resolve(TransactionDaInternal);
     const internalDa = container.resolve(RequesterDaInternal);
-    if (connect) {
-      await prismaClientService.connect();
-    }
     return { prismaClientService, txnDa, internalDa };
   }
 

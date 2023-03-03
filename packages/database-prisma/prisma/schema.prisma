@@ -45,8 +45,7 @@ model ConsentRequests {
 }
 
 model DataType {
-  id     Int     @id @default(autoincrement())
-  typeId String  @default(uuid())
+  typeId String  @id @default(uuid())
   schema String @db.VarChar(255)
 }
 

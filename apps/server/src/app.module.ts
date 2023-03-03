@@ -39,6 +39,7 @@ import { RolesGuard } from './core/authorisation/rbac/roles.guard';
 import { Auth0ClientService } from './core/services/auth0/auth0-client.service';
 import { Auth0RolesService } from './core/services/auth0/auth0-roles.service';
 import { ConsentRequestController } from './service/consent/consent-request.controller';
+import { DAManagementService } from './core/services/da-management.service';
 
 @Module({
   imports: [AuthModule, HttpModule, ConfigModule.forRoot()],
@@ -59,6 +60,7 @@ import { ConsentRequestController } from './service/consent/consent-request.cont
     RolesGuard,
     Auth0ClientService,
     Auth0RolesService,
+    DAManagementService,
   ],
 })
 export class AppModule {}

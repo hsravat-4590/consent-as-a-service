@@ -45,9 +45,6 @@ export namespace UserDA {
     const txnDa = container.resolve(TransactionDaInternal);
     const internalDa = container.resolve(UserDaInternal);
     const requesterDa = container.resolve(RequesterDaInternal);
-    if (connect) {
-      await prismaClientService.connect();
-    }
     return { prismaClientService, txnDa, internalDa, requesterDa };
   }
 

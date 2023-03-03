@@ -62,7 +62,6 @@ export namespace ConsentRequestDA {
     console.log("Creating a new Consent Request Type");
     const { prismaClientService, txnDa, internalDa, schemaDa } =
       await getServices();
-    await prismaClientService.connect();
     const txn = await txnDa.createTxn({
       txnStatus: "CREATED",
     });
@@ -100,7 +99,6 @@ export namespace ConsentRequestDA {
     console.log("Reading a ConsentRequest");
     const { prismaClientService, txnDa, internalDa, schemaDa } =
       await getServices();
-    await prismaClientService.connect();
     const req: Optional<ConsentRequests> = await internalDa.readConsentRequest(
       consentRequestId
     );
@@ -126,7 +124,6 @@ export namespace ConsentRequestDA {
     consentRequestId: NonNullable<string>
   ): Promise<string> => {
     const { prismaClientService, txnDa, internalDa } = await getServices();
-    await prismaClientService.connect();
     const consentRequestModel: Optional<ConsentRequests> =
       await internalDa.readConsentRequest(consentRequestId);
 

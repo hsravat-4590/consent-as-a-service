@@ -45,9 +45,6 @@ export namespace TransactionDA {
   async function getServices(connect: boolean = true) {
     const prismaClientService = container.resolve(PrismaClientService);
     const internalDa = container.resolve(TransactionDaInternal);
-    if (connect) {
-      await prismaClientService.connect();
-    }
     return { prismaClientService, internalDa };
   }
   export const CreateTransaction = async (

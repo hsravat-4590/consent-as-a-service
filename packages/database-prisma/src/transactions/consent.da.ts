@@ -47,9 +47,6 @@ export namespace ConsentDA {
     const txnDa = container.resolve(TransactionDaInternal);
     const internalDa = container.resolve(ConsentDaInternal);
     const requestDa = container.resolve(ConsentRequestDaInternal);
-    if (connect) {
-      await prismaClientService.connect();
-    }
     return { prismaClientService, txnDa, internalDa, requestDa };
   }
 

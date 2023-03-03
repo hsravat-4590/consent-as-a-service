@@ -21,23 +21,18 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { Controller, Get, Post } from '@nestjs/common';
-import { Roles } from '../../core/authorisation/rbac/roles.decorator';
-import { Auth0Roles } from '../../core/authorisation/rbac/auth0.roles';
+import { INestApplication, Injectable, OnModuleInit } from '@nestjs/common';
+import { bootstrap } from '@consent-as-a-service/database-prisma';
 
-@Controller('consent/request/v1')
-export class ConsentRequestController {
-  constructor() {}
+@Injectable()
+export class DAManagementService implements OnModuleInit {
+  private readonly daClientBootstrap = bootstrap();
 
-  @Post()
-  @Roles(Auth0Roles.CREATE_CONSENTS)
-  async createConsentRequest() {}
+  async onModuleInit() {
+    await this.daClientBootstrap.onStart();
+  }
 
-  @Get()
-  @Roles(Auth0Roles.REQUEST_CONSENTS)
-  async createRequestForConsent() {}
-
-  @Get()
-  @Roles(Auth0Roles.USER, Auth0Roles.ORG_USER)
-  async getRequestDataSchema() {}
+  async enableShutdownHooks(app: INestApplication) {
+    this.daClientBootstrap.onExit(async () => await app.close());
+  }
 }

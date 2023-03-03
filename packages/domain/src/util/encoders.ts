@@ -21,12 +21,5 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { DataType } from "@prisma/client";
-import { atob, DataSchema } from "@consent-as-a-service/domain";
-
-export const mapDataTypeToSchema = (data: DataType) => {
-  return {
-    id: data.typeId,
-    entries: JSON.parse(atob(data.schema)),
-  } as DataSchema;
-};
+export const atob = (str) => new Buffer(str, "base64").toString("binary");
+export const btoa = (str) => new Buffer(str, "binary").toString("base64");

@@ -21,12 +21,21 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { DataType } from "@prisma/client";
-import { atob, DataSchema } from "@consent-as-a-service/domain";
+import { atob, btoa } from "../../src";
 
-export const mapDataTypeToSchema = (data: DataType) => {
-  return {
-    id: data.typeId,
-    entries: JSON.parse(atob(data.schema)),
-  } as DataSchema;
-};
+describe("Encoders", () => {
+  describe("Btoa", () => {
+    it("Should encode string to Base64", () => {
+      const myString = "Hello World";
+      const withBtoa = btoa(myString);
+      expect(withBtoa).toEqual("SGVsbG8gV29ybGQ=");
+    });
+  });
+  describe("Atob", () => {
+    it("Should decode from Base64 to string", () => {
+      const withBtoa = "SGVsbG8gV29ybGQ=";
+      const myString = atob(withBtoa);
+      expect(myString).toEqual("Hello World");
+    });
+  });
+});

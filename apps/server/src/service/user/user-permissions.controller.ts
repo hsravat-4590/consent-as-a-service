@@ -55,7 +55,7 @@ export class UserPermissionsController {
   @Roles(Auth0Roles.USER)
   async elevateUserToRequester(@Body() request?: ElevateUserToCRRolesRequest) {
     if (request.displayName) {
-      return await this.userService.upgradeUserRoles(request, [
+      await this.userService.upgradeUserRoles(request, [
         Auth0Roles.REQUEST_CONSENTS,
         Auth0Roles.CREATE_CONSENTS,
       ]);

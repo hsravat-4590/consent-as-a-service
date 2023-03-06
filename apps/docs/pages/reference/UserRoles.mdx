@@ -1,0 +1,129 @@
+import { Tab, Tabs } from "nextra-theme-docs";
+
+# User Roles
+
+CAAS uses Role-Based Access Control (RBAC) technology to protect its endpoints. It provides security as it provides a simplification to restricting endpoints to users who have certain roles (or permissions)
+
+## Available Roles
+
+The following roles are used by the service:
+
+
+| RoleKey                                                                          | Description     |
+|:--------------:| ------------------------------------------------------------------------------|
+| Admin                                                    | Mostly for the API itself and any dashboards that may come in the future to manage the overall system  |
+| CreateConsents | Users with this role can create `ConsentRequests` |
+| RequestConsents | Users with this role can use `ConsentRequestModels` to send `ConsentRequests` to users |
+| OrgUser | Restricts elevation of privileges to Admins and would be the default setting for Enterprise accounts |
+
+## Get the roles available to your user
+
+### Example Request
+
+<Tabs items={['curl', 'Node Fetch', 'Kotlin']}>
+  <Tab>
+    ```curl
+    curl --request GET \
+    --url http://localhost:3003/user/roles/v1/getRoles \
+    --header 'Authorization: Bearer <YOUR_TOKEN_HERE>'
+    ```
+  </Tab>
+  <Tab>
+   ```javascript
+    const options = {
+      method: 'GET',
+      headers: {
+      Authorization: 'Bearer YOUR_BEARER_TOKEN'
+    }
+  };
+
+  fetch('http://localhost:3003/user/roles/v1/getRoles', options)
+  .then(response => response.json())
+  .then(response => console.log(response))
+  .catch(err => console.error(err));
+    ```
+  </Tab>
+  <Tab>
+    ```kotlin
+    val client = OkHttpClient()
+
+    val request = Request.Builder()
+    .url("http://localhost:3003/user/roles/v1/getRoles")
+    .get()
+    .addHeader("Authorization", "Bearer YOUR_BEARER_TOKEN")
+    .build()
+
+    val response = client.newCall(request).execute()
+    ```
+  </Tab>
+</Tabs>
+
+### Example Response
+
+```json
+[
+	{
+		"id": "rol_8Z8L1mJBgE6vo1Mn",
+		"name": "CreateConsents",
+		"description": "Users with this role can create ConsentRequests"
+	},
+	{
+		"id": "rol_CjrrzjExOXBd3bq4",
+		"name": "RequestConsents",
+		"description": "Users with this role can use ConsentRequestModels to send ConsentRequests to users"
+	},
+	{
+		"id": "rol_nC8LU4dTm4YxBVUg",
+		"name": "User",
+		"description": "The end-user. This role allows one to view/accept and fulfill consents"
+	}
+]
+```
+
+## Elevate User Roles
+
+Non-Org Users are able to elevate their profile to include the roles `CreateConsents` and `RequestConsents` once their email has been verified. In order to do this, they must call the following endpoint:
+
+### Request
+
+<Tabs items={['curl', 'Node Fetch', 'Kotlin']}>
+  <Tab>
+    ```curl
+    curl --request GET \
+    --url http://localhost:3003/user/roles/v1/elevate \
+    --header 'Authorization: Bearer <YOUR_TOKEN_HERE>'
+    ```
+  </Tab>
+  <Tab>
+    ```javascript
+    const options = {
+      method: 'GET',
+      headers: {
+      Authorization: 'Bearer YOUR_BEARER_TOKEN'
+    }
+  };
+
+  fetch('http://localhost:3003/user/roles/v1/elevate', options)
+  .then(response => response.json())
+  .then(response => console.log(response))
+  .catch(err => console.error(err));
+    ```
+  </Tab>
+  <Tab>
+    ```kotlin
+    val client = OkHttpClient()
+
+    val request = Request.Builder()
+    .url("http://localhost:3003/user/roles/v1/elevate")
+    .get()
+    .addHeader("Authorization", "Bearer YOUR_BEARER_TOKEN")
+    .build()
+
+    val response = client.newCall(request).execute()
+    ```
+  </Tab>
+</Tabs>
+
+### Response
+
+If this succeeds, a `200 OK` status code is returned.

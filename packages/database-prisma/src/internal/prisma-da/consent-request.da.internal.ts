@@ -24,12 +24,10 @@
 import { singleton } from "tsyringe";
 import { PrismaClientService } from "../services/prisma-client.service";
 import { ConsentRequests } from "@prisma/client";
-import {
-  AsyncOptional,
-  ConsentRequestModel,
-  Optional,
-} from "@consent-as-a-service/domain";
+import { AsyncOptional, Optional } from "@consent-as-a-service/domain";
 import { PrismaDa } from "./prisma.da";
+import { ConsentRequestDA } from "../../transactions";
+import CreateConsentRequestOptions = ConsentRequestDA.CreateConsentRequestOptions;
 
 @singleton()
 export class ConsentRequestDaInternal extends PrismaDa {
@@ -39,15 +37,22 @@ export class ConsentRequestDaInternal extends PrismaDa {
 
   async createConsentRequestType(
     txnId: NonNullable<string>,
-    options: CreateConsentRequestOptions
+    options: CreateConsentRequestOptions,
+    requesterId: string,
+    schemaId: string
   ): Promise<ConsentRequests> {
     return await this.prismaClient.consentRequests.create({
       data: {
         txnId: txnId,
         title: options.title,
         description: options.description,
-        dataId: options.schema.id,
+        dataId: schemaId,
         callbackUrl: options.callbackUrl.toString(),
+        requester: {
+          connect: {
+            id: requesterId,
+          },
+        },
       },
     });
   }
@@ -64,13 +69,3 @@ export class ConsentRequestDaInternal extends PrismaDa {
     );
   }
 }
-
-export type CreateConsentRequestOptions = Pick<
-  ConsentRequestModel,
-  "title" | "description" | "schema" | "callbackUrl"
->;
-export type CreateConsentResultType = {
-  txnId: string;
-  consentRequestId: string;
-  schemaId: string;
-};

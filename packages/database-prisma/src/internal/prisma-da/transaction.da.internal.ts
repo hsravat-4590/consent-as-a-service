@@ -64,7 +64,7 @@ export class TransactionDaInternal extends PrismaDa {
   ): Promise<TxnLog[]> {
     return await this.prismaClient.txnLog.findMany({
       where: {
-        txnId: txnId,
+        chainId: txnId,
       },
       orderBy: {
         datetime: order,
@@ -78,6 +78,7 @@ export class TransactionDaInternal extends PrismaDa {
   ): Promise<TxnLog> {
     return await this.prismaClient.txnLog.create({
       data: {
+        chainId: "chainId",
         parent: txnId,
         TxnStatus: TxnLog_TxnStatus[options.txnStatus],
       },

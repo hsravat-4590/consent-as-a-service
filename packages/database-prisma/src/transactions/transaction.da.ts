@@ -53,7 +53,7 @@ export namespace TransactionDA {
     console.log("Creating a TXN");
     const { internalDa } = await getServices();
     const newTxn = await internalDa.createTxn(options);
-    return newTxn.txnId;
+    return newTxn.chainId;
   };
 
   export const ReadTransaction = async (

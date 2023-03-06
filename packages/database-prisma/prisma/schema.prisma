@@ -9,7 +9,7 @@ datasource db {
 }
 
 model Consent {
-  consentId     String                @id @unique @default(uuid())
+  consentId     String                @id @default(uuid())
   txnId         String
   userid        String?
   orgid         String                @db.VarChar(255)
@@ -36,8 +36,10 @@ model ConsentData_DataType {
 }
 
 model ConsentRequests {
+  consentRequestId   String  @id @default(uuid())
   txnId       String  @unique @db.VarChar(255)
-  consentRequestId   String  @id @unique @default(uuid())
+  requester Requester? @relation(fields: [ownerId], references: [id])
+  ownerId String?
   title       String @db.VarChar(255)
   description String @db.VarChar(255)
   dataId      String @db.VarChar(255)
@@ -50,15 +52,16 @@ model DataType {
 }
 
 model Requester {
-  id          String  @unique @id @default(uuid())
+  id          String  @id @default(uuid())
   user        User?
+  consentRequests ConsentRequests[]
   displayname String @db.VarChar(255)
   banner      String? @db.VarChar(255)
   logo      String? @db.VarChar(255)
 }
 
 model TxnLog {
-  txnId     String           @id @unique @default(uuid())
+  txnId     String           @id @default(uuid())
   chainId   String           @default(uuid())
   TxnStatus TxnLog_TxnStatus
   datetime  DateTime         @db.DateTime(0) @default(now())

@@ -64,5 +64,7 @@ export namespace RequesterDA {
     );
   };
 
-  export type UpdatableRequesterOptions = Omit<Requester, "id" | "user">;
+  export type UpdatableRequesterOptions = Partial<
+    Omit<Requester, "id" | "user">
+  >;
 }

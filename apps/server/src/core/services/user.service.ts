@@ -29,6 +29,9 @@ import { ConfigService } from '@nestjs/config';
 import { UserModel } from '@consent-as-a-service/domain';
 import { UserMapper } from '../mappers/user.mapper';
 import { UserDA } from '@consent-as-a-service/database-prisma';
+import { Auth0Roles } from '../authorisation/rbac/auth0.roles';
+import { Auth0RolesService } from './auth0/auth0-roles.service';
+import { Role } from 'auth0';
 
 @Injectable()
 export class UserService {
@@ -41,6 +44,7 @@ export class UserService {
     private readonly httpService: HttpService,
     private readonly configService: ConfigService,
     private readonly userMapper: UserMapper,
+    private readonly auth0RolesService: Auth0RolesService,
   ) {
     this.AUTH0_ISSUER = configService.get('AUTH0_ISSUER_URL');
   }
@@ -52,6 +56,28 @@ export class UserService {
     const userModelPromise = await this.checkAndAddUserToDB(mUser);
     this.requestUser = userModelPromise;
     return userModelPromise;
+  }
+
+  async getUserRoles(): Promise<Role[]> {
+    const mUser = await this.getUser();
+    return await this.auth0RolesService.getRolesForUser(mUser);
+  }
+
+  async upgradeUserRoles(
+    requesterOptions: Omit<UserDA.CreateRequesterOptions, 'user'>,
+    roles: Auth0Roles[],
+  ): Promise<UserModel> {
+    // Update roles @ Auth0
+    const mUser = await this.getUser();
+    await this.auth0RolesService.updateUserRoles(mUser, roles);
+    //Add user to requester
+    if (roles.includes(Auth0Roles.REQUEST_CONSENTS)) {
+      return await UserDA.ElevateUserToRequester({
+        displayName: requesterOptions.displayName,
+        user: mUser,
+      });
+    }
+    return mUser;
   }
 
   private getUserFromAuth0(): Promise<UserModel> {

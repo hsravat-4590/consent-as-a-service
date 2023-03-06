@@ -72,18 +72,17 @@ export namespace UserDA {
   };
 
   export const ElevateUserToRequester = async (
-    userModel: UserModel,
     createRequester: CreateRequesterOptions
   ): Promise<UserModel> => {
     const { internalDa, requesterDa } = await getServices();
     // Check the user exists
-    const userOptional = await internalDa.readUser(userModel.id);
+    const userOptional = await internalDa.readUser(createRequester.user.id);
     ValidateOptional(userOptional, {
       errorMessage: "User doesn't exist in the database",
     });
     let user = userOptional.get();
     const requester = await requesterDa.elevateUserToRequester(createRequester);
-    user = await internalDa.updateUserDetails(userModel.id, {
+    user = await internalDa.updateUserDetails(createRequester.user.id, {
       requesterId: requester.id,
     });
 

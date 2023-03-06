@@ -30,10 +30,14 @@ export namespace Validate {
   };
 
   function handleValidationError(errorHandler: Partial<ValidateErrorHandlers>) {
-    throw (
-      errorHandler.errorMessage ??
-      new Error(errorHandler.errorMessage ?? "Invalid State")
-    );
+    if (errorHandler.errorException) {
+      throw errorHandler.errorException;
+    } else {
+      throw (
+        errorHandler.errorMessage ??
+        new Error(errorHandler.errorMessage ?? "Invalid State")
+      );
+    }
   }
 
   export const ValidateOptional = (

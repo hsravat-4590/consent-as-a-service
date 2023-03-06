@@ -21,7 +21,7 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { Inject, Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { REQUEST } from '@nestjs/core';
 import { Request } from 'express';
 import { HttpService } from '@nestjs/axios';
@@ -69,6 +69,12 @@ export class UserService {
   ): Promise<UserModel> {
     // Update roles @ Auth0
     const mUser = await this.getUser();
+    if (!mUser.emailVerified) {
+      throw new HttpException(
+        'Email needs verification',
+        HttpStatus.PRECONDITION_REQUIRED,
+      );
+    }
     await this.auth0RolesService.updateUserRoles(mUser, roles);
     //Add user to requester
     if (roles.includes(Auth0Roles.REQUEST_CONSENTS)) {

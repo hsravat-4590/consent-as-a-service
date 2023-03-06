@@ -21,23 +21,62 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { Controller, Get, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  HttpException,
+  HttpStatus,
+  Param,
+  Post,
+} from '@nestjs/common';
+import { ConsentRequestService } from '../../core/services/consent-request.service';
 import { Roles } from '../../core/authorisation/rbac/roles.decorator';
 import { Auth0Roles } from '../../core/authorisation/rbac/auth0.roles';
+import {
+  CreateConsentRequestNetworkRequest,
+  CreateConsentRequestNetworkResponse,
+  GetConsentRequestNetworkResponse,
+} from '../../core/models/consent-request.network.model';
+import { Optional, Validate } from '@consent-as-a-service/domain';
 
 @Controller('consent/request/v1')
 export class ConsentRequestController {
-  constructor() {}
+  constructor(private consentRequestService: ConsentRequestService) {}
 
   @Post()
   @Roles(Auth0Roles.CREATE_CONSENTS)
-  async createConsentRequest() {}
+  async createConsentRequest(
+    @Body()
+    requestBody: CreateConsentRequestNetworkRequest,
+  ): Promise<CreateConsentRequestNetworkResponse> {
+    const request =
+      Optional.ofNullable<CreateConsentRequestNetworkRequest>(requestBody);
+    Validate.ValidateOptional(
+      request,
+      {
+        errorException: new HttpException(
+          'Request Body must not be null',
+          HttpStatus.BAD_REQUEST,
+        ),
+      },
+      true,
+    );
+    const id = await this.consentRequestService.createConsentRequest(
+      request.get(),
+    );
+    return {
+      id: id,
+    };
+  }
 
-  @Get()
-  @Roles(Auth0Roles.REQUEST_CONSENTS)
-  async createRequestForConsent() {}
-
-  @Get()
+  @Get(':id')
   @Roles(Auth0Roles.USER, Auth0Roles.ORG_USER)
-  async getRequestDataSchema() {}
+  async getRequestDataSchema(
+    @Param('id') consentRequestId: string,
+  ): Promise<GetConsentRequestNetworkResponse> {
+    return await this.consentRequestService.getConsentRequest({
+      id: consentRequestId,
+    });
+  }
 }

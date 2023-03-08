@@ -43,10 +43,18 @@ export class ConsentRequestDaInternal extends PrismaDa {
   ): Promise<ConsentRequests> {
     return await this.prismaClient.consentRequests.create({
       data: {
-        txnId: txnId,
+        txn: {
+          connect: {
+            txnId: txnId,
+          },
+        },
         title: options.title,
         description: options.description,
-        dataId: schemaId,
+        dataType: {
+          connect: {
+            typeId: schemaId,
+          },
+        },
         callbackUrl: options.callbackUrl.toString(),
         requester: {
           connect: {

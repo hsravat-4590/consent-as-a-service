@@ -129,7 +129,7 @@ export namespace ConsentDA {
   ): Promise<ConsentModel> => {
     await getServices();
     const mConsent = await getConsentAndValidate(consentId);
-    if (mConsent.userid) {
+    if (mConsent.userId) {
       throw new Error("Error: Consent is already linked to a user");
     }
     return await updateTxnConsentAndMapBack(mConsent, "IN_PROGRESS", {

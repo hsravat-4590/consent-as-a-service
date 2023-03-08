@@ -44,9 +44,21 @@ export class ConsentDaInternal extends PrismaDa {
   ): Promise<Consent> {
     return await this.prismaClient.consent.create({
       data: {
-        txnId: txnId,
-        consentRequestId: options.consentRequestId,
-        orgid: options.org.orgId,
+        txn: {
+          connect: {
+            txnId: txnId,
+          },
+        },
+        user: {
+          connect: {
+            id: options.user.id,
+          },
+        },
+        consentRequest: {
+          connect: {
+            consentRequestId: options.consentRequestId,
+          },
+        },
       },
     });
   }
@@ -65,7 +77,9 @@ export class ConsentDaInternal extends PrismaDa {
     options: ReadAllConsentOptions
   ): Promise<Array<Consent>> {
     const readQuery: Prisma.ConsentWhereInput = {
-      consentRequestId: options.consentRequestId,
+      consentRequest: {
+        consentRequestId: options.consentRequestId,
+      },
       consentId: options.id,
     };
     return await this.prismaClient.consent.findMany({
@@ -89,9 +103,17 @@ export class ConsentDaInternal extends PrismaDa {
         updateData[key] = value;
       }
     };
-    insertData("userid", options.user.id);
+    insertData("user", {
+      connect: {
+        id: options.user.id,
+      },
+    });
     insertData("expiry", convertLocalDateTimeToDate(options.expiry));
-    insertData("consentDataId", options.consentDataId);
+    insertData("consentData", {
+      connect: {
+        id: options.consentDataId,
+      },
+    });
     return await this.prismaClient.consent.update({
       where: {
         consentId: id,
@@ -107,7 +129,7 @@ export type UpdateConsentOptions = Partial<
 
 export type CreateConsentOptions = Pick<
   ConsentModel,
-  "expiry" | "consentRequestId" | "org"
+  "expiry" | "consentRequestId" | "org" | "user"
 >;
 
 export type ReadConsentOptions = Pick<ConsentModel, "id">;

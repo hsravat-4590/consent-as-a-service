@@ -30,7 +30,7 @@ export const mapConsentToModel = (consent: Consent, txnLog: TxnLog) => {
   const txnModel = mapTxnLogToModel(txnLog);
   return {
     id: consent.consentId,
-    consentRequestId: consent.consentRequestId,
+    consentRequestId: consent.requestId,
     //TODO UserDeepMapping
     //TODO OrgDeepMapping
     expiry: convertDateToLocalDateTime(consent.expiry),

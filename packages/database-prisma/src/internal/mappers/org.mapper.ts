@@ -21,14 +21,19 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { Requester } from "@prisma/client";
-import { RequesterModel } from "@consent-as-a-service/domain";
+import {
+  EmailModel,
+  OrgModel,
+  urlOfNullable,
+} from "@consent-as-a-service/domain";
+import { Org } from "@prisma/client";
 
-export const mapRequesterToModel = (requester: Requester): RequesterModel => {
+export const mapOrgToModel = (org: Org): OrgModel => {
   return {
-    id: requester.id,
-    displayName: requester.displayname,
-    banner: requester.banner,
-    logo: requester.logo,
-  } as RequesterModel;
+    orgId: org.id,
+    email: new EmailModel(org.email),
+    displayName: org.displayname,
+    banner: urlOfNullable(org.banner),
+    logo: urlOfNullable(org.logo),
+  } as OrgModel;
 };

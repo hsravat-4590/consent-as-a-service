@@ -22,27 +22,41 @@
  */
 
 import { EmailModel } from "./email.model";
+import { ConsentRequestModel } from "./consent-request.model";
+import { ConsentModel } from "./consent.model";
+import { NameModel } from "./name.model";
 
 export interface UserModel {
   id: NonNullable<string>;
-  firstName?: string;
-  lastName?: string; //TODO Domain Primitive for Name types
-  nickname: string;
+  firstName?: NameModel;
+  lastName?: NameModel;
+  nickname?: string;
   email: NonNullable<EmailModel>;
   emailVerified: NonNullable<boolean>;
-
-  requesterId?: string;
+  consentCreator?: ConsentCreatorModel;
+  consentRequester?: ConsentRequesterModel;
+  orgId?: string;
 }
 
 export type NonDBUser = Omit<UserModel, "id">;
+
+export interface ConsentCreatorModel {
+  id: string;
+  consentRequests?: ConsentRequestModel[];
+}
+
+export interface ConsentRequesterModel {
+  id: string;
+  consents?: ConsentModel[];
+}
 
 export namespace UserModel {
   export const getDisplayName = (model: UserModel): string => {
     let returnStr = model.nickname;
     if (model.firstName) {
-      returnStr = model.firstName;
+      returnStr = model.firstName.name;
       if (model.lastName) {
-        returnStr = `${returnStr} ${model.lastName}`;
+        returnStr = `${returnStr} ${model.lastName.name}`;
       }
     }
     return returnStr;

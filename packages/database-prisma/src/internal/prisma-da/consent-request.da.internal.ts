@@ -23,7 +23,13 @@
 
 import { singleton } from "tsyringe";
 import { PrismaClientService } from "../services/prisma-client.service";
-import { ConsentRequests } from "@prisma/client";
+import {
+  Consent,
+  ConsentCreator,
+  ConsentRequest,
+  TxnLog,
+  TxnLog_TxnStatus,
+} from "@prisma/client";
 import { AsyncOptional, Optional } from "@consent-as-a-service/domain";
 import { PrismaDa } from "./prisma.da";
 import { ConsentRequestDA } from "../../transactions";
@@ -36,16 +42,15 @@ export class ConsentRequestDaInternal extends PrismaDa {
   }
 
   async createConsentRequestType(
-    txnId: NonNullable<string>,
     options: CreateConsentRequestOptions,
     requesterId: string,
     schemaId: string
-  ): Promise<ConsentRequests> {
-    return await this.prismaClient.consentRequests.create({
+  ): Promise<ConsentRequest & { txn: TxnLog }> {
+    const reqType = await this.prismaClient.consentRequest.create({
       data: {
         txn: {
-          connect: {
-            txnId: txnId,
+          create: {
+            TxnStatus: TxnLog_TxnStatus.CREATED,
           },
         },
         title: options.title,
@@ -56,24 +61,59 @@ export class ConsentRequestDaInternal extends PrismaDa {
           },
         },
         callbackUrl: options.callbackUrl.toString(),
-        requester: {
+        creator: {
           connect: {
             id: requesterId,
           },
         },
       },
+      include: {
+        txn: true,
+      },
     });
+    return reqType;
   }
 
   async readConsentRequest(
     requestId: NonNullable<string>
-  ): AsyncOptional<ConsentRequests> {
+  ): AsyncOptional<ConsentRequest> {
     return Optional.ofNullable(
-      await this.prismaClient.consentRequests.findFirst({
+      await this.prismaClient.consentRequest.findFirst({
         where: {
           consentRequestId: requestId,
         },
       })
     );
   }
+
+  async readWholeConsentRequest(
+    requestId: NonNullable<string>,
+    withConsents: boolean = false
+  ): AsyncOptional<WholeConsentRequest> {
+    const exec: WholeConsentRequest =
+      await this.prismaClient.consentRequest.findFirst({
+        where: {
+          consentRequestId: requestId,
+        },
+        include: {
+          txn: true,
+          creator: true,
+          dataType: {
+            select: {
+              typeId: true,
+              schema: true,
+            },
+          },
+          consents: withConsents,
+        },
+      });
+    return Optional.ofNullable(exec);
+  }
 }
+
+export type WholeConsentRequest = ConsentRequest & {
+  consents: Consent[];
+  txn: TxnLog;
+  creator: ConsentCreator;
+  dataType: { typeId: string; schema: string };
+};

@@ -21,17 +21,12 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { Controller, Get } from '@nestjs/common';
-import { UserService } from '../../core/services/user.service';
-import { RequireAuth } from '../../core/auth/require-auth.decorator';
-
-@Controller('user/login')
-export class LoginController {
-  constructor(private userService: UserService) {}
-
-  @Get()
-  @RequireAuth()
-  async login() {
-    return await this.userService.getUser();
-  }
+export interface RequestMetadataNetworkModel {
+  displayName: string;
+  banner?: string;
+  logo?: string;
+  contact: {
+    email?: string;
+    telephone?: string;
+  };
 }

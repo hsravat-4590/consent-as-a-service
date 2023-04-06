@@ -27,67 +27,45 @@ import {
   Get,
   HttpException,
   HttpStatus,
-  Post,
-  UsePipes,
-  ValidationPipe,
 } from '@nestjs/common';
 import { UserService } from '../../core/services/user.service';
 import { Roles } from '../../core/authorisation/rbac/roles.decorator';
 import { Auth0Roles } from '../../core/authorisation/rbac/auth0.roles';
-import {
-  ElevateUserToCRRolesRequest,
-  UpdateRequesterMetaRequest,
-} from '../../core/models/user-permissions.network.model';
-import { RequesterService } from '../../core/services/requester.service';
-import { RequesterDA } from '@consent-as-a-service/database-prisma/dist/transactions/requester.da';
+import { ElevateUserToCRRolesRequest } from '../../core/models/user-permissions.network.model';
 import { RequireAuth } from '../../core/auth/require-auth.decorator';
 import { Role } from 'auth0';
-import UpdatableRequesterOptions = RequesterDA.UpdatableRequesterOptions;
+import { OrgService } from '../../core/services/org.service';
+import { Validate } from '@consent-as-a-service/domain';
 
 @Controller('user/roles/v1')
 export class UserPermissionsController {
   constructor(
     private userService: UserService,
-    private requesterService: RequesterService,
+    private orgService: OrgService,
   ) {}
 
   @Get('elevate')
   @Roles(Auth0Roles.USER)
   async elevateUserToRequester(@Body() request?: ElevateUserToCRRolesRequest) {
     if (request.displayName) {
-      await this.userService.upgradeUserRoles(request, [
+      // Create the org
+      const userModel = await this.userService.hydrateUserWithPrivilege();
+      if (!!userModel.orgId) {
+        throw new HttpException(
+          'User already elevated',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+      await this.orgService.createNewOrg({
+        email: userModel.email,
+        displayName: request.displayName,
+      });
+      await this.userService.upgradeUserRoles([
         Auth0Roles.REQUEST_CONSENTS,
         Auth0Roles.CREATE_CONSENTS,
       ]);
     } else {
       throw new HttpException('Requires a DisplayName', HttpStatus.BAD_REQUEST);
-    }
-  }
-
-  @Post('updateMetadata')
-  @Roles(Auth0Roles.REQUEST_CONSENTS)
-  @UsePipes(new ValidationPipe({ transform: true }))
-  async updateRequesterMeta(@Body() request?: UpdateRequesterMetaRequest) {
-    if (request.banner || request.logo) {
-      const user = await this.userService.getUser();
-      const requester = await this.requesterService.getRequester(
-        user.requesterId,
-      );
-      const updatedData: UpdatableRequesterOptions = {};
-      const setIfNotNull = (
-        obj: keyof UpdateRequesterMetaRequest,
-        key: keyof UpdatableRequesterOptions,
-      ) => {
-        if (request[obj]) {
-          updatedData[key] = request[obj];
-        }
-      };
-      setIfNotNull('banner', 'banner');
-      setIfNotNull('logo', 'logo');
-      await this.requesterService.updateRequesterMetadata(
-        requester,
-        updatedData,
-      );
     }
   }
 

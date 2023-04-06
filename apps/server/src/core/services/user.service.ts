@@ -58,17 +58,22 @@ export class UserService {
     return userModelPromise;
   }
 
+  async hydrateUserWithPrivilege() {
+    const user = await UserDA.GetUserWithPrivilege(this.requestUser.id);
+    if (user.isPresent()) {
+      this.requestUser = user.get();
+    }
+    return user.get();
+  }
+
   async getUserRoles(): Promise<Role[]> {
     const mUser = await this.getUser();
     return await this.auth0RolesService.getRolesForUser(mUser);
   }
 
-  async upgradeUserRoles(
-    requesterOptions: Omit<UserDA.CreateRequesterOptions, 'user'>,
-    roles: Auth0Roles[],
-  ): Promise<UserModel> {
+  async upgradeUserRoles(roles: Auth0Roles[]): Promise<UserModel> {
     // Update roles @ Auth0
-    const mUser = await this.getUser();
+    let mUser = await this.hydrateUserWithPrivilege();
     if (!mUser.emailVerified) {
       throw new HttpException(
         'Email needs verification',
@@ -77,12 +82,15 @@ export class UserService {
     }
     await this.auth0RolesService.updateUserRoles(mUser, roles);
     //Add user to requester
+    const updates: { consentCreator?: boolean; consentRequester?: boolean } =
+      {};
     if (roles.includes(Auth0Roles.REQUEST_CONSENTS)) {
-      return await UserDA.ElevateUserToRequester({
-        displayName: requesterOptions.displayName,
-        user: mUser,
-      });
+      updates.consentRequester = true;
     }
+    if (roles.includes(Auth0Roles.CREATE_CONSENTS)) {
+      updates.consentCreator = true;
+    }
+    mUser = await UserDA.ElevateUserPrivileges(mUser, updates);
     return mUser;
   }
 

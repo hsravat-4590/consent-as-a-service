@@ -23,3 +23,11 @@
 
 export const atob = (str) => new Buffer(str, "base64").toString("binary");
 export const btoa = (str) => new Buffer(str, "binary").toString("base64");
+
+export const urlOfNullable = (str?: string) => {
+  if (str) {
+    return new URL(str);
+  } else {
+    return null;
+  }
+};

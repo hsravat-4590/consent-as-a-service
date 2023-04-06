@@ -21,17 +21,28 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { Controller, Get } from '@nestjs/common';
-import { UserService } from '../../core/services/user.service';
-import { RequireAuth } from '../../core/auth/require-auth.decorator';
+import { Controller, Param, Post } from '@nestjs/common';
+import { ConsentRequestService } from '../../core/services/consent-request.service';
+import { Roles } from '../../core/authorisation/rbac/roles.decorator';
+import { Auth0Roles } from '../../core/authorisation/rbac/auth0.roles';
 
-@Controller('user/login')
-export class LoginController {
-  constructor(private userService: UserService) {}
+@Controller('consent/new/v1')
+export class NewConsentController {
+  constructor(private consentRequestService: ConsentRequestService) {}
 
-  @Get()
-  @RequireAuth()
-  async login() {
-    return await this.userService.getUser();
+  @Post(':consentId')
+  @Roles(Auth0Roles.REQUEST_CONSENTS)
+  async requestNewConsentOpen(@Param('consentId') consentRequestId: string) {
+    // Validate the consentID. This automatically handles validation too
+    const request = await this.consentRequestService.getConsentRequest({
+      id: consentRequestId,
+    });
   }
+
+  @Post(':consentId/:userId')
+  @Roles(Auth0Roles.REQUEST_CONSENTS)
+  async requestConsentForUser(
+    @Param('consentId') consentRequestId: string,
+    @Param('userId') userId: string,
+  ) {}
 }

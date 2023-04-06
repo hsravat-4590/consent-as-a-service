@@ -35,7 +35,7 @@ export namespace Validate {
     } else {
       throw (
         errorHandler.errorMessage ??
-        new Error(errorHandler.errorMessage ?? "Invalid State")
+        new ValidationException(errorHandler.errorMessage ?? "Invalid State")
       );
     }
   }
@@ -83,4 +83,6 @@ export namespace Validate {
       handleValidationError(errorHandler);
     }
   };
+
+  export const ValidationException = class extends Error {};
 }

@@ -17,6 +17,8 @@
   },
   "devDependencies": {
     "prisma": "^4.9.0",
-    "typescript": "^4.9.4"
+    "typescript": "^4.9.4",
+    "prisma-erd-generator": "1.5.4",
+    "@mermaid-js/mermaid-cli": "^10.0.2"
   }
 }

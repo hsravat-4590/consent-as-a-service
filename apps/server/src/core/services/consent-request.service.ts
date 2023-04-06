@@ -29,7 +29,6 @@ import {
   GetConsentRequestNetworkRequest,
   GetConsentRequestNetworkResponse,
 } from '../models/consent-request.network.model';
-import { RequesterDA } from '@consent-as-a-service/database-prisma/dist/transactions/requester.da';
 import { Validate } from '@consent-as-a-service/domain';
 import CreateConsentRequestOptions = ConsentRequestDA.CreateConsentRequestOptions;
 
@@ -43,8 +42,8 @@ export class ConsentRequestService {
   async createConsentRequest(
     creationOptions: CreateConsentRequestNetworkRequest,
   ): Promise<string> {
-    const mUser = await this.userService.getUser();
-    const mRequester = await RequesterDA.ReadRequester(mUser.requesterId);
+    const mUser = await this.userService.hydrateUserWithPrivilege();
+
     //Pick<ConsentRequestModel, "title" | "description" | "schema" | "callbackUrl"
     const requestOptions = {
       title: creationOptions.title,
@@ -54,7 +53,7 @@ export class ConsentRequestService {
     const mId = await ConsentRequestDA.CreateConsentRequestType(
       requestOptions,
       creationOptions.entries,
-      mRequester,
+      mUser.consentCreator,
     );
     return mId.consentRequestId;
   }
@@ -75,6 +74,8 @@ export class ConsentRequestService {
     });
     const request = consentRequestModelOptional.get();
     return {
+      consents: undefined,
+      ownerId: '',
       description: request.description,
       schema: request.schema,
       title: request.title,

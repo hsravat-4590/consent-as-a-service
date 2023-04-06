@@ -22,20 +22,34 @@
  */
 
 import { Injectable } from '@nestjs/common';
-import { RequesterModel } from '@consent-as-a-service/domain';
-import { RequesterDA } from '@consent-as-a-service/database-prisma/dist/transactions/requester.da';
-import UpdatableRequesterOptions = RequesterDA.UpdatableRequesterOptions;
+import {
+  AsyncOptional,
+  OrgModel,
+  UserModel,
+} from '@consent-as-a-service/domain';
+import { OrgDa } from '@consent-as-a-service/database-prisma/dist/transactions/org.da';
+import { UserService } from './user.service';
 
 @Injectable()
-export class RequesterService {
-  async getRequester(requesterId: string): Promise<RequesterModel> {
-    return await RequesterDA.ReadRequester(requesterId);
+export class OrgService {
+  constructor(private userService: UserService) {}
+
+  async createNewOrg(
+    orgDetails: Pick<OrgModel, 'email' | 'displayName' | 'banner' | 'logo'>,
+  ): Promise<{ orgModel: OrgModel; userModel: UserModel }> {
+    const user = await this.userService.hydrateUserWithPrivilege();
+    if (user.orgId) {
+      throw new Error('User already part of an organisation');
+    }
+    return await OrgDa.CreateOrg(user, {
+      banner: orgDetails.banner,
+      displayName: orgDetails.displayName,
+      email: orgDetails.email,
+      logo: orgDetails.logo,
+    });
   }
 
-  async updateRequesterMetadata(
-    requester: RequesterModel,
-    updatedData: UpdatableRequesterOptions,
-  ): Promise<RequesterModel> {
-    return await RequesterDA.UpdateRequesterDetails(requester.id, updatedData);
+  async getOrg(orgId: string): AsyncOptional<OrgModel> {
+    return await OrgDa.GetOrg(orgId);
   }
 }

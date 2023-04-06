@@ -1,4 +1,3 @@
-"use strict";
 /*
  * Copyright (c) 2023 Hanzalah Ravat
  *
@@ -21,4 +20,16 @@
  * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-exports.__esModule = true;
+
+import { Injectable } from '@nestjs/common';
+
+/**
+ * This class manages claims for Consents and assures that uOrgs are honored for consent requests
+ */
+@Injectable()
+export class ConsentClaimService {
+  /**
+   * Validates whether the requester has personally
+   */
+  async validateRequesterOrg() {}
+}

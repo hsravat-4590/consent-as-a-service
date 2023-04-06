@@ -30,4 +30,3 @@ export * from "./org.model";
 export * from "./transaction.model";
 export * from "./user.model";
 export * from "./data-schema.model";
-export * from "./requester.model";

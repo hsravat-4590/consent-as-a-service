@@ -21,17 +21,29 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { Controller, Get } from '@nestjs/common';
-import { UserService } from '../../core/services/user.service';
-import { RequireAuth } from '../../core/auth/require-auth.decorator';
+import { StringPrimitive } from "./domain.primitive";
 
-@Controller('user/login')
-export class LoginController {
-  constructor(private userService: UserService) {}
+/**
+ * Domain Primitive for Names. Has Regex detection to manage and enforce names
+ * This is an IMMUTABLE primitive so there isn't a way to set the value once it's created
+ */
+export class NameModel extends StringPrimitive {
+  static tryStringValidation = (testSubject: string): boolean =>
+    nameRegexICAO.test(testSubject);
+  constructor(name: string) {
+    super(name);
+  }
+  get name() {
+    return super.it;
+  }
 
-  @Get()
-  @RequireAuth()
-  async login() {
-    return await this.userService.getUser();
+  getRegex(): RegExp {
+    return nameRegexICAO;
   }
 }
+
+/**
+ * Simple Regex for validating ICAO passports.
+ * @see https://stackoverflow.com/a/45949895/4455077
+ */
+const nameRegexICAO = new RegExp(/^[a-zA-Z '.-]*$/);

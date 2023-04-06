@@ -42,7 +42,10 @@ import { ConsentRequestController } from './service/consent/consent-request.cont
 import { DAManagementService } from './core/services/da-management.service';
 import { ConsentRequestService } from './core/services/consent-request.service';
 import { UserPermissionsController } from './service/user/user-permissions.controller';
-import { RequesterService } from './core/services/requester.service';
+import { OrgService } from './core/services/org.service';
+import { RequestMetadataController } from './service/org/request-metadata.controller';
+import { NewConsentController } from './service/consent/new-consent.controller';
+import { ConsentClaimService } from './core/services/consent-claim.service';
 
 @Module({
   imports: [AuthModule, HttpModule, ConfigModule.forRoot()],
@@ -52,6 +55,8 @@ import { RequesterService } from './core/services/requester.service';
     LoginController,
     ConsentRequestController,
     UserPermissionsController,
+    RequestMetadataController,
+    NewConsentController,
   ],
   providers: [
     HealthService,
@@ -66,7 +71,8 @@ import { RequesterService } from './core/services/requester.service';
     Auth0RolesService,
     DAManagementService,
     ConsentRequestService,
-    RequesterService,
+    OrgService,
+    ConsentClaimService,
   ],
 })
 export class AppModule {}

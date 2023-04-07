@@ -21,11 +21,7 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import {
-  CompleteConsent,
-  CreateConsentOptions,
-  UpdateConsentOptions,
-} from "../internal/prisma-da/consent.da.internal";
+import { CompleteConsent } from "../internal/prisma-da/consent.da.internal";
 import { mapConsentToModel } from "../internal/mappers/consent.mapper";
 import {
   ConsentModel,
@@ -68,6 +64,8 @@ export namespace ConsentDA {
     if (options.user) {
       user = await Optional.unwrapAsync(userDa.readUser(options.user.id));
     }
+    options.requester = requesterReal.id;
+    options.consentRequest = consentRequest.get().consentRequestId;
     // Create record with provided options
     const consent = await consentDa.createConsent(options);
     return mapConsentToModel({
@@ -102,16 +100,16 @@ export namespace ConsentDA {
   };
 
   async function updateTxnConsentAndMapBack(
-    mConsent,
+    mConsent: CompleteConsent,
     txnStatus: TxnStatus,
     updateConsentOptions: UpdateConsentOptions
   ): Promise<ConsentModel> {
     const { txnDa, consentDa, userDa, consentRequestDa } = getServices();
-    const updatedTxn = await txnDa.updateTxn(mConsent.txnId, {
+    const updatedTxn = await txnDa.updateTxn(mConsent.txn.chainId, {
       txnStatus: txnStatus,
     });
     const consent = await consentDa.updateConsent(
-      mConsent.id,
+      mConsent.consentId,
       updateConsentOptions
     );
     // Get the user
@@ -166,7 +164,7 @@ export namespace ConsentDA {
   export const RevokeConsent = async (
     consentId: string
   ): Promise<TransactionModel> => {
-    const { txnDa } = await getServices();
+    const { txnDa } = getServices();
     const mConsent = await getConsentAndValidate(consentId);
     const voidedTxn = await txnDa.updateTxn(mConsent.txnId, {
       txnStatus: "VOIDED",
@@ -214,5 +212,16 @@ export namespace ConsentDA {
   export type AcceptConsentOptions = Pick<
     ConsentModel,
     "id" | "user" | "expiry" // ConsentData isn't handled here but still checked for state validity
+  >;
+  export type UpdateConsentOptions = Partial<
+    Pick<ConsentModel, "expiry" | "user" | "consentData">
+  >;
+
+  export type CreateConsentOptions = Omit<ConsentModel, "transaction">;
+
+  export type ReadConsentOptions = Pick<ConsentModel, "id">;
+
+  export type ReadAllConsentOptions = Partial<
+    Pick<ConsentModel, "id" | "consentRequest">
   >;
 }

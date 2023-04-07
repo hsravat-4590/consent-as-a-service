@@ -47,8 +47,7 @@ export namespace ConsentRequestDA {
     requester: ConsentCreatorModel
   ): Promise<CreateConsentResultType> => {
     console.log("Creating a new Consent Request Type");
-    const { txnDa, consentRequestDa, consentDataSchemaDa, userDa } =
-      getServices();
+    const { consentRequestDa, consentDataSchemaDa } = getServices();
     const schemaEntry = await consentDataSchemaDa.createSchemaEntry(dataSchema);
     const schema = {
       id: schemaEntry.typeId,
@@ -65,9 +64,8 @@ export namespace ConsentRequestDA {
         requester.id,
         schema.id
       );
-    const txn = await Optional.unwrapAsync(txnDa.readTxn(dbR.txn.chainId));
     return {
-      txnId: txn.chainId,
+      txnId: dbR.txn.chainId,
       consentRequestId: dbR.consentRequestId,
       schemaId: schemaEntry.typeId,
     } as CreateConsentResultType;

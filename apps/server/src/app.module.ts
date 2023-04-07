@@ -46,6 +46,8 @@ import { OrgService } from './core/services/org.service';
 import { RequestMetadataController } from './service/org/request-metadata.controller';
 import { NewConsentController } from './service/consent/new-consent.controller';
 import { ConsentClaimService } from './core/services/consent-claim.service';
+import { ConsentLifecycleService } from './core/services/consent-lifecycle.service';
+import { ConsentRequestUriService } from './core/services/ui/consent-request-uri.service';
 
 @Module({
   imports: [AuthModule, HttpModule, ConfigModule.forRoot()],
@@ -73,6 +75,8 @@ import { ConsentClaimService } from './core/services/consent-claim.service';
     ConsentRequestService,
     OrgService,
     ConsentClaimService,
+    ConsentLifecycleService,
+    ConsentRequestUriService,
   ],
 })
 export class AppModule {}

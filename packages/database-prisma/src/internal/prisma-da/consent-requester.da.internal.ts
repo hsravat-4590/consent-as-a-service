@@ -23,10 +23,34 @@
 import { singleton } from "tsyringe";
 import { PrismaDa } from "./prisma.da";
 import { PrismaClientService } from "../services/prisma-client.service";
+import { AsyncOptional, Optional } from "@consent-as-a-service/domain";
+import { ConsentRequester, Org, User } from "@prisma/client";
 
 @singleton()
 export class ConsentRequesterDaInternal extends PrismaDa {
   constructor(prismaClientService: PrismaClientService) {
     super(prismaClientService);
   }
+
+  async getRequesterWithOrg(
+    requesterId: string
+  ): AsyncOptional<ConsentRequesterWithDetails> {
+    const a = await this.prismaClient.consentRequester.findFirst({
+      where: {
+        id: requesterId,
+      },
+      include: {
+        user: {
+          include: {
+            org: true,
+          },
+        },
+      },
+    });
+    return Optional.ofNullable(a);
+  }
 }
+
+export type ConsentRequesterWithDetails = ConsentRequester & {
+  user: User & { org: Org };
+};

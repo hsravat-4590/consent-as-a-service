@@ -21,22 +21,44 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { Controller, Param, Post } from '@nestjs/common';
+import {
+  Controller,
+  HttpException,
+  HttpStatus,
+  Param,
+  Post,
+} from '@nestjs/common';
 import { ConsentRequestService } from '../../core/services/consent-request.service';
 import { Roles } from '../../core/authorisation/rbac/roles.decorator';
 import { Auth0Roles } from '../../core/authorisation/rbac/auth0.roles';
+import { UserService } from '../../core/services/user.service';
+import { Validate } from '@consent-as-a-service/domain';
+import { ConsentLifecycleService } from '../../core/services/consent-lifecycle.service';
+import { ConsentRequestUriService } from '../../core/services/ui/consent-request-uri.service';
 
 @Controller('consent/new/v1')
 export class NewConsentController {
-  constructor(private consentRequestService: ConsentRequestService) {}
+  constructor(
+    private consentRequestService: ConsentRequestService,
+    private userService: UserService,
+    private consentLifecycleService: ConsentLifecycleService,
+    private consentRequestUriService: ConsentRequestUriService,
+  ) {}
 
   @Post(':consentId')
   @Roles(Auth0Roles.REQUEST_CONSENTS)
   async requestNewConsentOpen(@Param('consentId') consentRequestId: string) {
     // Validate the consentID. This automatically handles validation too
-    const request = await this.consentRequestService.getConsentRequest({
-      id: consentRequestId,
-    });
+    // Get the requester
+    const userWithPrivilege = await this.userService.hydrateUserWithPrivilege();
+    const consent = await this.consentLifecycleService.createPendingConsent(
+      consentRequestId,
+      userWithPrivilege.consentRequester,
+    );
+    // Create the URL
+    return {
+      request_url: this.consentRequestUriService.buildRequestURL(consent),
+    };
   }
 
   @Post(':consentId/:userId')
@@ -44,5 +66,22 @@ export class NewConsentController {
   async requestConsentForUser(
     @Param('consentId') consentRequestId: string,
     @Param('userId') userId: string,
-  ) {}
+  ) {
+    // Validate the userId
+    const userExists = await this.userService.validateUserExistsById(userId);
+    Validate.ValidateState(
+      () => {
+        return userExists;
+      },
+      {
+        errorException: new HttpException(
+          `No user found with Id: ${userId}`,
+          HttpStatus.NOT_FOUND,
+        ),
+      },
+    );
+    const request = await this.consentRequestService.getConsentRequest({
+      id: consentRequestId,
+    });
+  }
 }

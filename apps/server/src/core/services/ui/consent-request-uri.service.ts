@@ -21,27 +21,17 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { Consent, User } from "@prisma/client";
-import { ConsentModel, mapNullable } from "@consent-as-a-service/domain";
-import { convertDateToLocalDateTime } from "./util-type.mapper";
-import { mapUserToModel } from "./user.mapper";
-import {
-  ConsentRequestMapperOptions,
-  mapConsentRequest,
-} from "./consent-request.mapper";
+import { Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import { ConsentModel } from '@consent-as-a-service/domain';
 
-export const mapConsentToModel = (options: {
-  consent: Consent;
-  consentRequest: ConsentRequestMapperOptions;
-  requester: string;
-  user?: User;
-}) => {
-  return {
-    id: options.consent.consentId,
-    expiry: convertDateToLocalDateTime(options.consent.expiry),
-    consentRequest: mapConsentRequest(options.consentRequest).id,
-    user: mapNullable(mapUserToModel, options.user),
-    requester: options.requester,
-    transaction: options.consent.txnId,
-  } as ConsentModel;
-};
+@Injectable()
+export class ConsentRequestUriService {
+  constructor(private configService: ConfigService) {}
+
+  buildRequestURL(consent: Pick<ConsentModel, 'id'>) {
+    return `${this.configService.get<string>(
+      'CONSENT_DEFAULT_UI_URI',
+    )}/request/${consent.id}`;
+  }
+}

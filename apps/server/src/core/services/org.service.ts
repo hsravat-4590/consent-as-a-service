@@ -52,4 +52,8 @@ export class OrgService {
   async getOrg(orgId: string): AsyncOptional<OrgModel> {
     return await OrgDa.GetOrg(orgId);
   }
+
+  async getOrgForRequester(requesterId: string): AsyncOptional<OrgModel> {
+    return await OrgDa.GetOrgByRequester(requesterId);
+  }
 }

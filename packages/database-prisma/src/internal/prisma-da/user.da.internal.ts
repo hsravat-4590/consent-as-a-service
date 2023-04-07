@@ -98,19 +98,12 @@ export class UserDaInternal extends PrismaDa {
   }
 
   async readConsentRequesterProp(userId: string) {
-    const item = await this.prismaClient.user.findFirst({
+    const item = await this.prismaClient.consentRequester.findFirst({
       where: {
         id: userId,
       },
-      select: {
-        consentRequester: {
-          include: {
-            consents: true,
-          },
-        },
-      },
     });
-    return Optional.ofNullable(item.consentRequester);
+    return Optional.ofNullable(item);
   }
 
   async readUsersByEmail(

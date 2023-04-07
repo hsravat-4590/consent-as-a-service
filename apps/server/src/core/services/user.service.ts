@@ -26,7 +26,7 @@ import { REQUEST } from '@nestjs/core';
 import { Request } from 'express';
 import { HttpService } from '@nestjs/axios';
 import { ConfigService } from '@nestjs/config';
-import { UserModel } from '@consent-as-a-service/domain';
+import { AsyncOptional, UserModel } from '@consent-as-a-service/domain';
 import { UserMapper } from '../mappers/user.mapper';
 import { UserDA } from '@consent-as-a-service/database-prisma';
 import { Auth0Roles } from '../authorisation/rbac/auth0.roles';
@@ -58,6 +58,14 @@ export class UserService {
     return userModelPromise;
   }
 
+  async validateUserExistsById(userId: string): Promise<boolean> {
+    const user = await UserDA.GetUser(userId);
+    return user.isPresent();
+  }
+
+  async getUserModelForId(userId: string): AsyncOptional<UserModel> {
+    return await UserDA.GetUser(userId);
+  }
   async hydrateUserWithPrivilege() {
     const user = await UserDA.GetUserWithPrivilege(this.requestUser.id);
     if (user.isPresent()) {

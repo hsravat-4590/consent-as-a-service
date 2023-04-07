@@ -21,30 +21,18 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { container } from "tsyringe";
-import { PrismaClientService } from "../internal/services/prisma-client.service";
-import {
-  OrgDaInternal,
-  UpdateOrgFieldsInternal,
-} from "../internal/prisma-da/org.da.internal";
+import { UpdateOrgFieldsInternal } from "../internal/prisma-da/org.da.internal";
 import {
   AsyncOptional,
   Optional,
   OrgModel,
   UserModel,
 } from "@consent-as-a-service/domain";
-import { UserDaInternal } from "../internal/prisma-da/user.da.internal";
 import { mapOrgToModel } from "../internal/mappers/org.mapper";
 import { mapUserToModel } from "../internal/mappers/user.mapper";
+import getServices from "../internal/services/get-services";
 
 export namespace OrgDa {
-  function getServices() {
-    const prismaClientService = container.resolve(PrismaClientService);
-    const userDa = container.resolve(UserDaInternal);
-    const orgDa = container.resolve(OrgDaInternal);
-    return { prismaClientService, userDa, orgDa };
-  }
-
   export const CreateOrg = async (
     rootUser: UserModel,
     options: NonNullable<OrgCreateOptions>
@@ -72,6 +60,19 @@ export namespace OrgDa {
     const { orgDa } = getServices();
     const org = await orgDa.readOrg(orgId);
     return org.map((it) => mapOrgToModel(it));
+  };
+
+  export const GetOrgByRequester = async (
+    requesterId: string
+  ): AsyncOptional<OrgModel> => {
+    const { consentRequesterDa } = getServices();
+    const optional = await consentRequesterDa.getRequesterWithOrg(requesterId);
+    if (optional.isPresent()) {
+      const requester = optional.get();
+      return Optional.of(mapOrgToModel(requester.user.org));
+    } else {
+      return Optional.empty();
+    }
   };
 
   export const UpdateOrgDetails = async (

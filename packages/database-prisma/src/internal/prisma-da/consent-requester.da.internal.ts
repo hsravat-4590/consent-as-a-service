@@ -20,62 +20,37 @@
  * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-
 import { singleton } from "tsyringe";
 import { PrismaDa } from "./prisma.da";
 import { PrismaClientService } from "../services/prisma-client.service";
-import { Requester } from "@prisma/client";
 import { AsyncOptional, Optional } from "@consent-as-a-service/domain";
-import { UserDA } from "../../transactions";
-import { RequesterDA } from "../../transactions/requester.da";
-import UpdatableRequesterOptions = RequesterDA.UpdatableRequesterOptions;
-import CreateRequesterOptions = UserDA.CreateRequesterOptions;
+import { ConsentRequester, Org, User } from "@prisma/client";
 
 @singleton()
-export class RequesterDaInternal extends PrismaDa {
+export class ConsentRequesterDaInternal extends PrismaDa {
   constructor(prismaClientService: PrismaClientService) {
     super(prismaClientService);
   }
 
-  async elevateUserToRequester(
-    options: CreateRequesterOptions
-  ): Promise<Requester> {
-    return await this.prismaClient.requester.create({
-      data: {
-        displayname: options.displayName,
-        banner: options.banner,
-        logo: options.logo,
+  async getRequesterWithOrg(
+    requesterId: string
+  ): AsyncOptional<ConsentRequesterWithDetails> {
+    const a = await this.prismaClient.consentRequester.findFirst({
+      where: {
+        id: requesterId,
       },
-    });
-  }
-
-  async readRequesterData(requesterId: string): AsyncOptional<Requester> {
-    return Optional.ofNullable(
-      await this.prismaClient.requester.findFirst({
-        where: {
-          id: requesterId,
+      include: {
+        user: {
+          include: {
+            org: true,
+          },
         },
-      })
-    );
-  }
-
-  async updateRequesterDetail(
-    id: string,
-    options: UpdatableRequesterOptions
-  ): Promise<Requester> {
-    return await this.prismaClient.requester.update({
-      where: {
-        id: id,
-      },
-      data: options,
-    });
-  }
-
-  async deleteRequester(id: string): Promise<Requester> {
-    return await this.prismaClient.requester.delete({
-      where: {
-        id: id,
       },
     });
+    return Optional.ofNullable(a);
   }
 }
+
+export type ConsentRequesterWithDetails = ConsentRequester & {
+  user: User & { org: Org };
+};

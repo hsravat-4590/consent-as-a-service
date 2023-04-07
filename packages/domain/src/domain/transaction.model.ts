@@ -26,7 +26,6 @@ import { Optional } from "../util";
 
 export interface TransactionModel {
   txnId: NonNullable<string>;
-  chainId: NonNullable<string>;
   txnStatus: TxnStatus;
   dateTime: LocalDateTime;
   parent: Optional<string>;

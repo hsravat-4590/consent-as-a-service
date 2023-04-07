@@ -21,14 +21,13 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { Requester } from "@prisma/client";
-import { RequesterModel } from "@consent-as-a-service/domain";
+export const atob = (str) => new Buffer(str, "base64").toString("binary");
+export const btoa = (str) => new Buffer(str, "binary").toString("base64");
 
-export const mapRequesterToModel = (requester: Requester): RequesterModel => {
-  return {
-    id: requester.id,
-    displayName: requester.displayname,
-    banner: requester.banner,
-    logo: requester.logo,
-  } as RequesterModel;
+export const urlOfNullable = (str?: string) => {
+  if (str) {
+    return new URL(str);
+  } else {
+    return null;
+  }
 };

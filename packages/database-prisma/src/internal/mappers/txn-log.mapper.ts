@@ -27,8 +27,7 @@ import { Optional, TransactionModel } from "@consent-as-a-service/domain";
 
 export const mapTxnLogToModel = (record: TxnLog): TransactionModel => {
   return {
-    txnId: record.txnId,
-    chainId: record.chainId,
+    txnId: record.chainId,
     // @ts-ignore
     txnStatus: record.TxnStatus.toString(),
     dateTime: nativeJs(record.datetime).toLocalDateTime(),

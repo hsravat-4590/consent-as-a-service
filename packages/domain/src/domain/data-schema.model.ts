@@ -23,16 +23,16 @@
 
 import { Validate } from "../util";
 
-export interface DataEntry<T extends EntryTypes> {
-  title: string;
-  description: string;
-  type: T;
-}
-
 export interface DataSchema {
   id: string;
 
   entries: Array<DataEntry<any>>;
+}
+
+export interface DataEntry<T extends EntryTypes> {
+  title: string;
+  description: string;
+  type: "number" | "boolean" | "string" | "ShortString" | "bigint" | "Char";
 }
 
 export type EntryTypes =

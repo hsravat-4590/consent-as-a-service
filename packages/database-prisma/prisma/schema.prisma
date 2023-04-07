@@ -9,72 +9,95 @@ datasource db {
 }
 
 model Consent {
-  consentId     String                @id @unique @default(uuid())
-  txnId         String
-  userid        String?
-  orgid         String                @db.VarChar(255)
-  expiry        DateTime?              @db.DateTime(0)
-  consentRequestId String
-  consentDataId String?
+  consentId      String           @id @default(uuid())
+  txn            TxnLog           @relation(fields: [txnId], references: [txnId])
+  txnId          String           @unique
+  user           User?            @relation(fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  userId         String?          @db.VarChar(255)
+  expiry         DateTime?        @db.DateTime(0)
+  consentRequest ConsentRequest   @relation(fields: [requestId], references: [consentRequestId])
+  requestId      String
+  requester      ConsentRequester @relation(fields: [requesterId], references: [id])
+  requesterId    String
+  consentData    ConsentData?     @relation(fields: [consentDataId], references: [id])
+  consentDataId  String?          @unique
 }
 
 model ConsentData {
-  id          Int       @id
-  dataTypeRef Int?
-  dataRef     String?   @db.VarChar(255)
-  hash        String?   @db.VarChar(255)
-  sizeBytes   Int?
-  name        String?   @db.VarChar(255)
-  dateCreated DateTime? @db.DateTime(0)
+  id          String   @id @default(uuid())
+  data        Bytes
+  hash        String?  @db.VarChar(255)
+  dateCreated DateTime @default(now()) @db.DateTime(0)
+  consent     Consent?
 }
 
-model ConsentData_DataType {
-  ConsentData_dataTypeRef Int
-  DataType_id             Int
-
-  @@id([ConsentData_dataTypeRef, DataType_id])
-}
-
-model ConsentRequests {
-  txnId       String  @unique @db.VarChar(255)
-  consentRequestId   String  @id @unique @default(uuid())
-  title       String @db.VarChar(255)
-  description String @db.VarChar(255)
-  dataId      String @db.VarChar(255)
-  callbackUrl String @db.VarChar(255)
+model ConsentRequest {
+  consentRequestId String          @id @default(uuid())
+  txn              TxnLog          @relation(fields: [txnId], references: [txnId], onDelete: NoAction, onUpdate: NoAction)
+  txnId            String          @unique
+  creator          ConsentCreator? @relation(fields: [ownerId], references: [id])
+  ownerId          String?
+  title            String          @db.VarChar(255)
+  description      String          @db.VarChar(255)
+  dataType         DataType        @relation(fields: [dataId], references: [typeId])
+  dataId           String
+  callbackUrl      String          @db.VarChar(255)
+  consents         Consent[]
 }
 
 model DataType {
-  id     Int     @id @default(autoincrement())
-  typeId String  @default(uuid())
-  schema String @db.VarChar(255)
-}
-
-model Requester {
-  id          String  @unique @id @default(uuid())
-  user        User?
-  displayname String @db.VarChar(255)
-  banner      String? @db.VarChar(255)
-  logo      String? @db.VarChar(255)
+  typeId          String           @id @default(uuid())
+  schema          String           @db.VarChar(255)
+  consentRequests ConsentRequest[]
 }
 
 model TxnLog {
-  txnId     String           @id @unique @default(uuid())
-  chainId   String           @default(uuid())
-  TxnStatus TxnLog_TxnStatus
-  datetime  DateTime         @db.DateTime(0) @default(now())
-  parent    String?          @db.VarChar(255)
+  txnId          String           @id @default(uuid())
+  chainId        String           @default(uuid())
+  TxnStatus      TxnLog_TxnStatus
+  datetime       DateTime         @default(now()) @db.DateTime(0)
+  parent         String?          @unique
+  parentTxn      TxnLog?          @relation("TransactionHistory", fields: [parent], references: [txnId], onDelete: NoAction, onUpdate: NoAction)
+  childTxn       TxnLog?          @relation("TransactionHistory")
+  consent        Consent?
+  consentRequest ConsentRequest?
 }
 
 model User {
- id     String @id @db.VarChar(255)
- firstname String? @db.VarChar(255)
- lastname String? @db.VarChar(255)
- nickname String @db.VarChar(255)
- email String @db.VarChar(255)
- emailVerified Boolean
- requester Requester? @relation(fields: [requesterId], references: [id])
- requesterId String? @unique
+  id               String            @id @db.VarChar(255)
+  firstname        String?           @db.VarChar(255)
+  lastname         String?           @db.VarChar(255)
+  nickname         String            @db.VarChar(255)
+  email            String            @db.VarChar(255)
+  emailVerified    Boolean
+  consents         Consent[]
+  org              Org?              @relation(fields: [orgId], references: [id])
+  orgId            String?
+  consentRequester ConsentRequester?
+  consentCreator   ConsentCreator?
+}
+
+model ConsentCreator {
+  id              String           @id @default(uuid())
+  user            User             @relation(fields: [userId], references: [id])
+  userId          String           @unique
+  consentRequests ConsentRequest[]
+}
+
+model ConsentRequester {
+  id       String    @id @default(uuid())
+  user     User      @relation(fields: [userId], references: [id])
+  userId   String    @unique
+  consents Consent[]
+}
+
+model Org {
+  id          String  @id @default(uuid())
+  email       String  @unique
+  displayname String  @db.VarChar(255)
+  banner      String? @db.VarChar(255)
+  logo        String? @db.VarChar(255)
+  users       User[]
 }
 
 enum TxnLog_TxnStatus {

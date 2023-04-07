@@ -25,3 +25,4 @@ export * from "./domain";
 export * from "./network";
 export * from "./util";
 export * from "./network";
+export * from "./errors";

@@ -21,10 +21,34 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { EmailModel } from './email.model';
+import { EmailModel } from "./email.model";
 
 export interface OrgModel {
   orgId: NonNullable<string>;
   email: EmailModel;
   displayName: string; //TODO extract into Domain Primitive to ensure size restrictions apply
+  /**
+   * Url to Banner Resource
+   */
+  banner?: URL;
+  /**
+   * URL to logo resource
+   */
+  logo?: URL;
+}
+
+export namespace OrgModel {
+  export const create = (
+    orgId: NonNullable<string>,
+    email: string,
+    displayName: string,
+    banner: string,
+    logo: string
+  ): OrgModel => ({
+    orgId: orgId,
+    email: new EmailModel(email),
+    displayName: displayName,
+    banner: new URL(banner),
+    logo: new URL(logo),
+  });
 }

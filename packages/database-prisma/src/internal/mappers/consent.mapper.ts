@@ -21,19 +21,27 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { Consent, TxnLog } from "@prisma/client";
-import { mapTxnLogToModel } from "./txn-log.mapper";
-import { ConsentModel } from "@consent-as-a-service/domain";
+import { Consent, User } from "@prisma/client";
+import { ConsentModel, mapNullable } from "@consent-as-a-service/domain";
 import { convertDateToLocalDateTime } from "./util-type.mapper";
+import { mapUserToModel } from "./user.mapper";
+import {
+  ConsentRequestMapperOptions,
+  mapConsentRequest,
+} from "./consent-request.mapper";
 
-export const mapConsentToModel = (consent: Consent, txnLog: TxnLog) => {
-  const txnModel = mapTxnLogToModel(txnLog);
+export const mapConsentToModel = (options: {
+  consent: Consent;
+  consentRequest: ConsentRequestMapperOptions;
+  requester: string;
+  user?: User;
+}) => {
   return {
-    id: consent.consentId,
-    consentRequestId: consent.consentRequestId,
-    //TODO UserDeepMapping
-    //TODO OrgDeepMapping
-    expiry: convertDateToLocalDateTime(consent.expiry),
-    transaction: txnModel,
+    id: options.consent.consentId,
+    expiry: convertDateToLocalDateTime(options.consent.expiry),
+    consentRequest: mapConsentRequest(options.consentRequest).id,
+    user: mapNullable(mapUserToModel, options.user),
+    requester: options.requester,
+    transaction: options.consent.txnId,
   } as ConsentModel;
 };

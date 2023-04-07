@@ -21,29 +21,76 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { EmailModel, UserModel } from "@consent-as-a-service/domain";
-import { User } from "@prisma/client";
+import {
+  ConsentCreatorModel,
+  ConsentModel,
+  ConsentRequesterModel,
+  EmailModel,
+  UserModel,
+} from "@consent-as-a-service/domain";
+import { ConsentCreator, ConsentRequester, User } from "@prisma/client";
+import { NameModel } from "@consent-as-a-service/domain/dist/domain/name.model";
+import { PrivilegeUser } from "../prisma-da/user.da.internal";
 
 export const mapUserModelToORM = (user: UserModel): User => {
   return {
     id: user.id,
-    firstname: user.firstName,
-    lastname: user.lastName,
+    firstname: user.firstName.name,
+    lastname: user.lastName.name,
     nickname: user.nickname,
-    requesterId: user.requesterId,
     email: user.email.email,
     emailVerified: user.emailVerified,
+    orgId: user.orgId,
   };
 };
 
 export const mapUserToModel = (user: User): UserModel => {
   return {
     id: user.id,
-    firstname: user.firstname,
-    lastname: user.lastname,
+    firstname: new NameModel(user.firstname),
+    lastname: new NameModel(user.lastname),
     nickname: user.nickname,
-    requesterId: user.requesterId,
     email: new EmailModel(user.email),
     emailVerified: user.emailVerified,
   } as UserModel;
+};
+
+export const mapUserToModelWithPrivilege = (user: PrivilegeUser) => {
+  return {
+    id: user.id,
+    firstname: new NameModel(user.firstname),
+    lastname: new NameModel(user.lastname),
+    nickname: user.nickname,
+    email: new EmailModel(user.email),
+    emailVerified: user.emailVerified,
+    orgId: !!user.org ? user.org.id : null,
+    consentRequester: !!user.consentRequester
+      ? {
+          id: user.consentRequester.id,
+          consents: [],
+        }
+      : null,
+    consentCreator: !!user.consentCreator
+      ? {
+          id: user.consentCreator.id,
+          consents: [],
+        }
+      : null,
+  } as UserModel;
+};
+
+export const mapConsentRequesterToModel = (
+  consentRequester: ConsentRequester,
+  consentModels?: ConsentModel[]
+) => {
+  return {
+    id: consentRequester.id,
+    consents: !!consentModels ? consentModels : null,
+  } as ConsentRequesterModel;
+};
+
+export const mapConsentCreatorToModel = (consentCreator: ConsentCreator) => {
+  return {
+    id: consentCreator.id,
+  } as ConsentCreatorModel;
 };

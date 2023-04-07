@@ -21,24 +21,52 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { UserModel } from "./user.model";
+import { Validate } from "../util";
+import ValidationException = Validate.ValidationException;
 
-export interface RequesterModel {
-  id: NonNullable<string>;
-  /**
-   * UserModel linked with Requester
-   */
-  user: UserModel;
-  /**
-   * DisplayName for Requester
-   */
-  displayName: NonNullable<string>;
-  /**
-   * Url to Banner Resource
-   */
-  banner?: string;
-  /**
-   * URL to logo resource
-   */
-  logo?: string;
+export abstract class DomainPrimitive<T> {
+  private _it: T;
+
+  protected get it() {
+    return this._it;
+  }
+
+  protected set it(newOne: T) {
+    this.checkAndSet(newOne);
+  }
+
+  protected constructor(t: T) {
+    this.checkAndSet(t);
+  }
+
+  private checkAndSet(newOne: T) {
+    Validate.ValidateState(() => this.validationPredicate(newOne), {
+      errorException: this.getValidationException(),
+    });
+    this._it = newOne;
+  }
+
+  protected abstract validationPredicate(it: T): boolean;
+
+  protected getValidationException(): Error {
+    return new ValidationException();
+  }
+}
+
+export abstract class StringPrimitive extends DomainPrimitive<
+  NonNullable<string>
+> {
+  protected constructor(primitive: NonNullable<string>) {
+    super(primitive);
+  }
+
+  protected validationPredicate(it: NonNullable<string>): boolean {
+    return this.getRegex().test(it);
+  }
+
+  abstract getRegex(): RegExp;
+
+  protected getValidationException(): Error {
+    return new ValidationException("Provided string does not match regex");
+  }
 }

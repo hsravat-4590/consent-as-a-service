@@ -24,6 +24,7 @@
 import { UserInfoModel } from '../models/auth0/userInfoModel';
 import { Injectable } from '@nestjs/common';
 import { EmailModel, UserModel } from '@consent-as-a-service/domain';
+import { NameModel } from '@consent-as-a-service/domain/dist/domain/name.model';
 
 @Injectable()
 export class UserMapper {
@@ -32,8 +33,8 @@ export class UserMapper {
       id: userInfo.sub,
       email: new EmailModel(userInfo.email),
       emailVerified: userInfo.email_verified,
-      firstName: userInfo.given_name,
-      lastName: userInfo.family_name,
+      firstName: new NameModel(userInfo.given_name),
+      lastName: new NameModel(userInfo.family_name),
       nickname: userInfo.nickname,
     } as UserModel;
   }

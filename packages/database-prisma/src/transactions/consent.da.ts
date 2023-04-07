@@ -21,85 +21,77 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { container } from "tsyringe";
-import { PrismaClientService } from "../internal/services/prisma-client.service";
-import { TransactionDaInternal } from "../internal/prisma-da/transaction.da.internal";
-import {
-  ConsentDaInternal,
-  CreateConsentOptions,
-  UpdateConsentOptions,
-} from "../internal/prisma-da/consent.da.internal";
-import { ConsentRequestDaInternal } from "../internal/prisma-da/consent-request.da.internal";
+import { CompleteConsent } from "../internal/prisma-da/consent.da.internal";
 import { mapConsentToModel } from "../internal/mappers/consent.mapper";
 import {
   ConsentModel,
+  ConsentRequesterModel,
   Optional,
   TransactionModel,
   TxnStatus,
   UserModel,
 } from "@consent-as-a-service/domain";
-import { TxnLog } from "@prisma/client";
+import { ConsentRequester, User } from "@prisma/client";
 import { mapTxnLogToModel } from "../internal/mappers/txn-log.mapper";
+import getServices from "../internal/services/get-services";
 
 export namespace ConsentDA {
-  async function getServices(connect: boolean = true) {
-    const prismaClientService = container.resolve(PrismaClientService);
-    const txnDa = container.resolve(TransactionDaInternal);
-    const internalDa = container.resolve(ConsentDaInternal);
-    const requestDa = container.resolve(ConsentRequestDaInternal);
-    if (connect) {
-      await prismaClientService.connect();
-    }
-    return { prismaClientService, txnDa, internalDa, requestDa };
-  }
-
   /**
    * Creates a pending consent which can then be completed by a user once they receive the consentId
    */
   export const CreatePendingConsent = async (
+    requester: ConsentRequesterModel,
     options: CreateConsentOptions
   ): Promise<ConsentModel> => {
-    const { txnDa, internalDa, requestDa } = await getServices();
+    const { txnDa, consentDa, consentRequestDa, userDa } = getServices();
+    const requesterFromDa: Optional<ConsentRequester> =
+      await userDa.readRequester(requester.id);
+    const requesterReal = requesterFromDa.orElseRunSync(() => {
+      throw new Error(
+        `Error: Cannot create a pending consent. Can't find Requester`
+      );
+    });
     // Validate against consent request
-    const consentRequest = await requestDa.readConsentRequest(
-      options.consentRequestId
+    const consentRequest = await consentRequestDa.readWholeConsentRequest(
+      options.consentRequest
     );
     if (!consentRequest.isPresent()) {
       throw new Error(
         "Error: Cannot create a pending consent without a valid ConsentRequest"
       );
     }
-    // Create a Txn for this consent
-    const txn = await txnDa.createTxn({
-      txnStatus: "CREATED",
-    });
+    let user: User = null;
+    if (options.user) {
+      user = await Optional.unwrapAsync(userDa.readUser(options.user.id));
+    }
+    options.requester = requesterReal.id;
+    options.consentRequest = consentRequest.get().consentRequestId;
     // Create record with provided options
-    const consent = await internalDa.createConsent(txn.txnId, options);
-    // Map (Requires Deep Map to Txn)
-
-    return mapConsentToModel(consent, txn);
-    // Return ConsentModel with completed values
+    const consent = await consentDa.createConsent(options);
+    return mapConsentToModel({
+      consent,
+      consentRequest: {
+        request: consentRequest.get(),
+        owner: consentRequest.get().ownerId,
+        schema: consentRequest.get().dataType,
+      },
+      requester: requesterReal.id,
+      user,
+    });
   };
 
   const getConsentAndValidate = async (
     consentId: string,
     validateVoided: boolean = true
-  ) => {
-    const { internalDa, txnDa } = await getServices(false);
-    const optional = await internalDa.readConsent({
-      id: consentId,
-    });
-    if (!optional.isPresent()) {
+  ): Promise<CompleteConsent> => {
+    const { consentDa } = getServices();
+    const mConsent = await consentDa.readConsentWithOptions(consentId, true);
+    if (!mConsent.isPresent()) {
       throw new Error("Error: Cannot update a non-existent consent");
     }
-    const consent = optional.get();
-    const txn: Optional<TxnLog> = await txnDa.readTxn(consent.txnId);
-    if (!txn.isPresent()) {
-      throw new Error(
-        "Error: Cannot update a consent with invalid transaction"
-      );
-    }
-    if (validateVoided && txn.get().TxnStatus === "VOIDED") {
+    const consent = mConsent.get();
+    const txn = consent.txn;
+    if (validateVoided && txn.TxnStatus === "VOIDED") {
       throw new Error(
         "Error: Cannot update a consent with invalid transaction"
       );
@@ -108,31 +100,46 @@ export namespace ConsentDA {
   };
 
   async function updateTxnConsentAndMapBack(
-    mConsent,
+    mConsent: CompleteConsent,
     txnStatus: TxnStatus,
-    updateConsentOptions: UpdateConsentOptions,
-    shouldDisconnect: boolean = true
+    updateConsentOptions: UpdateConsentOptions
   ): Promise<ConsentModel> {
-    const { txnDa, internalDa } = await getServices(false);
-    const updatedTxn = await txnDa.updateTxn(mConsent.txnId, {
+    const { txnDa, consentDa, userDa, consentRequestDa } = getServices();
+    const updatedTxn = await txnDa.updateTxn(mConsent.txn.chainId, {
       txnStatus: txnStatus,
     });
-    const updatedConsent = await internalDa.updateConsent(
-      mConsent.id,
+    const consent = await consentDa.updateConsent(
+      mConsent.consentId,
       updateConsentOptions
     );
-    if (shouldDisconnect) {
-    }
-    return mapConsentToModel(updatedConsent, updatedTxn);
+    // Get the user
+    const user = await Optional.unwrapAsync(userDa.readUser(consent.userId));
+    // Get the requester
+    const requester = await Optional.unwrapAsync(
+      userDa.readRequester(consent.requesterId)
+    );
+    // Get the request model
+    const consentRequest = await Optional.unwrapAsync(
+      consentRequestDa.readWholeConsentRequest(consent.requestId)
+    );
+    return mapConsentToModel({
+      consent,
+      consentRequest: {
+        request: consentRequest,
+        owner: consentRequest.ownerId,
+        schema: consentRequest.dataType,
+      },
+      requester: requester.id,
+      user,
+    });
   }
 
   export const AddUserToConsent = async (
     consentId: string,
     user: UserModel
   ): Promise<ConsentModel> => {
-    await getServices();
     const mConsent = await getConsentAndValidate(consentId);
-    if (mConsent.userid) {
+    if (mConsent.userId) {
       throw new Error("Error: Consent is already linked to a user");
     }
     return await updateTxnConsentAndMapBack(mConsent, "IN_PROGRESS", {
@@ -157,12 +164,11 @@ export namespace ConsentDA {
   export const RevokeConsent = async (
     consentId: string
   ): Promise<TransactionModel> => {
-    const { txnDa, prismaClientService } = await getServices();
+    const { txnDa } = getServices();
     const mConsent = await getConsentAndValidate(consentId);
     const voidedTxn = await txnDa.updateTxn(mConsent.txnId, {
       txnStatus: "VOIDED",
     });
-
     return mapTxnLogToModel(voidedTxn);
   };
 
@@ -175,18 +181,47 @@ export namespace ConsentDA {
     consentId: string,
     allowVoided: boolean = false
   ): Promise<ConsentModel> => {
-    const { txnDa } = await getServices();
+    const { consentRequestDa, userDa } = getServices();
     const consent = await getConsentAndValidate(consentId, !allowVoided);
-    const txn = await txnDa.readTxn(consent.txnId);
-    return mapConsentToModel(consent, txn.get());
+    const consentRequest = await Optional.unwrapAsync(
+      consentRequestDa.readWholeConsentRequest(consent.requestId, false)
+    );
+    const requester = await Optional.unwrapAsync(
+      userDa.readConsentRequesterProp(consent.requesterId)
+    );
+    let user: User = null;
+    if (consent.userId) {
+      user = await Optional.unwrapAsync(userDa.readUser(consent.userId));
+    }
+    return mapConsentToModel({
+      consent,
+      consentRequest: {
+        request: consentRequest,
+        owner: consentRequest.ownerId,
+        schema: consentRequest.dataType,
+      },
+      requester: requester.id,
+      user,
+    });
   };
 
   export type AcceptConsentWithDataOptions = Pick<
     ConsentModel,
-    "consentDataId" | "id" | "user" | "org" | "expiry" | "consentData" // ConsentData isn't handled here but still checked for state validity
+    "id" | "user" | "expiry" | "consentData" // ConsentData isn't handled here but still checked for state validity
   >;
   export type AcceptConsentOptions = Pick<
     ConsentModel,
-    "id" | "user" | "org" | "expiry" // ConsentData isn't handled here but still checked for state validity
+    "id" | "user" | "expiry" // ConsentData isn't handled here but still checked for state validity
+  >;
+  export type UpdateConsentOptions = Partial<
+    Pick<ConsentModel, "expiry" | "user" | "consentData">
+  >;
+
+  export type CreateConsentOptions = Omit<ConsentModel, "transaction">;
+
+  export type ReadConsentOptions = Pick<ConsentModel, "id">;
+
+  export type ReadAllConsentOptions = Partial<
+    Pick<ConsentModel, "id" | "consentRequest">
   >;
 }

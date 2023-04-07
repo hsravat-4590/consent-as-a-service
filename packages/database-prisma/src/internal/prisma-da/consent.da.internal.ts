@@ -22,15 +22,25 @@
  */
 
 import { singleton } from "tsyringe";
-import { Consent, Prisma } from "@prisma/client";
-import { PrismaClientService } from "../services/prisma-client.service";
 import {
-  AsyncOptional,
-  ConsentModel,
-  Optional,
-} from "@consent-as-a-service/domain";
+  Consent,
+  ConsentData,
+  ConsentRequest,
+  ConsentRequester,
+  Prisma,
+  TxnLog,
+  TxnLog_TxnStatus,
+  User,
+} from "@prisma/client";
+import { PrismaClientService } from "../services/prisma-client.service";
+import { AsyncOptional, Optional } from "@consent-as-a-service/domain";
 import { convertLocalDateTimeToDate } from "../mappers/util-type.mapper";
 import { PrismaDa } from "./prisma.da";
+import { ConsentDA } from "../../transactions";
+import CreateConsentOptions = ConsentDA.CreateConsentOptions;
+import ReadConsentOptions = ConsentDA.ReadConsentOptions;
+import ReadAllConsentOptions = ConsentDA.ReadAllConsentOptions;
+import UpdateConsentOptions = ConsentDA.UpdateConsentOptions;
 
 @singleton()
 export class ConsentDaInternal extends PrismaDa {
@@ -38,15 +48,35 @@ export class ConsentDaInternal extends PrismaDa {
     super(prismaClientService);
   }
 
-  async createConsent(
-    txnId: string,
-    options: CreateConsentOptions
-  ): Promise<Consent> {
+  async createConsent(options: CreateConsentOptions): Promise<Consent> {
+    console.log(`Running with Options: ${JSON.stringify(options)}`);
+    let userArgs: Prisma.UserCreateNestedOneWithoutConsentsInput;
+    if (options.user) {
+      userArgs = {
+        connect: {
+          id: options.user.id,
+        },
+      };
+    }
     return await this.prismaClient.consent.create({
       data: {
-        txnId: txnId,
-        consentRequestId: options.consentRequestId,
-        orgid: options.org.orgId,
+        txn: {
+          create: {
+            TxnStatus: TxnLog_TxnStatus.CREATED,
+          },
+        },
+        requester: {
+          connect: {
+            id: options.requester,
+          },
+        },
+        user: userArgs,
+        consentRequest: {
+          connect: {
+            consentRequestId: options.consentRequest,
+          },
+        },
+        expiry: convertLocalDateTimeToDate(options.expiry),
       },
     });
   }
@@ -61,11 +91,42 @@ export class ConsentDaInternal extends PrismaDa {
     );
   }
 
+  /**
+   * Reads a consent and includes txn, user, consentRequest, requester & consentData
+   */
+  async readConsentWithOptions(
+    consentId: string,
+    includeData: boolean = false
+  ): AsyncOptional<CompleteConsent> {
+    const consent = await this.prismaClient.consent.findFirst({
+      where: {
+        consentId: consentId,
+      },
+      include: {
+        txn: true,
+        user: true,
+        consentRequest: {
+          include: {
+            creator: true,
+            dataType: true,
+            consents: false,
+            txn: false,
+          },
+        },
+        requester: true,
+        consentData: includeData,
+      },
+    });
+    return Optional.ofNullable(consent);
+  }
+
   async readConsentsMatching(
     options: ReadAllConsentOptions
   ): Promise<Array<Consent>> {
     const readQuery: Prisma.ConsentWhereInput = {
-      consentRequestId: options.consentRequestId,
+      consentRequest: {
+        consentRequestId: options.consentRequest,
+      },
       consentId: options.id,
     };
     return await this.prismaClient.consent.findMany({
@@ -89,9 +150,23 @@ export class ConsentDaInternal extends PrismaDa {
         updateData[key] = value;
       }
     };
-    insertData("userid", options.user.id);
-    insertData("expiry", convertLocalDateTimeToDate(options.expiry));
-    insertData("consentDataId", options.consentDataId);
+    if (options.user) {
+      insertData("user", {
+        connect: {
+          id: options.user.id,
+        },
+      });
+    }
+    if (options.expiry) {
+      insertData("expiry", convertLocalDateTimeToDate(options.expiry));
+    }
+    if (options.consentData) {
+      insertData("consentData", {
+        connect: {
+          id: options.consentData.id,
+        },
+      });
+    }
     return await this.prismaClient.consent.update({
       where: {
         consentId: id,
@@ -101,17 +176,10 @@ export class ConsentDaInternal extends PrismaDa {
   }
 }
 
-export type UpdateConsentOptions = Partial<
-  Pick<ConsentModel, "expiry" | "user" | "consentDataId">
->;
-
-export type CreateConsentOptions = Pick<
-  ConsentModel,
-  "expiry" | "consentRequestId" | "org"
->;
-
-export type ReadConsentOptions = Pick<ConsentModel, "id">;
-
-export type ReadAllConsentOptions = Partial<
-  Pick<ConsentModel, "id" | "consentRequestId">
->;
+export type CompleteConsent = Consent & {
+  user: User;
+  consentRequest: ConsentRequest;
+  requester: ConsentRequester;
+  consentData: ConsentData;
+  txn: TxnLog;
+};

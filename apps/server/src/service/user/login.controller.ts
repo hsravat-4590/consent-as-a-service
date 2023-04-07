@@ -21,18 +21,17 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { Controller, Get, UseGuards } from '@nestjs/common';
+import { Controller, Get } from '@nestjs/common';
 import { UserService } from '../../core/services/user.service';
-import { Auth0Guard } from '../../core/auth/auth0.guard';
+import { RequireAuth } from '../../core/auth/require-auth.decorator';
 
 @Controller('user/login')
 export class LoginController {
   constructor(private userService: UserService) {}
 
   @Get()
-  @UseGuards(Auth0Guard)
+  @RequireAuth()
   async login() {
-    const user = await this.userService.getUser();
-    return user;
+    return await this.userService.getUser();
   }
 }

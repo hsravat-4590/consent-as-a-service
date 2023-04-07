@@ -38,10 +38,28 @@ import { UserMapper } from './core/mappers/user.mapper';
 import { RolesGuard } from './core/authorisation/rbac/roles.guard';
 import { Auth0ClientService } from './core/services/auth0/auth0-client.service';
 import { Auth0RolesService } from './core/services/auth0/auth0-roles.service';
+import { ConsentRequestController } from './service/consent/consent-request.controller';
+import { DAManagementService } from './core/services/da-management.service';
+import { ConsentRequestService } from './core/services/consent-request.service';
+import { UserPermissionsController } from './service/user/user-permissions.controller';
+import { OrgService } from './core/services/org.service';
+import { RequestMetadataController } from './service/org/request-metadata.controller';
+import { NewConsentController } from './service/consent/new-consent.controller';
+import { ConsentClaimService } from './core/services/consent-claim.service';
+import { ConsentLifecycleService } from './core/services/consent-lifecycle.service';
+import { ConsentRequestUriService } from './core/services/ui/consent-request-uri.service';
 
 @Module({
   imports: [AuthModule, HttpModule, ConfigModule.forRoot()],
-  controllers: [TransactionController, HealthController, LoginController],
+  controllers: [
+    TransactionController,
+    HealthController,
+    LoginController,
+    ConsentRequestController,
+    UserPermissionsController,
+    RequestMetadataController,
+    NewConsentController,
+  ],
   providers: [
     HealthService,
     SessionManagementService,
@@ -53,6 +71,12 @@ import { Auth0RolesService } from './core/services/auth0/auth0-roles.service';
     RolesGuard,
     Auth0ClientService,
     Auth0RolesService,
+    DAManagementService,
+    ConsentRequestService,
+    OrgService,
+    ConsentClaimService,
+    ConsentLifecycleService,
+    ConsentRequestUriService,
   ],
 })
 export class AppModule {}

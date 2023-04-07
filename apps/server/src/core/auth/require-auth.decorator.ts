@@ -1,4 +1,3 @@
-"use strict";
 /*
  * Copyright (c) 2023 Hanzalah Ravat
  *
@@ -21,4 +20,8 @@
  * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-exports.__esModule = true;
+
+import { applyDecorators, UseGuards } from '@nestjs/common';
+import { Auth0Guard } from './auth0.guard';
+
+export const RequireAuth = () => applyDecorators(UseGuards(Auth0Guard));

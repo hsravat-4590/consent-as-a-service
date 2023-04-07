@@ -22,7 +22,7 @@
  */
 
 import { singleton } from "tsyringe";
-import { AsyncOptional, Optional } from "@consent-as-a-service/domain";
+import { AsyncOptional, btoa, Optional } from "@consent-as-a-service/domain";
 import { PrismaClientService } from "../services/prisma-client.service";
 import { DataType } from "@prisma/client";
 import { DataEntry } from "@consent-as-a-service/domain/dist";
@@ -39,7 +39,7 @@ export class ConsentDataSchemaDaInternal extends PrismaDa {
   ): Promise<DataType> {
     return await this.prismaClient.dataType.create({
       data: {
-        schema: JSON.stringify(entries),
+        schema: btoa(JSON.stringify(entries)),
       },
     });
   }

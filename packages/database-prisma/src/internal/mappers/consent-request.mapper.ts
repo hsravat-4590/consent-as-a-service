@@ -21,26 +21,51 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { ConsentRequests, DataType, TxnLog } from "@prisma/client";
-import { mapTxnLogToModel } from "./txn-log.mapper";
-import {
-  ConsentRequestModel,
-  TransactionModel,
-} from "@consent-as-a-service/domain";
+import { Consent, ConsentRequest, DataType } from "@prisma/client";
+import { ConsentRequestModel } from "@consent-as-a-service/domain";
 import { mapDataTypeToSchema } from "./schema.mapper";
+import { WholeConsentRequest } from "../prisma-da/consent-request.da.internal";
+import { mapConsentToModel } from "./consent.mapper";
 
-export const mapConsentRequestToModel = (
-  request: ConsentRequests,
-  txnLog: TxnLog,
-  schema: DataType
-): ConsentRequestModel => {
-  const model: TransactionModel = mapTxnLogToModel(txnLog);
-  return {
-    schema: mapDataTypeToSchema(schema),
-    id: request.consentRequestId,
-    txn: model,
-    title: request.title,
-    description: request.description,
-    callbackUrl: new URL(request.callbackUrl),
+export const mapConsentRequest = (opt: ConsentRequestMapperOptions) => {
+  const requestModel: ConsentRequestModel = {
+    callbackUrl: new URL(opt.request.callbackUrl),
+    description: opt.request.description,
+    ownerId: opt.owner,
+    title: opt.request.title,
+    id: opt.request.consentRequestId,
+    txn: opt.request.txnId,
   };
+  return requestModel;
+};
+
+export const mapWholeConsentRequest = (req: WholeConsentRequest) => {
+  const mdl: ConsentRequestModel = {
+    id: req.consentRequestId,
+    txn: req.txn.txnId,
+    ownerId: req.ownerId,
+    title: req.title,
+    description: req.description,
+    schema: mapDataTypeToSchema(req.dataType),
+    callbackUrl: new URL(req.callbackUrl),
+    consents: req.consents.map((it) =>
+      mapConsentToModel({
+        requester: it.requesterId,
+        user: undefined,
+        consent: it,
+        consentRequest: {
+          request: req,
+          owner: req.ownerId,
+          schema: req.dataType,
+        },
+      })
+    ),
+  };
+};
+
+export type ConsentRequestMapperOptions = {
+  request: ConsentRequest;
+  owner: string;
+  consents?: Array<Consent>;
+  schema: DataType;
 };

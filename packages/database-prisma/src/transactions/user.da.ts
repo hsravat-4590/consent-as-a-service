@@ -21,42 +21,29 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { container } from "tsyringe";
-import { PrismaClientService } from "../internal/services/prisma-client.service";
-import { TransactionDaInternal } from "../internal/prisma-da/transaction.da.internal";
-import {
-  UpdatableUserFieldsInternal,
-  UserDaInternal,
-} from "../internal/prisma-da/user.da.internal";
-import { RequesterDaInternal } from "../internal/prisma-da/requester.da.internal";
+import { UpdatableUserFieldsInternal } from "../internal/prisma-da/user.da.internal";
 import {
   AsyncOptional,
-  Optional,
+  OrgModel,
   UserModel,
   Validate,
 } from "@consent-as-a-service/domain";
-import { mapUserToModel } from "../internal/mappers/user.mapper";
-import { RequesterModel } from "@consent-as-a-service/domain/dist/domain/requester.model";
+import {
+  mapConsentCreatorToModel,
+  mapConsentRequesterToModel,
+  mapUserToModel,
+  mapUserToModelWithPrivilege,
+} from "../internal/mappers/user.mapper";
+import getServices from "../internal/services/get-services";
 import ValidateOptional = Validate.ValidateOptional;
 
 export namespace UserDA {
-  async function getServices(connect: boolean = true) {
-    const prismaClientService = container.resolve(PrismaClientService);
-    const txnDa = container.resolve(TransactionDaInternal);
-    const internalDa = container.resolve(UserDaInternal);
-    const requesterDa = container.resolve(RequesterDaInternal);
-    if (connect) {
-      await prismaClientService.connect();
-    }
-    return { prismaClientService, txnDa, internalDa, requesterDa };
-  }
-
   export const CreateUser = async (
     userModel: UserModel
   ): Promise<UserModel> => {
-    const { txnDa, internalDa } = await getServices();
+    const { txnDa, userDa } = getServices();
     // CHECK db for any existing users
-    const optionalUsr = await internalDa.readUser(userModel.id);
+    const optionalUsr = await userDa.readUser(userModel.id);
     ValidateOptional(
       optionalUsr,
       {
@@ -69,64 +56,72 @@ export namespace UserDA {
       txnStatus: "CREATED",
     });
     // Create the user
-    const createdUsr = await internalDa.createUser(userModel);
+    const createdUsr = await userDa.createUser(userModel);
 
     return mapUserToModel(createdUsr);
   };
 
-  export const ElevateUserToRequester = async (
+  export const ElevateUserPrivileges = async (
     userModel: UserModel,
-    createRequester: CreateRequesterOptions
+    options: {
+      consentCreator?: boolean;
+      consentRequester?: boolean;
+    }
   ): Promise<UserModel> => {
-    const { internalDa, requesterDa } = await getServices();
+    const { userDa } = getServices();
     // Check the user exists
-    const userOptional = await internalDa.readUser(userModel.id);
+    const userOptional = await userDa.readUser(userModel.id);
     ValidateOptional(userOptional, {
       errorMessage: "User doesn't exist in the database",
     });
     let user = userOptional.get();
-    const requester = await requesterDa.elevateUserToRequester(createRequester);
-    user = await internalDa.updateUserDetails(userModel.id, {
-      requesterId: requester.id,
-    });
-
+    const requester = await userDa.elevateUserPermissions(user, options);
+    const userMdl = mapUserToModel(user);
+    userMdl.consentRequester = mapConsentRequesterToModel(
+      requester.consentRequester
+    );
+    userMdl.consentCreator = mapConsentCreatorToModel(requester.consentCreator);
     return mapUserToModel(user);
   };
 
   export const GetUser = async (userId: string): AsyncOptional<UserModel> => {
-    const { prismaClientService, txnDa, internalDa, requesterDa } =
-      await getServices();
-    const userOptional = await internalDa.readUser(userId);
-    if (!userOptional.isPresent()) {
-      return Optional.empty();
-    }
-    return Optional.of(mapUserToModel(userOptional.get()));
+    const { userDa } = getServices();
+    const userOptional = await userDa.readUser(userId);
+    return userOptional.map((it) => mapUserToModel(it));
+  };
+
+  export const GetUserWithPrivilege = async (
+    userId: string
+  ): AsyncOptional<UserModel> => {
+    const { userDa } = getServices();
+    const wholeUser = await userDa.readUserPrivilegeInclusions(userId);
+    return wholeUser.map((it) => mapUserToModelWithPrivilege(it));
   };
 
   export const UpdateUserDetails = async (
     userId: string,
     options: UpdatableUserFields
   ): Promise<UserModel> => {
-    const { internalDa } = await getServices();
+    const { userDa } = await getServices();
     //TODO Update the Transaction
-    const userOptional = await internalDa.readUser(userId);
+    const userOptional = await userDa.readUser(userId);
     ValidateOptional(userOptional, {
       errorMessage: "User doesn't exist in the database",
     });
-    return mapUserToModel(await internalDa.updateUserDetails(userId, options));
+    return mapUserToModel(await userDa.updateUserDetails(userId, options));
   };
 
   export const DeleteUser = async (user: UserModel) => {
     // TODO Update Transaction
-    const { internalDa } = await getServices();
-    const userOptional = await internalDa.readUser(user.id);
+    const { userDa } = getServices();
+    const userOptional = await userDa.readUser(user.id);
     ValidateOptional(userOptional, {
       errorMessage: "User doesn't exist in the database",
     });
-    await internalDa.deleteUser(user.id, user.email.email);
+    await userDa.deleteUser(user.id, user.email.email);
   };
 
-  export type CreateRequesterOptions = Omit<RequesterModel, "id">;
+  export type CreateRequesterOptions = Omit<OrgModel, "id">;
 
   export type UpdatableUserFields = Omit<
     UpdatableUserFieldsInternal,

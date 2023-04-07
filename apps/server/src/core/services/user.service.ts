@@ -21,14 +21,17 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { Inject, Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { REQUEST } from '@nestjs/core';
 import { Request } from 'express';
 import { HttpService } from '@nestjs/axios';
 import { ConfigService } from '@nestjs/config';
-import { UserModel } from '@consent-as-a-service/domain';
+import { AsyncOptional, UserModel } from '@consent-as-a-service/domain';
 import { UserMapper } from '../mappers/user.mapper';
 import { UserDA } from '@consent-as-a-service/database-prisma';
+import { Auth0Roles } from '../authorisation/rbac/auth0.roles';
+import { Auth0RolesService } from './auth0/auth0-roles.service';
+import { Role } from 'auth0';
 
 @Injectable()
 export class UserService {
@@ -41,6 +44,7 @@ export class UserService {
     private readonly httpService: HttpService,
     private readonly configService: ConfigService,
     private readonly userMapper: UserMapper,
+    private readonly auth0RolesService: Auth0RolesService,
   ) {
     this.AUTH0_ISSUER = configService.get('AUTH0_ISSUER_URL');
   }
@@ -52,6 +56,50 @@ export class UserService {
     const userModelPromise = await this.checkAndAddUserToDB(mUser);
     this.requestUser = userModelPromise;
     return userModelPromise;
+  }
+
+  async validateUserExistsById(userId: string): Promise<boolean> {
+    const user = await UserDA.GetUser(userId);
+    return user.isPresent();
+  }
+
+  async getUserModelForId(userId: string): AsyncOptional<UserModel> {
+    return await UserDA.GetUser(userId);
+  }
+  async hydrateUserWithPrivilege() {
+    const user = await UserDA.GetUserWithPrivilege(this.requestUser.id);
+    if (user.isPresent()) {
+      this.requestUser = user.get();
+    }
+    return user.get();
+  }
+
+  async getUserRoles(): Promise<Role[]> {
+    const mUser = await this.getUser();
+    return await this.auth0RolesService.getRolesForUser(mUser);
+  }
+
+  async upgradeUserRoles(roles: Auth0Roles[]): Promise<UserModel> {
+    // Update roles @ Auth0
+    let mUser = await this.hydrateUserWithPrivilege();
+    if (!mUser.emailVerified) {
+      throw new HttpException(
+        'Email needs verification',
+        HttpStatus.PRECONDITION_REQUIRED,
+      );
+    }
+    await this.auth0RolesService.updateUserRoles(mUser, roles);
+    //Add user to requester
+    const updates: { consentCreator?: boolean; consentRequester?: boolean } =
+      {};
+    if (roles.includes(Auth0Roles.REQUEST_CONSENTS)) {
+      updates.consentRequester = true;
+    }
+    if (roles.includes(Auth0Roles.CREATE_CONSENTS)) {
+      updates.consentCreator = true;
+    }
+    mUser = await UserDA.ElevateUserPrivileges(mUser, updates);
+    return mUser;
   }
 
   private getUserFromAuth0(): Promise<UserModel> {

@@ -21,7 +21,16 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-export * from "./optional";
-export * from "./validate";
-export * from "./encoders";
-export * from "./null-safety";
+export const mapNullable = <Old, New>(
+  mapperFunction: MapperFunction<Old, New>,
+  old?: Old
+): Nullable<New> => {
+  if (old) {
+    return mapperFunction(old);
+  } else {
+    return null;
+  }
+};
+
+export type MapperFunction<Old, New> = (oldType: Old) => New;
+export type Nullable<T> = T | null | undefined;

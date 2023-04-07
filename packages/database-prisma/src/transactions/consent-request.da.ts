@@ -74,6 +74,7 @@ export namespace ConsentRequestDA {
   /**
    * Reads out the txn with a deep link to a TxnModel
    * @param consentRequestId
+   * @param withConsents NOT Yet implemented. withConsents provides functionality to link in Consents with the ConsentRequest
    * @constructor
    */
   export const ReadConsentRequest = async (

@@ -95,16 +95,16 @@ export class ConsentLifecycleService {
       if (owner === 1)
         await this.consentClaimService.userClaimConsent(consentId);
       const consentModel = await ConsentDA.ReadConsent(consentId);
-      const orgModel = this.orgService.getOrgForRequester(
-        consentModel.requester,
+      const orgModel = await Optional.unwrapAsync(
+        this.orgService.getOrgForRequester(consentModel.requester),
       );
-      const consentDataSchema = await ConsentRequestDA.ReadConsentRequest(
-        consentModel.consentRequest,
+      const consentDataSchema = await Optional.unwrapAsync(
+        ConsentRequestDA.ReadConsentRequest(consentModel.consentRequest),
       );
-      console.log(consentDataSchema.isPresent());
       return {
         consentModel: consentModel,
         orgModel: orgModel,
+        request: consentDataSchema,
       };
     } else {
       throw new HttpException(

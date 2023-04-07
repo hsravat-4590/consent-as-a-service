@@ -35,6 +35,7 @@ export const mapConsentRequest = (opt: ConsentRequestMapperOptions) => {
     title: opt.request.title,
     id: opt.request.consentRequestId,
     txn: opt.request.txnId,
+    schema: mapDataTypeToSchema(opt.schema),
   };
   return requestModel;
 };

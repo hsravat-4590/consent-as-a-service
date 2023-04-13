@@ -43,7 +43,7 @@ export namespace ConsentDA {
     requester: ConsentRequesterModel,
     options: CreateConsentOptions
   ): Promise<ConsentModel> => {
-    const { txnDa, consentDa, consentRequestDa, userDa } = getServices();
+    const { consentDa, consentRequestDa, userDa } = getServices();
     const requesterFromDa: Optional<ConsentRequester> =
       await userDa.readRequester(requester.id);
     const requesterReal = requesterFromDa.orElseRunSync(() => {

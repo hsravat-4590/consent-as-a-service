@@ -21,27 +21,14 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { LocalDateTime } from '@js-joda/core';
-import { DataSchema } from '@consent-as-a-service/domain';
+import { MapperFunction } from "./null-safety";
 
-export interface UserConsentReadNetworkResponse {
-  id: string;
-  expiry: LocalDateTime;
-  consentRequestId: string;
-  userId?: string;
-  requester: {
-    displayName: string;
-    banner?: string;
-    logo?: string;
+export namespace Array {
+  export const mapAndPush = <Old, New>(
+    mapperFunc: MapperFunction<Old, New>,
+    value: Old,
+    array: Array<New>
+  ) => {
+    return array.push(mapperFunc(value));
   };
-  ui: {
-    title: string;
-    description: string;
-  };
-  dataSchema: DataSchema;
-}
-
-export interface UserConsentSubmitRequest {
-  expiry?: LocalDateTime;
-  consentResponses: any;
 }

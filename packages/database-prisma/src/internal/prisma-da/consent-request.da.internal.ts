@@ -102,6 +102,8 @@ export class ConsentRequestDaInternal extends PrismaDa {
             select: {
               typeId: true,
               schema: true,
+              uiSchema: true,
+              data: true,
             },
           },
           consents: withConsents,
@@ -115,5 +117,5 @@ export type WholeConsentRequest = ConsentRequest & {
   consents: Consent[];
   txn: TxnLog;
   creator: ConsentCreator;
-  dataType: { typeId: string; schema: string };
+  dataType: { typeId: string; schema: any; uiSchema: any; data: any };
 };

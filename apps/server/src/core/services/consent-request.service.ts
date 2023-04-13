@@ -28,8 +28,8 @@ import {
   CreateConsentRequestNetworkRequest,
   GetConsentRequestNetworkRequest,
   GetConsentRequestNetworkResponse,
-} from '../models/consent-request.network.model';
-import { Validate } from '@consent-as-a-service/domain';
+  Validate,
+} from '@consent-as-a-service/domain';
 import CreateConsentRequestOptions = ConsentRequestDA.CreateConsentRequestOptions;
 
 /**
@@ -52,7 +52,7 @@ export class ConsentRequestService {
     } as CreateConsentRequestOptions;
     const mId = await ConsentRequestDA.CreateConsentRequestType(
       requestOptions,
-      creationOptions.entries,
+      creationOptions,
       mUser.consentCreator,
     );
     return mId.consentRequestId;

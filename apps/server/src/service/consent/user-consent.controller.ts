@@ -25,8 +25,11 @@ import { Controller, Get, Param } from '@nestjs/common';
 import { Auth0Roles } from '../../core/authorisation/rbac/auth0.roles';
 import { Roles } from '../../core/authorisation/rbac/roles.decorator';
 import { ConsentLifecycleService } from '../../core/services/consent-lifecycle.service';
-import { UserConsentReadNetworkResponse } from '../../core/models/consent.network.model';
-import { mapNullable, Nullable } from '@consent-as-a-service/domain';
+import {
+  mapNullable,
+  Nullable,
+  UserConsentReadNetworkResponse,
+} from '@consent-as-a-service/domain';
 
 @Controller('consent/user/v1')
 export class UserConsentController {

@@ -2,8 +2,10 @@
   "name": "@consent-as-a-service/database-prisma",
   "version": "1.0.0",
   "description": "",
+  "main": "./dist/index",
+  "types": "./dist/index",
   "scripts": {
-    "build": "prisma generate && tsc -p tsconfig.json"
+    "build": "prisma generate && tsc --build --force tsconfig.json"
   },
   "keywords": [],
   "author": "Hanzalah Ravat",

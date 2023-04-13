@@ -22,12 +22,26 @@
  */
 
 import { LocalDateTime } from "@js-joda/core";
-import { DataSchema } from "./data-schema.model";
+import { DataSchema } from "../domain";
 
-export interface ConsentDataModel {
-  id: NonNullable<string>;
-  data: any;
-  hash: string;
-  schema: DataSchema;
-  dateCreated: LocalDateTime;
+export interface UserConsentReadNetworkResponse {
+  id: string;
+  expiry: LocalDateTime;
+  consentRequestId: string;
+  userId?: string;
+  requester: {
+    displayName: string;
+    banner?: string;
+    logo?: string;
+  };
+  ui: {
+    title: string;
+    description: string;
+  };
+  dataSchema: DataSchema;
+}
+
+export interface UserConsentSubmitRequest {
+  expiry?: LocalDateTime;
+  consentResponses: any;
 }

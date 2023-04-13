@@ -64,12 +64,14 @@ export class ConsentLifecycleService {
     },
   ) {
     // Performs the validations to ensure that a valid consent request is held by the platform
-    await this.consentRequestService.getConsentRequest({
+    const consentRequest = await this.consentRequestService.getConsentRequest({
       id: consentRequestId,
     });
+    console.log(`ConsentRequest is ${JSON.stringify(consentRequest)}`);
     const newOptions = {
       user: null,
       expiry: options.expiry,
+      consentRequest: consentRequestId,
     } as CreateConsentOptions;
     if (options.user) {
       // Attach to a specific user

@@ -47,7 +47,9 @@ model ConsentRequest {
 
 model DataType {
   typeId          String           @id @default(uuid())
-  schema          String           @db.VarChar(255)
+  schema          String           @db.VarChar(4096)
+  uiSchema        String?          @db.VarChar(4096)
+  data            String?          @db.VarChar(4096)
   consentRequests ConsentRequest[]
 }
 

@@ -21,19 +21,22 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { OrgModel, UserModel } from '@consent-as-a-service/domain';
+import { ConsentRequestModel, DataEntry } from "../domain";
 
-export type ElevateUserToCRRolesRequest = Pick<
-  OrgModel,
-  'displayName' | 'banner' | 'logo'
+export type CreateConsentRequestNetworkRequest = Pick<
+  ConsentRequestModel,
+  "title" | "description" | "callbackUrl"
+> &
+  DataEntry;
+
+export type CreateConsentRequestNetworkResponse = Pick<
+  ConsentRequestModel,
+  "id"
 >;
 
-export type ElevateUserToCRRolesResponse = Pick<
-  UserModel,
-  'id' | 'consentCreator'
->;
+export type GetConsentRequestNetworkRequest = Pick<ConsentRequestModel, "id">;
 
-export type UpdateRequesterMetaRequest = Omit<
-  OrgModel,
-  'id' | 'displayName' | 'email'
+export type GetConsentRequestNetworkResponse = Omit<
+  ConsentRequestModel,
+  "id" | "txn" | "callbackUrl"
 >;

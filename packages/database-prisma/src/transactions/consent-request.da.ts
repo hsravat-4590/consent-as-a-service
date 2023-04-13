@@ -27,13 +27,13 @@ import {
   ConsentCreatorModel,
   ConsentRequestModel,
   DataEntry,
-  DataSchema,
   Optional,
 } from "@consent-as-a-service/domain";
 import { mapConsentRequest } from "../internal/mappers/consent-request.mapper";
 import getServices from "../internal/services/get-services";
 import NotImplementedError from "@consent-as-a-service/domain/dist/errors/not-implemented.error";
 import { WholeConsentRequest } from "../internal/prisma-da/consent-request.da.internal";
+import { mapDataTypeToSchema } from "../internal/mappers/schema.mapper";
 
 export namespace ConsentRequestDA {
   /**
@@ -44,16 +44,13 @@ export namespace ConsentRequestDA {
    */
   export const CreateConsentRequestType = async (
     options: CreateConsentRequestOptions,
-    dataSchema: Array<DataEntry<any>>,
+    dataSchema: DataEntry,
     requester: ConsentCreatorModel
   ): Promise<CreateConsentResultType> => {
     console.log("Creating a new Consent Request Type");
     const { consentRequestDa, consentDataSchemaDa } = getServices();
     const schemaEntry = await consentDataSchemaDa.createSchemaEntry(dataSchema);
-    const schema = {
-      id: schemaEntry.typeId,
-      entries: dataSchema,
-    } as DataSchema;
+    const schema = mapDataTypeToSchema(schemaEntry);
 
     const dbR: ConsentRequest & { txn: TxnLog } =
       await consentRequestDa.createConsentRequestType(

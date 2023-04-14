@@ -23,7 +23,15 @@
 
 import { DataSchema } from "@consent-as-a-service/domain";
 import Container from "@mui/material/Container";
-import { Alert, Card, Snackbar, SnackbarOrigin } from "@mui/material";
+import {
+  Alert,
+  Card,
+  Dialog,
+  DialogActions,
+  DialogTitle,
+  Snackbar,
+  SnackbarOrigin,
+} from "@mui/material";
 import Box from "@mui/material/Box";
 import { JsonForms } from "@jsonforms/react";
 import {
@@ -33,34 +41,38 @@ import {
 import { useState } from "react";
 import Button from "@mui/material/Button";
 
-interface State extends SnackbarOrigin {
-  open: boolean;
-}
 const ConsentRequestForm = (
   schema: DataSchema,
-  onSubmit: (submitData: any) => Promise<void> | void
+  onSubmit: (submitData: any) => Promise<void> | void,
+  onRejected: () => Promise<void> | void
 ) => {
   const [data, setData] = useState(schema.data);
   const [errors, setErrors] = useState<boolean>();
-  const [state, setState] = useState<State>({
-    open: false,
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarOrigin, setSnackbarOrigin] = useState<SnackbarOrigin>({
     vertical: "top",
     horizontal: "center",
   });
-  const { vertical, horizontal, open } = state;
-  const handleClose = (
+  const { vertical, horizontal } = snackbarOrigin;
+
+  const handleSnackbarClose = (
     event: React.SyntheticEvent | Event,
     reason?: string
   ) => {
     if (reason === "clickaway") {
       return;
     }
-
-    setState((prevState) => {
-      prevState.open = false;
-      return prevState;
-    });
+    setSnackbarOpen(false);
   };
+
+  const handleDialogClose = (
+    event: React.SyntheticEvent | Event,
+    reason?: string
+  ) => {
+    setDialogOpen(false);
+  };
+
   return (
     <Card
       variant="outlined"
@@ -90,13 +102,23 @@ const ConsentRequestForm = (
               m: 2.5,
             }}
             onClick={() => {
+              setDialogOpen(true);
+            }}
+          >
+            Reject
+          </Button>
+          <Button
+            variant="contained"
+            disableElevation
+            size="large"
+            sx={{
+              m: 2.5,
+            }}
+            onClick={() => {
               if (!errors) {
                 onSubmit(data);
               } else {
-                setState((prevState) => {
-                  prevState.open = true;
-                  return prevState;
-                });
+                setSnackbarOpen(true);
               }
             }}
           >
@@ -104,18 +126,40 @@ const ConsentRequestForm = (
           </Button>
           <Snackbar
             anchorOrigin={{ vertical, horizontal }}
-            open={open}
-            onClose={handleClose}
+            open={snackbarOpen}
+            onClose={handleSnackbarClose}
             key={vertical + horizontal}
           >
             <Alert
-              onClose={handleClose}
+              onClose={handleSnackbarClose}
               severity="error"
               sx={{ width: "100%" }}
             >
               Form Incomplete. Complete required fields before submitting
             </Alert>
           </Snackbar>
+          <Dialog
+            open={dialogOpen}
+            onClose={handleDialogClose}
+            aria-labelledby="alert-dialog-title"
+            aria-describedby="alert-dialog-description"
+          >
+            <DialogTitle id="alert-dialog-title">
+              {"Are you sure you want to reject this consent?"}
+            </DialogTitle>
+            <DialogActions>
+              <Button onClick={handleDialogClose}>No</Button>
+              <Button
+                onClick={(event) => {
+                  handleDialogClose(event);
+                  onRejected();
+                }}
+                autoFocus
+              >
+                Yes
+              </Button>
+            </DialogActions>
+          </Dialog>
         </Box>
       </Container>
     </Card>

@@ -22,7 +22,6 @@
  */
 
 import { LocalDateTime } from "@js-joda/core";
-import { DataSchema } from "./data-schema.model";
 import { empty, JsonEncoder, Optional } from "../util";
 
 export interface ConsentDataModel {
@@ -34,14 +33,14 @@ export interface ConsentDataModel {
 }
 
 export const ConsentDataModel = (
-  dataSchema: DataSchema,
+  dataSchemaId: string,
   data: any,
   id: Optional<string> = empty()
 ): Omit<ConsentDataModel, "id"> | ConsentDataModel => {
   const model: any = {
     data: data,
     hash: JsonEncoder.btoa(data),
-    schema: dataSchema.id,
+    schemaId: dataSchemaId,
     dateCreated: LocalDateTime.now(),
   };
   if (id.isPresent()) {

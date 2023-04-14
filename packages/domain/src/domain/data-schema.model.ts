@@ -21,6 +21,8 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+import { LocalDateTime } from "@js-joda/core";
+
 export interface DataSchema {
   id: string;
   /**
@@ -39,6 +41,8 @@ export interface DataSchema {
 
 export type DataEntry = Omit<DataSchema, "id">;
 
-export type DataSubmission = DataSchema & {
-  submitData: NonNullable<any>;
-};
+export interface DataSubmission {
+  expiry?: LocalDateTime;
+  consentRequestId: string;
+  submitData: any;
+}

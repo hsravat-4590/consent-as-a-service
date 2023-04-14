@@ -58,6 +58,16 @@ export class TransactionDaInternal extends PrismaDa {
     );
   }
 
+  async readTxnsWithId(txnId: NonNullable<string>): AsyncOptional<TxnLog> {
+    return Optional.ofNullable(
+      await this.prismaClient.txnLog.findFirst({
+        where: {
+          txnId: txnId,
+        },
+      })
+    );
+  }
+
   async readWholeTxn(
     txnId: NonNullable<string>,
     order: TxnOrderStrategy

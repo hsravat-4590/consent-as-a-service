@@ -165,7 +165,7 @@ export namespace ConsentDA {
     const { txnDa } = getServices();
 
     const mConsent = await getConsentAndValidate(consentId);
-    const rejectedTxn = await txnDa.updateTxn(mConsent.txnId, {
+    const rejectedTxn = await txnDa.updateTxn(mConsent.txn.chainId, {
       txnStatus: "REJECTED",
     });
     return mapTxnLogToModel(rejectedTxn);
@@ -176,7 +176,7 @@ export namespace ConsentDA {
   ): Promise<TransactionModel> => {
     const { txnDa } = getServices();
     const mConsent = await getConsentAndValidate(consentId);
-    const voidedTxn = await txnDa.updateTxn(mConsent.txnId, {
+    const voidedTxn = await txnDa.updateTxn(mConsent.txn.chainId, {
       txnStatus: "VOIDED",
     });
     return mapTxnLogToModel(voidedTxn);

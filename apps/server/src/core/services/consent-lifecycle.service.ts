@@ -40,6 +40,7 @@ import { ConfigService } from '@nestjs/config';
 import { ConsentClaimService } from './consent-claim.service';
 import { OrgService } from './org.service';
 import { ConsentVoidService } from './consent-void.service';
+import { ConsentStateService } from './consent-state.service';
 import CreateConsentOptions = ConsentDA.CreateConsentOptions;
 
 /**
@@ -56,6 +57,7 @@ export class ConsentLifecycleService {
     private consentClaimService: ConsentClaimService,
     private orgService: OrgService,
     private consentVoidService: ConsentVoidService,
+    private consentStateService: ConsentStateService,
   ) {
     this.defaultExpiry = this.configService.get(
       'CONSENT_DEFAULT_EXPIRY_SECONDS',
@@ -134,17 +136,21 @@ export class ConsentLifecycleService {
     consentData: DataSubmission,
   ) {
     await this.validateConsentClaimsAndVoids(consentId);
+    await this.validateConsentAndRequestStateForCompletion(consentId);
 
     // Pull up consent and continue
+    const consent = await ConsentDA.ReadConsent(consentId);
+    const request = await Optional.unwrapAsync(
+      ConsentRequestDA.ReadConsentRequest(consent.consentRequest),
+    );
     // Construct consent datamodel
     let dataModel: Omit<ConsentDataModel, 'id'> | ConsentDataModel =
-      ConsentDataModel(consentData, consentData.data);
+      ConsentDataModel(request.schema.id, consentData.submitData);
     dataModel = await ConsentDataDA.CreateDataEntry(dataModel);
-    // TODO Currently using default expiry. Allow CHANGES
-    const consent = await ConsentDA.ReadConsent(consentId, true);
+    const expiry = !!consentData.expiry ? consentData.expiry : consent.expiry;
     await ConsentDA.AcceptConsentWithData({
       consentData: dataModel as ConsentDataModel,
-      expiry: consent.expiry,
+      expiry: expiry,
       id: consentId,
       user: await this.userService.getUser(),
     });
@@ -180,6 +186,21 @@ export class ConsentLifecycleService {
 
   async rejectConsent(consentId: string) {
     await this.validateConsentClaimsAndVoids(consentId);
+    await this.validateConsentAndRequestStateForCompletion(consentId);
     await ConsentDA.RejectConsentRequest(consentId);
+  }
+
+  private async validateConsentAndRequestStateForCompletion(consentId: string) {
+    const correctState = await this.consentStateService.validateConsentInState({
+      trackRequest: true,
+      consentId,
+      blockedStates: ['REJECTED', 'VOIDED', 'ACCEPTED'],
+    });
+    if (!correctState) {
+      throw new HttpException(
+        'Consent is not in the correct state for this action',
+        HttpStatus.FORBIDDEN,
+      );
+    }
   }
 }

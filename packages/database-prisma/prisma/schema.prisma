@@ -25,7 +25,7 @@ model Consent {
 
 model ConsentData {
   id          String   @id @default(uuid())
-  data        Bytes
+  data        Json
   hash        String?  @db.VarChar(255)
   dateCreated DateTime @default(now()) @db.DateTime(0)
   consent     Consent?

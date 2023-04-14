@@ -71,13 +71,14 @@ export class UserConsentController {
   @Roles(Auth0Roles.USER)
   async submitConsent(
     @Param('consentId') consentId,
-    @Body() consentData: DataSubmission,
+    @Body() requestBody: DataSubmission,
   ): Promise<ConsentCompleteNetworkModel> {
+    console.log('Here');
     const { request } =
       await this.consentLifecycleService.readConsentForRequest(consentId);
     await this.consentLifecycleService.submitConsentDataAndFulfil(
       consentId,
-      consentData,
+      requestBody,
     );
     return {
       callbackUrl: request.callbackUrl.toString(),

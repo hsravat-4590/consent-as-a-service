@@ -50,6 +50,7 @@ import { ConsentLifecycleService } from './core/services/consent-lifecycle.servi
 import { ConsentRequestUriService } from './core/services/ui/consent-request-uri.service';
 import { UserConsentController } from './service/consent/user-consent.controller';
 import { ConsentVoidService } from './core/services/consent-void.service';
+import { ConsentStateService } from './core/services/consent-state.service';
 
 @Module({
   imports: [AuthModule, HttpModule, ConfigModule.forRoot()],
@@ -81,6 +82,7 @@ import { ConsentVoidService } from './core/services/consent-void.service';
     ConsentLifecycleService,
     ConsentRequestUriService,
     ConsentVoidService,
+    ConsentStateService,
   ],
 })
 export class AppModule {}

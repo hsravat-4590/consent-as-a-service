@@ -39,14 +39,16 @@ export class ConsentVoidService {
     const checkTxnVoidState = (transaction: TransactionModel) =>
       transaction.txnStatus === 'VOIDED';
     const consent = await ConsentDA.ReadConsent(consentId);
-    let transaction = await TransactionDA.ReadTransaction(consent.transaction);
+    let transaction = await TransactionDA.ReadTransactionById(
+      consent.transaction,
+    );
     if (checkTxnVoidState(transaction)) {
       return true;
     }
     const request = await Optional.unwrapAsync(
       ConsentRequestDA.ReadConsentRequest(consent.consentRequest),
     );
-    transaction = await TransactionDA.ReadTransaction(request.txn);
+    transaction = await TransactionDA.ReadTransactionById(request.txn);
     return checkTxnVoidState(transaction);
   }
 }

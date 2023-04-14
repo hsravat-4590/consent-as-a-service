@@ -115,6 +115,8 @@ export class Optional<T> {
   }
 }
 
+export const empty = <T>() => Optional.empty<T>();
+
 /**
  * This type wraps an optional in a promise for Asynchronous uses
  */

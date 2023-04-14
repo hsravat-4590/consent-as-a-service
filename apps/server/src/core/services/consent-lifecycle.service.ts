@@ -25,14 +25,21 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { ConsentRequestService } from './consent-request.service';
 import {
   ConsentDA,
+  ConsentDataDA,
   ConsentRequestDA,
 } from '@consent-as-a-service/database-prisma';
-import { ConsentRequesterModel, Optional } from '@consent-as-a-service/domain';
+import {
+  ConsentDataModel,
+  ConsentRequesterModel,
+  DataSubmission,
+  Optional,
+} from '@consent-as-a-service/domain';
 import { UserService } from './user.service';
 import { LocalDateTime } from '@js-joda/core';
 import { ConfigService } from '@nestjs/config';
 import { ConsentClaimService } from './consent-claim.service';
 import { OrgService } from './org.service';
+import { ConsentVoidService } from './consent-void.service';
 import CreateConsentOptions = ConsentDA.CreateConsentOptions;
 
 /**
@@ -48,6 +55,7 @@ export class ConsentLifecycleService {
     private configService: ConfigService,
     private consentClaimService: ConsentClaimService,
     private orgService: OrgService,
+    private consentVoidService: ConsentVoidService,
   ) {
     this.defaultExpiry = this.configService.get(
       'CONSENT_DEFAULT_EXPIRY_SECONDS',
@@ -92,9 +100,9 @@ export class ConsentLifecycleService {
       consentId,
       user.id,
     );
-    if (owner === 0 || owner === 1) {
+    if (owner === 'UNOWNED' || owner === 'USER_OWNED') {
       // Claim the consent
-      if (owner === 1)
+      if (owner === 'UNOWNED')
         await this.consentClaimService.userClaimConsent(consentId);
       const consentModel = await ConsentDA.ReadConsent(consentId);
       const orgModel = await Optional.unwrapAsync(
@@ -114,5 +122,64 @@ export class ConsentLifecycleService {
         HttpStatus.CONFLICT,
       );
     }
+  }
+
+  /**
+   * Submits the consent Data provided and marks the consent as fulfilled so that it can be read by requesters
+   * @param consentId
+   * @param consentData
+   */
+  async submitConsentDataAndFulfil(
+    consentId: string,
+    consentData: DataSubmission,
+  ) {
+    await this.validateConsentClaimsAndVoids(consentId);
+
+    // Pull up consent and continue
+    // Construct consent datamodel
+    let dataModel: Omit<ConsentDataModel, 'id'> | ConsentDataModel =
+      ConsentDataModel(consentData, consentData.data);
+    dataModel = await ConsentDataDA.CreateDataEntry(dataModel);
+    // TODO Currently using default expiry. Allow CHANGES
+    const consent = await ConsentDA.ReadConsent(consentId, true);
+    await ConsentDA.AcceptConsentWithData({
+      consentData: dataModel as ConsentDataModel,
+      expiry: consent.expiry,
+      id: consentId,
+      user: await this.userService.getUser(),
+    });
+  }
+
+  private async validateConsentClaimsAndVoids(consentId: string) {
+    const mUser = await this.userService.getUser();
+    const consentClaim = await this.consentClaimService.validateConsentOwner(
+      consentId,
+      mUser.id,
+    );
+    if (consentClaim !== 'USER_OWNED') {
+      // Return Error as this user hasn't followed the lifecycle or the consent is owned by someone else
+      if (consentClaim === 'OWNED') {
+        throw new HttpException(
+          `This consent has been claimed by another user`,
+          HttpStatus.CONFLICT,
+        );
+      } else {
+        throw new HttpException(
+          `This Consent hasn't been committed following correct procedure`,
+          HttpStatus.METHOD_NOT_ALLOWED,
+        );
+      }
+    }
+    if (await this.consentVoidService.checkConsentVoided(consentId)) {
+      throw new HttpException(
+        `This consent or it's request has been voided`,
+        HttpStatus.UNPROCESSABLE_ENTITY,
+      );
+    }
+  }
+
+  async rejectConsent(consentId: string) {
+    await this.validateConsentClaimsAndVoids(consentId);
+    await ConsentDA.RejectConsentRequest(consentId);
   }
 }

@@ -21,33 +21,6 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { LocalDateTime } from "@js-joda/core";
-import { DataSchema } from "./data-schema.model";
-import { empty, JsonEncoder, Optional } from "../util";
-
-export interface ConsentDataModel {
-  id: NonNullable<string>;
-  data: any;
-  hash: string;
-  schemaId: string;
-  dateCreated: LocalDateTime;
-}
-
-export const ConsentDataModel = (
-  dataSchema: DataSchema,
-  data: any,
-  id: Optional<string> = empty()
-): Omit<ConsentDataModel, "id"> | ConsentDataModel => {
-  const model: any = {
-    data: data,
-    hash: JsonEncoder.btoa(data),
-    schema: dataSchema.id,
-    dateCreated: LocalDateTime.now(),
-  };
-  if (id.isPresent()) {
-    model.id = id.get();
-    return model as ConsentDataModel;
-  } else {
-    return model as Omit<ConsentDataModel, "id">;
-  }
+export type ConsentCompleteNetworkModel = {
+  callbackUrl: string;
 };

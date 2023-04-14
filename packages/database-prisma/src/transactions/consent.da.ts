@@ -161,6 +161,16 @@ export namespace ConsentDA {
     return await updateTxnConsentAndMapBack(mConsent, "ACCEPTED", options);
   };
 
+  export const RejectConsentRequest = async (consentId: string) => {
+    const { txnDa } = getServices();
+
+    const mConsent = await getConsentAndValidate(consentId);
+    const rejectedTxn = await txnDa.updateTxn(mConsent.txnId, {
+      txnStatus: "REJECTED",
+    });
+    return mapTxnLogToModel(rejectedTxn);
+  };
+
   export const RevokeConsent = async (
     consentId: string
   ): Promise<TransactionModel> => {

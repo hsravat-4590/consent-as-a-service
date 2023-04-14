@@ -21,11 +21,13 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { Controller, Get, Param } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post } from '@nestjs/common';
 import { Auth0Roles } from '../../core/authorisation/rbac/auth0.roles';
 import { Roles } from '../../core/authorisation/rbac/roles.decorator';
 import { ConsentLifecycleService } from '../../core/services/consent-lifecycle.service';
 import {
+  ConsentCompleteNetworkModel,
+  DataSubmission,
   mapNullable,
   Nullable,
   UserConsentReadNetworkResponse,
@@ -63,5 +65,35 @@ export class UserConsentController {
       dataSchema: promise.request.schema,
     };
     return mappedAction;
+  }
+
+  @Post('/submit/:consentId')
+  @Roles(Auth0Roles.USER)
+  async submitConsent(
+    @Param('consentId') consentId,
+    @Body() consentData: DataSubmission,
+  ): Promise<ConsentCompleteNetworkModel> {
+    const { request } =
+      await this.consentLifecycleService.readConsentForRequest(consentId);
+    await this.consentLifecycleService.submitConsentDataAndFulfil(
+      consentId,
+      consentData,
+    );
+    return {
+      callbackUrl: request.callbackUrl.toString(),
+    };
+  }
+
+  @Post('/reject/:consentId')
+  @Roles(Auth0Roles.USER)
+  async rejectConsent(
+    @Param('consentId') consentId,
+  ): Promise<ConsentCompleteNetworkModel> {
+    const { request } =
+      await this.consentLifecycleService.readConsentForRequest(consentId);
+    await this.consentLifecycleService.rejectConsent(consentId);
+    return {
+      callbackUrl: request.callbackUrl.toString(),
+    };
   }
 }

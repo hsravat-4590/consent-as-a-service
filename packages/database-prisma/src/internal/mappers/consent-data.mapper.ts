@@ -21,32 +21,16 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-export interface ConsentDataSchemaModel {
-  id: NonNullable<string>;
-  title: string;
-  description: string;
-  dataPoints: Array<DataPoint>;
-}
+import { ConsentData } from "@prisma/client";
+import { ConsentDataModel, JsonEncoder } from "@consent-as-a-service/domain";
+import { convertDateToLocalDateTime } from "./util-type.mapper";
 
-export type DataPoint = {
-  name: string;
-  userDescription: string;
-  control: Control;
+export const mapConsentDataToModel = (consentData: ConsentData) => {
+  return {
+    id: consentData.id,
+    data: JsonEncoder.atob(consentData.data),
+    hash: consentData.hash,
+    schemaId: consentData.schemaId,
+    dateCreated: convertDateToLocalDateTime(consentData.dateCreated),
+  } as ConsentDataModel;
 };
-
-export type MinMax = {
-  min: number;
-  max: number;
-};
-
-export type Control =
-  | 'BOOLEAN'
-  | 'SHORT_STR'
-  | 'LONG_STR'
-  | 'NUMBER'
-  | 'FLOAT'
-  | 'DATE'
-  | 'DATE_TIME'
-  | 'TIME'
-  | 'EMAIL'
-  | 'PHONE_NUMBER';

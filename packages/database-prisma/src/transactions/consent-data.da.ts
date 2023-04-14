@@ -21,33 +21,30 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { LocalDateTime } from "@js-joda/core";
-import { DataSchema } from "./data-schema.model";
-import { empty, JsonEncoder, Optional } from "../util";
+import { AsyncOptional, ConsentDataModel } from "@consent-as-a-service/domain";
+import getServices from "../internal/services/get-services";
+import { ConsentData } from "@prisma/client";
+import { mapConsentDataToModel } from "../internal/mappers/consent-data.mapper";
 
-export interface ConsentDataModel {
-  id: NonNullable<string>;
-  data: any;
-  hash: string;
-  schemaId: string;
-  dateCreated: LocalDateTime;
-}
-
-export const ConsentDataModel = (
-  dataSchema: DataSchema,
-  data: any,
-  id: Optional<string> = empty()
-): Omit<ConsentDataModel, "id"> | ConsentDataModel => {
-  const model: any = {
-    data: data,
-    hash: JsonEncoder.btoa(data),
-    schema: dataSchema.id,
-    dateCreated: LocalDateTime.now(),
+export namespace ConsentDataDA {
+  export const CreateDataEntry = async (
+    entryModel: CreateDataEntryModel
+  ): Promise<ConsentDataModel> => {
+    const { consentDataDa } = getServices();
+    const consentData: ConsentData = await consentDataDa.create(entryModel);
+    return {
+      id: consentData.id,
+      ...entryModel,
+    };
   };
-  if (id.isPresent()) {
-    model.id = id.get();
-    return model as ConsentDataModel;
-  } else {
-    return model as Omit<ConsentDataModel, "id">;
-  }
-};
+
+  export const ReadDataEntry = async (
+    id: NonNullable<string>
+  ): AsyncOptional<ConsentDataModel> => {
+    const { consentDataDa } = getServices();
+    const data = await consentDataDa.read(id);
+    return data.map((it) => mapConsentDataToModel(it));
+  };
+
+  export type CreateDataEntryModel = Omit<ConsentDataModel, "id">;
+}

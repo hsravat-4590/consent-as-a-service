@@ -21,33 +21,32 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { LocalDateTime } from "@js-joda/core";
-import { DataSchema } from "./data-schema.model";
-import { empty, JsonEncoder, Optional } from "../util";
+import { Injectable } from '@nestjs/common';
+import {
+  ConsentDA,
+  ConsentRequestDA,
+  TransactionDA,
+} from '@consent-as-a-service/database-prisma';
+import { Optional, TransactionModel } from '@consent-as-a-service/domain';
 
-export interface ConsentDataModel {
-  id: NonNullable<string>;
-  data: any;
-  hash: string;
-  schemaId: string;
-  dateCreated: LocalDateTime;
-}
-
-export const ConsentDataModel = (
-  dataSchema: DataSchema,
-  data: any,
-  id: Optional<string> = empty()
-): Omit<ConsentDataModel, "id"> | ConsentDataModel => {
-  const model: any = {
-    data: data,
-    hash: JsonEncoder.btoa(data),
-    schema: dataSchema.id,
-    dateCreated: LocalDateTime.now(),
-  };
-  if (id.isPresent()) {
-    model.id = id.get();
-    return model as ConsentDataModel;
-  } else {
-    return model as Omit<ConsentDataModel, "id">;
+@Injectable()
+export class ConsentVoidService {
+  /**
+   * Checks if a consent has any need to be voided
+   * @param consentId
+   */
+  async checkConsentVoided(consentId: NonNullable<string>) {
+    const checkTxnVoidState = (transaction: TransactionModel) =>
+      transaction.txnStatus === 'VOIDED';
+    const consent = await ConsentDA.ReadConsent(consentId);
+    let transaction = await TransactionDA.ReadTransaction(consent.transaction);
+    if (checkTxnVoidState(transaction)) {
+      return true;
+    }
+    const request = await Optional.unwrapAsync(
+      ConsentRequestDA.ReadConsentRequest(consent.consentRequest),
+    );
+    transaction = await TransactionDA.ReadTransaction(request.txn);
+    return checkTxnVoidState(transaction);
   }
-};
+}

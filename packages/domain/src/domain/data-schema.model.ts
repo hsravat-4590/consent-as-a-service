@@ -38,3 +38,7 @@ export interface DataSchema {
 }
 
 export type DataEntry = Omit<DataSchema, "id">;
+
+export type DataSubmission = DataSchema & {
+  submitData: NonNullable<any>;
+};

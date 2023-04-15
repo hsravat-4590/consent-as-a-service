@@ -41,11 +41,17 @@ import {
 import { useState } from "react";
 import Button from "@mui/material/Button";
 
-const ConsentRequestForm = (
-  schema: DataSchema,
-  onSubmit: (submitData: any) => Promise<void> | void,
-  onRejected: () => Promise<void> | void
-) => {
+interface ConsentRequestFormProps {
+  schema: DataSchema;
+  onSubmit: (submitData: any) => Promise<void> | void;
+  onRejected: () => Promise<void> | void;
+}
+
+const ConsentRequestForm = ({
+  schema,
+  onSubmit,
+  onRejected,
+}: ConsentRequestFormProps) => {
   const [data, setData] = useState(schema.data);
   const [errors, setErrors] = useState<boolean>();
   const [dialogOpen, setDialogOpen] = useState(false);

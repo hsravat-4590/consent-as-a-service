@@ -26,7 +26,7 @@ import { DataSchema } from "../domain";
 
 export interface UserConsentReadNetworkResponse {
   id: string;
-  expiry: LocalDateTime;
+  expiry: string;
   consentRequestId: string;
   userId?: string;
   requester: {

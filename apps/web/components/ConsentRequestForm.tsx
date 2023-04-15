@@ -78,24 +78,25 @@ const ConsentRequestForm = ({
   ) => {
     setDialogOpen(false);
   };
-
   return (
     <Card
-      variant="outlined"
+      elevation={0}
       sx={{
-        color: "background.default",
+        color: "background.paper",
+        p: 1,
       }}
     >
       <Container>
         <JsonForms
-          schema={schema.schema.schema}
+          schema={schema.schema}
           uischema={schema.uiSchema}
           data={data}
           renderers={materialRenderers}
           cells={materialCells}
           onChange={({ data, errors }) => {
             setData(data);
-            setErrors(!!errors);
+            // @ts-ignore
+            setErrors(errors.length !== 0);
           }}
           validationMode={"ValidateAndShow"}
         />
@@ -131,6 +132,7 @@ const ConsentRequestForm = ({
             Submit
           </Button>
           <Snackbar
+            autoHideDuration={4000}
             anchorOrigin={{ vertical, horizontal }}
             open={snackbarOpen}
             onClose={handleSnackbarClose}

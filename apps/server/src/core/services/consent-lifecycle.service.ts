@@ -32,6 +32,7 @@ import {
   ConsentDataModel,
   ConsentRequesterModel,
   DataSubmission,
+  mapNullable,
   Optional,
 } from '@consent-as-a-service/domain';
 import { UserService } from './user.service';
@@ -134,6 +135,7 @@ export class ConsentLifecycleService {
     consentId: string,
     consentData: DataSubmission,
   ) {
+    console.log(`Data Submission is ${JSON.stringify(consentData)}`);
     await this.validateConsentClaimsAndVoids(consentId);
     await this.validateConsentAndRequestStateForCompletion(consentId);
 
@@ -146,7 +148,11 @@ export class ConsentLifecycleService {
     let dataModel: Omit<ConsentDataModel, 'id'> | ConsentDataModel =
       ConsentDataModel(request.schema.id, consentData.submitData);
     dataModel = await ConsentDataDA.CreateDataEntry(dataModel);
-    const expiry = !!consentData.expiry ? consentData.expiry : consent.expiry;
+    const expiryAsLdt = mapNullable(
+      (it) => LocalDateTime.parse(it),
+      consentData.expiry,
+    );
+    const expiry = !!expiryAsLdt ? expiryAsLdt : consent.expiry;
     await ConsentDA.AcceptConsentWithData({
       consentData: dataModel as ConsentDataModel,
       expiry: expiry,

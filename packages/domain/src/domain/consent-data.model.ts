@@ -22,7 +22,7 @@
  */
 
 import { LocalDateTime } from "@js-joda/core";
-import { empty, JsonEncoder, Optional } from "../util";
+import { empty, JsonEncoder, mapNullable, Optional } from "../util";
 
 export interface ConsentDataModel {
   id: NonNullable<string>;
@@ -39,7 +39,7 @@ export const ConsentDataModel = (
 ): Omit<ConsentDataModel, "id"> | ConsentDataModel => {
   const model: any = {
     data: data,
-    hash: JsonEncoder.btoa(data),
+    hash: mapNullable(JsonEncoder.btoa, data),
     schemaId: dataSchemaId,
     dateCreated: LocalDateTime.now(),
   };

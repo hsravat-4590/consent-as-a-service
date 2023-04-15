@@ -26,6 +26,7 @@ import { getAccessToken, withPageAuthRequired } from "@auth0/nextjs-auth0";
 import ServerConfig from "../api/service/server.config";
 import {
   ConsentCompleteNetworkModel,
+  DataSubmission,
   UserConsentReadNetworkResponse,
 } from "@consent-as-a-service/domain";
 import Typography from "@mui/material/Typography";
@@ -66,11 +67,26 @@ const ConsentRequest = ({
   };
   const onRejectCalled = async () => {
     setDialogOpen(true);
-    const response = await fetch("/api/consent/reject/", {
+    const response = await fetch(`/api/consent/reject/${consentRequest.id}`, {
+      method: "POST",
+    });
+    if (response.status === 201) {
+      const result = (await response.json()) as ConsentCompleteNetworkModel;
+      window.location.replace(result.callbackUrl);
+    } else {
+      router.push("/request/error");
+    }
+  };
+
+  const onSubmitCalled = async (data: any) => {
+    setDialogOpen(true);
+    const response = await fetch(`/api/consent/submit/${consentRequest.id}`, {
       method: "POST",
       body: JSON.stringify({
-        id: consentRequest.id,
-      }),
+        consentRequestId: consentRequest.consentRequestId,
+        submitData: data,
+        expiry: consentRequest.expiry,
+      } as DataSubmission),
     });
     if (response.status === 201) {
       const result = (await response.json()) as ConsentCompleteNetworkModel;
@@ -81,10 +97,11 @@ const ConsentRequest = ({
   };
   return (
     <>
-      <Card>
+      <Card elevation={0}>
         <CardMedia sx={{ height: 200 }} title="Banner" image={banner} />
         <Container
           sx={{
+            p: 1.5,
             m: 2.5,
           }}
         >
@@ -95,7 +112,7 @@ const ConsentRequest = ({
           <Typography variant="h6">{consentRequest.ui.description}</Typography>
           <ConsentRequestForm
             schema={consentRequest.dataSchema}
-            onSubmit={async (submitData: any) => {}}
+            onSubmit={onSubmitCalled}
             onRejected={onRejectCalled}
           />
         </Container>
@@ -122,6 +139,7 @@ const ConsentRequest = ({
 export default ConsentRequest;
 export const getServerSideProps = withPageAuthRequired({
   async getServerSideProps(ctx) {
+    console.info(`In GetSSP`);
     const { accessToken } = await getAccessToken(ctx.req, ctx.res);
     const response = await fetch(
       `${ServerConfig.baseUrl}:${ServerConfig.port}/consent/user/v1/${ctx.query.id}`,

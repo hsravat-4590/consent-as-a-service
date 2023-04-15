@@ -21,7 +21,15 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { Body, Controller, Get, Param, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  HttpException,
+  HttpStatus,
+  Param,
+  Post,
+} from '@nestjs/common';
 import { Auth0Roles } from '../../core/authorisation/rbac/auth0.roles';
 import { Roles } from '../../core/authorisation/rbac/roles.decorator';
 import { ConsentLifecycleService } from '../../core/services/consent-lifecycle.service';
@@ -50,7 +58,7 @@ export class UserConsentController {
     };
     const mappedAction: UserConsentReadNetworkResponse = {
       id: consentId,
-      expiry: promise.consentModel.expiry,
+      expiry: promise.consentModel.expiry.toString(),
       consentRequestId: promise.consentModel.consentRequest,
       userId: promise.consentModel.user.id,
       requester: {
@@ -75,6 +83,12 @@ export class UserConsentController {
   ): Promise<ConsentCompleteNetworkModel> {
     const { request } =
       await this.consentLifecycleService.readConsentForRequest(consentId);
+    if (!requestBody.submitData) {
+      throw new HttpException(
+        'Cannot proceed without a valid request body',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
     await this.consentLifecycleService.submitConsentDataAndFulfil(
       consentId,
       requestBody,
@@ -89,7 +103,6 @@ export class UserConsentController {
   async rejectConsent(
     @Param('consentId') consentId,
   ): Promise<ConsentCompleteNetworkModel> {
-    console.log(`Arrived with id ${consentId}`);
     const { request } =
       await this.consentLifecycleService.readConsentForRequest(consentId);
     await this.consentLifecycleService.rejectConsent(consentId);

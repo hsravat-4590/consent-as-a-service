@@ -77,7 +77,6 @@ export class ConsentLifecycleService {
     const consentRequest = await this.consentRequestService.getConsentRequest({
       id: consentRequestId,
     });
-    console.log(`ConsentRequest is ${JSON.stringify(consentRequest)}`);
     const newOptions = {
       user: null,
       expiry: options.expiry,

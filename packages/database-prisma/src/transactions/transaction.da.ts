@@ -43,7 +43,6 @@ export namespace TransactionDA {
   export const CreateTransaction = async (
     options: CreateTransactionOptions
   ): Promise<string> => {
-    console.log("Creating a TXN");
     const { txnDa } = getServices();
     const newTxn = await txnDa.createTxn(options);
     return newTxn.chainId;
@@ -52,7 +51,6 @@ export namespace TransactionDA {
   export const ReadTransaction = async (
     chainId: string
   ): Promise<TransactionModel> => {
-    console.log("Reading A Txn");
     const { txnDa } = getServices();
     const readOut: Optional<TxnLog> = await txnDa.readTxn(chainId);
     ValidateOptional(readOut, {

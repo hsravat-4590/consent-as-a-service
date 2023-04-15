@@ -22,14 +22,14 @@
  */
 
 import { getAccessToken, withApiAuthRequired } from "@auth0/nextjs-auth0";
-import ServerConfig from "../service/server.config";
-import completeCommon from "./complete-common";
+import ServerConfig from "../../service/server.config";
+import completeCommon from "../complete-common";
 
 export default withApiAuthRequired(async function rejectConsent(req, res) {
   const { accessToken } = await getAccessToken(req, res);
-  const body = JSON.parse(req.body);
+  const { consentId } = req.query;
   const response = await fetch(
-    `${ServerConfig.baseUrl}:${ServerConfig.port}/consent/user/v1/reject/${body.id}`,
+    `${ServerConfig.baseUrl}:${ServerConfig.port}/consent/user/v1/reject/${consentId}`,
     {
       method: "POST",
       headers: {

@@ -24,7 +24,10 @@
 import { useRouter } from "next/router";
 import { getAccessToken, withPageAuthRequired } from "@auth0/nextjs-auth0";
 import ServerConfig from "../api/service/server.config";
-import { UserConsentReadNetworkResponse } from "@consent-as-a-service/domain";
+import {
+  ConsentCompleteNetworkModel,
+  UserConsentReadNetworkResponse,
+} from "@consent-as-a-service/domain";
 import Typography from "@mui/material/Typography";
 import { Card, CardMedia } from "@mui/material";
 import Container from "@mui/material/Container";
@@ -54,6 +57,21 @@ const ConsentRequest = ({
   if (consentRequest.requester.banner) {
     banner = consentRequest.requester.banner;
   }
+  const onRejectCalled = async () => {
+    const response = await fetch("/api/consent/reject/", {
+      method: "POST",
+      body: JSON.stringify({
+        id: consentRequest.id,
+      }),
+    });
+    if (response.status === 201) {
+      const result = (await response.json()) as ConsentCompleteNetworkModel;
+      window.location.replace(result.callbackUrl);
+    } else {
+      //TODO Error Handling
+      console.log("Oops");
+    }
+  };
   return (
     <>
       <Card>
@@ -68,7 +86,11 @@ const ConsentRequest = ({
           </Typography>
           <Typography variant="h2">{consentRequest.ui.title}</Typography>
           <Typography variant="h6">{consentRequest.ui.description}</Typography>
-          <ConsentRequestForm id="form" schema={consentRequest.dataSchema} />
+          <ConsentRequestForm
+            schema={consentRequest.dataSchema}
+            onSubmit={async (submitData: any) => {}}
+            onRejected={onRejectCalled}
+          />
         </Container>
       </Card>
     </>
@@ -79,7 +101,6 @@ export default ConsentRequest;
 export const getServerSideProps = withPageAuthRequired({
   async getServerSideProps(ctx) {
     const { accessToken } = await getAccessToken(ctx.req, ctx.res);
-    console.log(`Query is ${JSON.stringify(ctx.query)}`);
     const response = await fetch(
       `${ServerConfig.baseUrl}:${ServerConfig.port}/consent/user/v1/${ctx.query.id}`,
       {

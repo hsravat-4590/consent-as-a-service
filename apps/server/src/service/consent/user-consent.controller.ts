@@ -73,7 +73,6 @@ export class UserConsentController {
     @Param('consentId') consentId,
     @Body() requestBody: DataSubmission,
   ): Promise<ConsentCompleteNetworkModel> {
-    console.log('Here');
     const { request } =
       await this.consentLifecycleService.readConsentForRequest(consentId);
     await this.consentLifecycleService.submitConsentDataAndFulfil(
@@ -90,6 +89,7 @@ export class UserConsentController {
   async rejectConsent(
     @Param('consentId') consentId,
   ): Promise<ConsentCompleteNetworkModel> {
+    console.log(`Arrived with id ${consentId}`);
     const { request } =
       await this.consentLifecycleService.readConsentForRequest(consentId);
     await this.consentLifecycleService.rejectConsent(consentId);

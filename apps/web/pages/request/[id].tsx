@@ -76,10 +76,7 @@ const ConsentRequest = ({
       const result = (await response.json()) as ConsentCompleteNetworkModel;
       window.location.replace(result.callbackUrl);
     } else {
-      //TODO Error Handling
       router.push("/request/error");
-      setDialogOpen(false);
-      console.log("Oops");
     }
   };
   return (

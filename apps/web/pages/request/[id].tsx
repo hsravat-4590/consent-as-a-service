@@ -29,9 +29,18 @@ import {
   UserConsentReadNetworkResponse,
 } from "@consent-as-a-service/domain";
 import Typography from "@mui/material/Typography";
-import { Card, CardMedia } from "@mui/material";
+import {
+  Card,
+  CardMedia,
+  CircularProgress,
+  Dialog,
+  DialogContent,
+  DialogTitle,
+} from "@mui/material";
 import Container from "@mui/material/Container";
 import ConsentRequestForm from "../../components/ConsentRequestForm";
+import { useState } from "react";
+import Box from "@mui/material/Box";
 
 const ConsentRequest = ({
   resultCode,
@@ -43,21 +52,20 @@ const ConsentRequest = ({
   consentRequest: UserConsentReadNetworkResponse;
 }) => {
   const router = useRouter();
+  const [dialogOpen, setDialogOpen] = useState(false);
   const { id } = router.query;
-  if (resultCode !== 200) {
-    return (
-      <>
-        <Typography variant="h5">Error</Typography>
-        <Typography variant="h6">{resultCode}</Typography>
-        <Typography variant="h6">{resultMsg}</Typography>
-      </>
-    );
-  }
   let banner = "";
   if (consentRequest.requester.banner) {
     banner = consentRequest.requester.banner;
   }
+  const handleDialogClose = (
+    event: React.SyntheticEvent | Event,
+    reason?: string
+  ) => {
+    setDialogOpen(false);
+  };
   const onRejectCalled = async () => {
+    setDialogOpen(true);
     const response = await fetch("/api/consent/reject/", {
       method: "POST",
       body: JSON.stringify({
@@ -69,6 +77,8 @@ const ConsentRequest = ({
       window.location.replace(result.callbackUrl);
     } else {
       //TODO Error Handling
+      router.push("/request/error");
+      setDialogOpen(false);
       console.log("Oops");
     }
   };
@@ -93,6 +103,21 @@ const ConsentRequest = ({
           />
         </Container>
       </Card>
+      <Dialog
+        open={dialogOpen}
+        onClose={handleDialogClose}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+      >
+        <DialogTitle id="alert-dialog-title">
+          {"Completing Request"}
+        </DialogTitle>
+        <DialogContent>
+          <Box textAlign="center">
+            <CircularProgress />
+          </Box>
+        </DialogContent>
+      </Dialog>
     </>
   );
 };
@@ -109,6 +134,15 @@ export const getServerSideProps = withPageAuthRequired({
         },
       }
     );
+    if (response.status !== 200) {
+      return {
+        redirect: {
+          permanent: true,
+          destination: "/request/error",
+        },
+        props: {},
+      };
+    }
     const result = (await response.json()) as UserConsentReadNetworkResponse;
     return {
       props: {

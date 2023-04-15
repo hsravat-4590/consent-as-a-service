@@ -21,22 +21,20 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { getAccessToken, withApiAuthRequired } from "@auth0/nextjs-auth0";
-import ServerConfig from "../service/server.config";
-import completeCommon from "./complete-common";
+import { ConsentCompleteNetworkModel } from "@consent-as-a-service/domain";
+import { NextApiResponse } from "next";
 
-export default withApiAuthRequired(async function rejectConsent(req, res) {
-  const { accessToken } = await getAccessToken(req, res);
-  const body = JSON.parse(req.body);
-  const response = await fetch(
-    `${ServerConfig.baseUrl}:${ServerConfig.port}/consent/user/v1/reject/${body.id}`,
-    {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
-    }
-  );
-  await completeCommon(res, response);
-  return Promise.resolve();
-});
+export default async function completeCommon(
+  res: NextApiResponse,
+  response: Response
+) {
+  if (response.status === 201) {
+    const result = (await response.json()) as ConsentCompleteNetworkModel;
+    res.status(201).json(result);
+    return Promise.resolve();
+  }
+  res.status(response.status).json({
+    errorMessage:
+      "Could not complete this consent. It may already be accepted,rejected or voided",
+  });
+}

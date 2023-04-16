@@ -138,7 +138,7 @@ const ConsentRequest = ({
 
 export default ConsentRequest;
 export const getServerSideProps = withPageAuthRequired({
-  async getServerSideProps(ctx) {
+  async getServerSideProps(ctx): Promise<GetSSPType> {
     console.info(`In GetSSP`);
     const { accessToken } = await getAccessToken(ctx.req, ctx.res);
     const response = await fetch(
@@ -155,7 +155,6 @@ export const getServerSideProps = withPageAuthRequired({
           permanent: true,
           destination: "/request/error",
         },
-        props: {},
       };
     }
     const result = (await response.json()) as UserConsentReadNetworkResponse;
@@ -168,3 +167,18 @@ export const getServerSideProps = withPageAuthRequired({
     };
   },
 });
+
+export type GetSSPType =
+  | {
+      props: {
+        resultCode: number;
+        resultMsg: string;
+        consentRequest: UserConsentReadNetworkResponse;
+      };
+    }
+  | {
+      redirect: {
+        permanent: boolean;
+        destination: string;
+      };
+    };

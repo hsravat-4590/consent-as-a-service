@@ -37,7 +37,7 @@ import {
   ConsentCompleteNetworkModel,
   DataSubmission,
   mapNullable,
-  Nullable,
+  mapNullableUrl,
   UserConsentReadNetworkResponse,
 } from '@consent-as-a-service/domain';
 
@@ -50,12 +50,7 @@ export class UserConsentController {
     const promise = await this.consentLifecycleService.readConsentForRequest(
       consentId,
     );
-    const mapNullableUrl = (url?: URL): Nullable<string> => {
-      if (url) {
-        return url.toString();
-      }
-      return null;
-    };
+
     const mappedAction: UserConsentReadNetworkResponse = {
       id: consentId,
       expiry: promise.consentModel.expiry.toString(),

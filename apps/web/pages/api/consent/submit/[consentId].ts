@@ -29,7 +29,6 @@ export default withApiAuthRequired(async function submitConsent(req, res) {
   const { accessToken } = await getAccessToken(req, res);
   const body = JSON.parse(req.body);
   const { consentId } = req.query;
-  console.log(`Body is ${req.body}`);
   const response = await fetch(
     `${ServerConfig.baseUrl}:${ServerConfig.port}/consent/user/v1/submit/${consentId}`,
     {

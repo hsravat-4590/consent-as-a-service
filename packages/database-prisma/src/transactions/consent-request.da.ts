@@ -27,12 +27,13 @@ import {
   ConsentCreatorModel,
   ConsentRequestModel,
   DataEntry,
-  DataSchema,
   Optional,
 } from "@consent-as-a-service/domain";
 import { mapConsentRequest } from "../internal/mappers/consent-request.mapper";
 import getServices from "../internal/services/get-services";
 import NotImplementedError from "@consent-as-a-service/domain/dist/errors/not-implemented.error";
+import { WholeConsentRequest } from "../internal/prisma-da/consent-request.da.internal";
+import { mapDataTypeToSchema } from "../internal/mappers/schema.mapper";
 
 export namespace ConsentRequestDA {
   /**
@@ -43,16 +44,13 @@ export namespace ConsentRequestDA {
    */
   export const CreateConsentRequestType = async (
     options: CreateConsentRequestOptions,
-    dataSchema: Array<DataEntry<any>>,
+    dataSchema: DataEntry,
     requester: ConsentCreatorModel
   ): Promise<CreateConsentResultType> => {
     console.log("Creating a new Consent Request Type");
     const { consentRequestDa, consentDataSchemaDa } = getServices();
     const schemaEntry = await consentDataSchemaDa.createSchemaEntry(dataSchema);
-    const schema = {
-      id: schemaEntry.typeId,
-      entries: dataSchema,
-    } as DataSchema;
+    const schema = mapDataTypeToSchema(schemaEntry);
 
     const dbR: ConsentRequest & { txn: TxnLog } =
       await consentRequestDa.createConsentRequestType(
@@ -86,26 +84,17 @@ export namespace ConsentRequestDA {
         "Read ConsentRequest with consents has not been implemented"
       );
     }
-    console.log("Reading a ConsentRequest");
-    const { txnDa, consentRequestDa, consentDataSchemaDa, userDa } =
-      getServices();
-    const req: Optional<ConsentRequest> =
-      await consentRequestDa.readConsentRequest(consentRequestId);
+    const { consentRequestDa, userDa } = getServices();
+    const req: Optional<WholeConsentRequest> =
+      await consentRequestDa.readWholeConsentRequest(
+        consentRequestId,
+        withConsents
+      );
     let requester = null;
     if (!req.isPresent()) {
       return Optional.empty();
     }
     requester = req.get();
-    //Get the Data
-    const schema = await Optional.unwrapAsync(
-      consentDataSchemaDa.readSchema(req.get().dataId)
-    );
-    const txnModel: Optional<TxnLog> = await txnDa.readTxn(req.get().txnId);
-    console.log(
-      `Presence of txnModel is ${txnModel.isPresent()} and the schema txnId is ${
-        req.get().txnId
-      }`
-    );
     const owner = await Optional.unwrapAsync(
       userDa.readRequester(requester.id)
     );
@@ -115,7 +104,7 @@ export namespace ConsentRequestDA {
       mapConsentRequest({
         request: req.get(),
         owner: owner.userId,
-        schema: schema,
+        schema: requester.dataType,
       })
     );
   };

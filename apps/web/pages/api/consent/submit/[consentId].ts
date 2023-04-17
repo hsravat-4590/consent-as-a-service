@@ -21,19 +21,26 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-export const atob = (str) => new Buffer(str, "base64").toString("binary");
-export const btoa = (str) => new Buffer(str, "binary").toString("base64");
+import { getAccessToken, withApiAuthRequired } from "@auth0/nextjs-auth0";
+import ServerConfig from "../../service/server.config";
+import completeCommon from "../complete-common";
 
-export namespace JsonEncoder {
-  export const atob = <T>(str) => new Buffer(str, "base64").toJSON() as T;
-
-  export const btoa = <T>(obj: T) =>
-    new Buffer(JSON.stringify(obj), "binary").toString("base64");
-}
-export const urlOfNullable = (str?: string) => {
-  if (str) {
-    return new URL(str);
-  } else {
-    return null;
-  }
-};
+export default withApiAuthRequired(async function submitConsent(req, res) {
+  const { accessToken } = await getAccessToken(req, res);
+  const body = JSON.parse(req.body);
+  const { consentId } = req.query;
+  console.log(`Body is ${req.body}`);
+  const response = await fetch(
+    `${ServerConfig.baseUrl}:${ServerConfig.port}/consent/user/v1/submit/${consentId}`,
+    {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        "Content-Type": "application/json",
+      },
+      body: req.body,
+    }
+  );
+  await completeCommon(res, response);
+  return Promise.resolve();
+});

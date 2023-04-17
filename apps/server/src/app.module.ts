@@ -48,6 +48,9 @@ import { NewConsentController } from './service/consent/new-consent.controller';
 import { ConsentClaimService } from './core/services/consent-claim.service';
 import { ConsentLifecycleService } from './core/services/consent-lifecycle.service';
 import { ConsentRequestUriService } from './core/services/ui/consent-request-uri.service';
+import { UserConsentController } from './service/consent/user-consent.controller';
+import { ConsentVoidService } from './core/services/consent-void.service';
+import { ConsentStateService } from './core/services/consent-state.service';
 
 @Module({
   imports: [AuthModule, HttpModule, ConfigModule.forRoot()],
@@ -59,6 +62,7 @@ import { ConsentRequestUriService } from './core/services/ui/consent-request-uri
     UserPermissionsController,
     RequestMetadataController,
     NewConsentController,
+    UserConsentController,
   ],
   providers: [
     HealthService,
@@ -77,6 +81,8 @@ import { ConsentRequestUriService } from './core/services/ui/consent-request-uri
     ConsentClaimService,
     ConsentLifecycleService,
     ConsentRequestUriService,
+    ConsentVoidService,
+    ConsentStateService,
   ],
 })
 export class AppModule {}

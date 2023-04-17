@@ -43,7 +43,7 @@ export namespace ConsentDA {
     requester: ConsentRequesterModel,
     options: CreateConsentOptions
   ): Promise<ConsentModel> => {
-    const { txnDa, consentDa, consentRequestDa, userDa } = getServices();
+    const { consentDa, consentRequestDa, userDa } = getServices();
     const requesterFromDa: Optional<ConsentRequester> =
       await userDa.readRequester(requester.id);
     const requesterReal = requesterFromDa.orElseRunSync(() => {
@@ -161,12 +161,22 @@ export namespace ConsentDA {
     return await updateTxnConsentAndMapBack(mConsent, "ACCEPTED", options);
   };
 
+  export const RejectConsentRequest = async (consentId: string) => {
+    const { txnDa } = getServices();
+
+    const mConsent = await getConsentAndValidate(consentId);
+    const rejectedTxn = await txnDa.updateTxn(mConsent.txn.chainId, {
+      txnStatus: "REJECTED",
+    });
+    return mapTxnLogToModel(rejectedTxn);
+  };
+
   export const RevokeConsent = async (
     consentId: string
   ): Promise<TransactionModel> => {
     const { txnDa } = getServices();
     const mConsent = await getConsentAndValidate(consentId);
-    const voidedTxn = await txnDa.updateTxn(mConsent.txnId, {
+    const voidedTxn = await txnDa.updateTxn(mConsent.txn.chainId, {
       txnStatus: "VOIDED",
     });
     return mapTxnLogToModel(voidedTxn);

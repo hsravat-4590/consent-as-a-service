@@ -21,19 +21,30 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-export const atob = (str) => new Buffer(str, "base64").toString("binary");
-export const btoa = (str) => new Buffer(str, "binary").toString("base64");
+import { AsyncOptional, ConsentDataModel } from "@consent-as-a-service/domain";
+import getServices from "../internal/services/get-services";
+import { ConsentData } from "@prisma/client";
+import { mapConsentDataToModel } from "../internal/mappers/consent-data.mapper";
 
-export namespace JsonEncoder {
-  export const atob = <T>(str) => new Buffer(str, "base64").toJSON() as T;
+export namespace ConsentDataDA {
+  export const CreateDataEntry = async (
+    entryModel: CreateDataEntryModel
+  ): Promise<ConsentDataModel> => {
+    const { consentDataDa } = getServices();
+    const consentData: ConsentData = await consentDataDa.create(entryModel);
+    return {
+      id: consentData.id,
+      ...entryModel,
+    };
+  };
 
-  export const btoa = <T>(obj: T) =>
-    new Buffer(JSON.stringify(obj), "binary").toString("base64");
+  export const ReadDataEntry = async (
+    id: NonNullable<string>
+  ): AsyncOptional<ConsentDataModel> => {
+    const { consentDataDa } = getServices();
+    const data = await consentDataDa.read(id);
+    return data.map((it) => mapConsentDataToModel(it));
+  };
+
+  export type CreateDataEntryModel = Omit<ConsentDataModel, "id">;
 }
-export const urlOfNullable = (str?: string) => {
-  if (str) {
-    return new URL(str);
-  } else {
-    return null;
-  }
-};

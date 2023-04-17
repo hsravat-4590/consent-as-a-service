@@ -21,111 +21,26 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { Validate } from "../util";
-
 export interface DataSchema {
   id: string;
-
-  entries: Array<DataEntry<any>>;
+  /**
+   * Schema Refers to A JSON Schema
+   */
+  schema: any;
+  /**
+   * JSONForms UISchema Definition. Optional
+   */
+  uiSchema?: any;
+  /**
+   * Optional Data entry for autofilled starter
+   */
+  data?: any;
 }
 
-export interface DataEntry<T extends EntryTypes> {
-  title: string;
-  description: string;
-  type: "number" | "boolean" | "string" | "ShortString" | "bigint" | "Char";
+export type DataEntry = Omit<DataSchema, "id">;
+
+export class DataSubmission {
+  expiry?: string;
+  consentRequestId: string;
+  submitData: any;
 }
-
-export type EntryTypes =
-  | number
-  | boolean
-  | string
-  | ShortString
-  | bigint
-  | Char;
-
-export interface ShortString {
-  readonly max: 255;
-  length: number;
-  string: string;
-}
-
-/**
- * Implementation for a shortened string
- */
-export class ShortStringImpl implements ShortString {
-  readonly length: number;
-  readonly string: string;
-  max: 255;
-
-  constructor(string: string) {
-    Validate.ValidateState(() => string.length <= 255, {
-      errorMessage: `String is longer than the maximum size ${this.max}`,
-    });
-    this.length = string.length;
-    this.string = string;
-  }
-}
-
-export type Char =
-  | "0"
-  | "1"
-  | "2"
-  | "3"
-  | "4"
-  | "5"
-  | "6"
-  | "7"
-  | "8"
-  | "9"
-  | "A"
-  | "B"
-  | "C"
-  | "D"
-  | "E"
-  | "F"
-  | "G"
-  | "H"
-  | "I"
-  | "J"
-  | "K"
-  | "L"
-  | "M"
-  | "N"
-  | "O"
-  | "P"
-  | "Q"
-  | "R"
-  | "S"
-  | "T"
-  | "U"
-  | "V"
-  | "W"
-  | "X"
-  | "Y"
-  | "Z"
-  | "a"
-  | "b"
-  | "c"
-  | "d"
-  | "e"
-  | "f"
-  | "g"
-  | "h"
-  | "i"
-  | "j"
-  | "k"
-  | "l"
-  | "m"
-  | "n"
-  | "o"
-  | "p"
-  | "q"
-  | "r"
-  | "s"
-  | "t"
-  | "u"
-  | "v"
-  | "w"
-  | "x"
-  | "y"
-  | "z";

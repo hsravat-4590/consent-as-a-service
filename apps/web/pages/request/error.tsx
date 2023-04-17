@@ -21,19 +21,22 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-export const atob = (str) => new Buffer(str, "base64").toString("binary");
-export const btoa = (str) => new Buffer(str, "binary").toString("base64");
+import Box from "@mui/material/Box";
+import Typography from "@mui/material/Typography";
 
-export namespace JsonEncoder {
-  export const atob = <T>(str) => new Buffer(str, "base64").toJSON() as T;
-
-  export const btoa = <T>(obj: T) =>
-    new Buffer(JSON.stringify(obj), "binary").toString("base64");
-}
-export const urlOfNullable = (str?: string) => {
-  if (str) {
-    return new URL(str);
-  } else {
-    return null;
-  }
+const ConsentErrorPage = () => {
+  return (
+    <>
+      <Box textAlign="center">
+        <Typography variant="h5">Unable to Fulfil this request</Typography>
+        <Typography variant="body1">
+          This request cannot be fulfilled. This could be down to a variety of
+          reasons such as the original request being already completed, voided
+          or the consent has been claimed by another user
+        </Typography>
+      </Box>
+    </>
+  );
 };
+
+export default ConsentErrorPage;

@@ -21,19 +21,6 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-export const atob = (str) => new Buffer(str, "base64").toString("binary");
-export const btoa = (str) => new Buffer(str, "binary").toString("base64");
-
-export namespace JsonEncoder {
-  export const atob = <T>(str) => new Buffer(str, "base64").toJSON() as T;
-
-  export const btoa = <T>(obj: T) =>
-    new Buffer(JSON.stringify(obj), "binary").toString("base64");
-}
-export const urlOfNullable = (str?: string) => {
-  if (str) {
-    return new URL(str);
-  } else {
-    return null;
-  }
+export type ConsentCompleteNetworkModel = {
+  callbackUrl: string;
 };

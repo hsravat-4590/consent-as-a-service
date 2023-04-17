@@ -21,19 +21,22 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-export const atob = (str) => new Buffer(str, "base64").toString("binary");
-export const btoa = (str) => new Buffer(str, "binary").toString("base64");
+import { ConsentRequestModel, DataEntry } from "../domain";
 
-export namespace JsonEncoder {
-  export const atob = <T>(str) => new Buffer(str, "base64").toJSON() as T;
+export type CreateConsentRequestNetworkRequest = Pick<
+  ConsentRequestModel,
+  "title" | "description" | "callbackUrl"
+> &
+  DataEntry;
 
-  export const btoa = <T>(obj: T) =>
-    new Buffer(JSON.stringify(obj), "binary").toString("base64");
-}
-export const urlOfNullable = (str?: string) => {
-  if (str) {
-    return new URL(str);
-  } else {
-    return null;
-  }
-};
+export type CreateConsentRequestNetworkResponse = Pick<
+  ConsentRequestModel,
+  "id"
+>;
+
+export type GetConsentRequestNetworkRequest = Pick<ConsentRequestModel, "id">;
+
+export type GetConsentRequestNetworkResponse = Omit<
+  ConsentRequestModel,
+  "id" | "txn" | "callbackUrl"
+>;

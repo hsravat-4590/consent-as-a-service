@@ -37,8 +37,9 @@ import {
   CreateConsentRequestNetworkRequest,
   CreateConsentRequestNetworkResponse,
   GetConsentRequestNetworkResponse,
-} from '../../core/models/consent-request.network.model';
-import { Optional, Validate } from '@consent-as-a-service/domain';
+  Optional,
+  Validate,
+} from '@consent-as-a-service/domain';
 
 @Controller('consent/request/v1')
 export class ConsentRequestController {

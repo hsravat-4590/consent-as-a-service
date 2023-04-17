@@ -21,32 +21,27 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-export interface ConsentDataSchemaModel {
-  id: NonNullable<string>;
-  title: string;
-  description: string;
-  dataPoints: Array<DataPoint>;
+import { LocalDateTime } from "@js-joda/core";
+import { DataSchema } from "../domain";
+
+export interface UserConsentReadNetworkResponse {
+  id: string;
+  expiry: string;
+  consentRequestId: string;
+  userId?: string;
+  requester: {
+    displayName: string;
+    banner?: string;
+    logo?: string;
+  };
+  ui: {
+    title: string;
+    description: string;
+  };
+  dataSchema: DataSchema;
 }
 
-export type DataPoint = {
-  name: string;
-  userDescription: string;
-  control: Control;
-};
-
-export type MinMax = {
-  min: number;
-  max: number;
-};
-
-export type Control =
-  | 'BOOLEAN'
-  | 'SHORT_STR'
-  | 'LONG_STR'
-  | 'NUMBER'
-  | 'FLOAT'
-  | 'DATE'
-  | 'DATE_TIME'
-  | 'TIME'
-  | 'EMAIL'
-  | 'PHONE_NUMBER';
+export interface UserConsentSubmitRequest {
+  expiry?: LocalDateTime;
+  consentResponses: any;
+}

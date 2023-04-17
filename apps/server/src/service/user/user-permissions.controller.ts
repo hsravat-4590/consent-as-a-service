@@ -31,11 +31,10 @@ import {
 import { UserService } from '../../core/services/user.service';
 import { Roles } from '../../core/authorisation/rbac/roles.decorator';
 import { Auth0Roles } from '../../core/authorisation/rbac/auth0.roles';
-import { ElevateUserToCRRolesRequest } from '../../core/models/user-permissions.network.model';
+import { ElevateUserToCRRolesRequest } from '../../../../../packages/domain/src/network/user-permissions.network.model';
 import { RequireAuth } from '../../core/auth/require-auth.decorator';
 import { Role } from 'auth0';
 import { OrgService } from '../../core/services/org.service';
-import { Validate } from '@consent-as-a-service/domain';
 
 @Controller('user/roles/v1')
 export class UserPermissionsController {

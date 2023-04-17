@@ -21,36 +21,50 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { singleton } from "tsyringe";
-import { AsyncOptional, Optional } from "@consent-as-a-service/domain";
+import { injectable } from "tsyringe";
 import { PrismaClientService } from "../services/prisma-client.service";
-import { DataType } from "@prisma/client";
-import { DataEntry } from "@consent-as-a-service/domain/dist";
 import { PrismaDa } from "./prisma.da";
+import { AsyncOptional, Optional } from "@consent-as-a-service/domain";
+import { convertLocalDateTimeToDate } from "../mappers/util-type.mapper";
+import { ConsentData } from "@prisma/client";
+import { ConsentDataDA } from "../../transactions";
 
-@singleton()
-export class ConsentDataSchemaDaInternal extends PrismaDa {
+@injectable()
+export class ConsentDataDaInternal extends PrismaDa {
   constructor(prismaClientService: PrismaClientService) {
     super(prismaClientService);
   }
 
-  async createSchemaEntry(entry: DataEntry): Promise<DataType> {
-    return await this.prismaClient.dataType.create({
+  async create(dataModel: ConsentDataDA.CreateDataEntryModel) {
+    return await this.prismaClient.consentData.create({
       data: {
-        schema: JSON.stringify(entry.schema),
-        uiSchema: JSON.stringify(entry.uiSchema),
-        data: JSON.stringify(entry.data),
+        data: dataModel.data,
+        dateCreated: convertLocalDateTimeToDate(dataModel.dateCreated),
+        hash: dataModel.hash,
+        dataType: {
+          connect: {
+            typeId: dataModel.schemaId,
+          },
+        },
       },
     });
   }
 
-  async readSchema(id: NonNullable<string>): AsyncOptional<DataType> {
+  async read(id: string): AsyncOptional<ConsentData> {
     return Optional.ofNullable(
-      await this.prismaClient.dataType.findFirst({
+      await this.prismaClient.consentData.findFirst({
         where: {
-          typeId: id,
+          id: id,
         },
       })
     );
+  }
+
+  async delete(id: string) {
+    await this.prismaClient.consentData.delete({
+      where: {
+        id: id,
+      },
+    });
   }
 }

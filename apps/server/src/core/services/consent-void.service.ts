@@ -21,19 +21,34 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-export const atob = (str) => new Buffer(str, "base64").toString("binary");
-export const btoa = (str) => new Buffer(str, "binary").toString("base64");
+import { Injectable } from '@nestjs/common';
+import {
+  ConsentDA,
+  ConsentRequestDA,
+  TransactionDA,
+} from '@consent-as-a-service/database-prisma';
+import { Optional, TransactionModel } from '@consent-as-a-service/domain';
 
-export namespace JsonEncoder {
-  export const atob = <T>(str) => new Buffer(str, "base64").toJSON() as T;
-
-  export const btoa = <T>(obj: T) =>
-    new Buffer(JSON.stringify(obj), "binary").toString("base64");
-}
-export const urlOfNullable = (str?: string) => {
-  if (str) {
-    return new URL(str);
-  } else {
-    return null;
+@Injectable()
+export class ConsentVoidService {
+  /**
+   * Checks if a consent has any need to be voided
+   * @param consentId
+   */
+  async checkConsentVoided(consentId: NonNullable<string>) {
+    const checkTxnVoidState = (transaction: TransactionModel) =>
+      transaction.txnStatus === 'VOIDED';
+    const consent = await ConsentDA.ReadConsent(consentId);
+    let transaction = await TransactionDA.ReadTransactionById(
+      consent.transaction,
+    );
+    if (checkTxnVoidState(transaction)) {
+      return true;
+    }
+    const request = await Optional.unwrapAsync(
+      ConsentRequestDA.ReadConsentRequest(consent.consentRequest),
+    );
+    transaction = await TransactionDA.ReadTransactionById(request.txn);
+    return checkTxnVoidState(transaction);
   }
-};
+}

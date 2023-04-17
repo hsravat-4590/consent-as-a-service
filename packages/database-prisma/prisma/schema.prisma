@@ -25,10 +25,12 @@ model Consent {
 
 model ConsentData {
   id          String   @id @default(uuid())
-  data        Bytes
+  data        Json
   hash        String?  @db.VarChar(255)
   dateCreated DateTime @default(now()) @db.DateTime(0)
   consent     Consent?
+  dataType    DataType @relation(fields: [schemaId], references: [typeId])
+  schemaId    String
 }
 
 model ConsentRequest {
@@ -47,8 +49,11 @@ model ConsentRequest {
 
 model DataType {
   typeId          String           @id @default(uuid())
-  schema          String           @db.VarChar(255)
+  schema          String           @db.VarChar(4096)
+  uiSchema        String?          @db.VarChar(4096)
+  data            String?          @db.VarChar(4096)
   consentRequests ConsentRequest[]
+  dataEntries     ConsentData[]
 }
 
 model TxnLog {

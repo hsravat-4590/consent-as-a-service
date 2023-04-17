@@ -54,8 +54,8 @@ export const lightTheme = createTheme({
       dark: "#0c1d29",
     },
     error: {
-      main: "#ba1a1a",
-      light: "#ffdad6",
+      main: "#ffdad6",
+      light: "#ba1a1a",
       dark: "#410002",
     },
     background: {
@@ -168,7 +168,6 @@ export const darkModeTheme = createTheme({
     },
     h3: {
       font: headingFont,
-      fontWeight: 700,
       fontSize: "3.6rem",
     },
     h5: {

@@ -21,7 +21,7 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { UserService } from './user.service';
 import { ConsentDA } from '@consent-as-a-service/database-prisma';
 
@@ -54,18 +54,23 @@ export class ConsentClaimService {
   async validateConsentOwner(
     consentId: string,
     userId: string,
-  ): Promise<0 | 1 | 2> {
+  ): Promise<'USER_OWNED' | 'UNOWNED' | 'OWNED'> {
     const consent = await ConsentDA.ReadConsent(consentId);
     if (consent) {
       if (consent.user) {
         if (consent.user.id === userId) {
-          return 0;
+          return 'USER_OWNED';
+        } else {
+          return 'OWNED';
         }
       } else {
-        return 1;
+        return 'UNOWNED';
       }
     } else {
-      return 2;
+      throw new HttpException(
+        `Cannot find consent with Id ${consentId}`,
+        HttpStatus.NOT_FOUND,
+      );
     }
   }
 }

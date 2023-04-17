@@ -33,11 +33,13 @@ import {
 import { OrgService } from '../../core/services/org.service';
 import { Auth0Roles } from '../../core/authorisation/rbac/auth0.roles';
 import { Roles } from '../../core/authorisation/rbac/roles.decorator';
-import { UpdateRequesterMetaRequest } from '../../core/models/user-permissions.network.model';
 import { UserService } from '../../core/services/user.service';
-import { Validate } from '@consent-as-a-service/domain';
+import {
+  RequestMetadataNetworkModel,
+  UpdateRequesterMetaRequest,
+  Validate,
+} from '@consent-as-a-service/domain';
 import { OrgDa } from '@consent-as-a-service/database-prisma/dist/transactions/org.da';
-import { RequestMetadataNetworkModel } from '../../core/models/request-metadata.network.model';
 import UpdatableOrgFields = OrgDa.UpdatableOrgFields;
 
 @Controller('org/metadata/v1')

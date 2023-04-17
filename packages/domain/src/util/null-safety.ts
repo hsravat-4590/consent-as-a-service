@@ -32,5 +32,12 @@ export const mapNullable = <Old, New>(
   }
 };
 
+export const mapNullableUrl = (url?: URL): Nullable<string> => {
+  if (url) {
+    return url.toString();
+  }
+  return null;
+};
+
 export type MapperFunction<Old, New> = (oldType: Old) => New;
 export type Nullable<T> = T | null | undefined;

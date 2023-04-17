@@ -30,51 +30,51 @@ import {
 import { mapTxnLogToModel } from "../internal/mappers/txn-log.mapper";
 import {
   CreateTransactionOptions,
-  TransactionDaInternal,
   TxnOrderStrategy,
   UpdateTransactionOptions,
 } from "../internal/prisma-da/transaction.da.internal";
 import "reflect-metadata";
-import { container } from "tsyringe";
-import { PrismaClientService } from "../internal/services/prisma-client.service";
+import getServices from "../internal/services/get-services";
 import ValidateState = Validate.ValidateState;
 
 export namespace TransactionDA {
   import ValidateOptional = Validate.ValidateOptional;
 
-  async function getServices(connect: boolean = true) {
-    const prismaClientService = container.resolve(PrismaClientService);
-    const internalDa = container.resolve(TransactionDaInternal);
-    return { prismaClientService, internalDa };
-  }
   export const CreateTransaction = async (
     options: CreateTransactionOptions
   ): Promise<string> => {
-    console.log("Creating a TXN");
-    const { internalDa } = await getServices();
-    const newTxn = await internalDa.createTxn(options);
+    const { txnDa } = getServices();
+    const newTxn = await txnDa.createTxn(options);
     return newTxn.chainId;
   };
 
   export const ReadTransaction = async (
-    txnId: string
+    chainId: string
   ): Promise<TransactionModel> => {
-    console.log("Reading A Txn");
-    const { internalDa } = await getServices();
-    const readOut: Optional<TxnLog> = await internalDa.readTxn(txnId);
+    const { txnDa } = getServices();
+    const readOut: Optional<TxnLog> = await txnDa.readTxn(chainId);
     ValidateOptional(readOut, {
       errorMessage: "No Entries Returned",
     });
     return mapTxnLogToModel(readOut.get());
   };
 
+  export const ReadTransactionById = async (txnId: string) => {
+    const { txnDa } = getServices();
+    const mTxn = await txnDa.readTxnsWithId(txnId);
+    ValidateOptional(mTxn, {
+      errorMessage: "No Entries Returned",
+    });
+    return ReadTransaction(mTxn.get().chainId);
+  };
+
   export const ReadWholeTransaction = async (
     txnId: string,
     order: TxnOrderStrategy
   ): Promise<Array<TransactionModel>> => {
-    const { internalDa } = await getServices();
+    const { txnDa } = getServices();
     let arr: TransactionModel[];
-    const result: TxnLog[] = await internalDa.readWholeTxn(txnId, order);
+    const result: TxnLog[] = await txnDa.readWholeTxn(txnId, order);
     arr = result.map(mapTxnLogToModel);
     return arr;
   };
@@ -83,8 +83,8 @@ export namespace TransactionDA {
     update: UpdateTransactionOptions,
     txnId: NonNullable<string>
   ): Promise<string> => {
-    const { internalDa } = await getServices();
-    const parent = await internalDa.readTxn(txnId);
+    const { txnDa } = getServices();
+    const parent = await txnDa.readTxn(txnId);
     if (parent.isPresent()) {
       ValidateState(() => parent.get().TxnStatus !== TxnLog_TxnStatus.VOIDED, {
         errorMessage:
@@ -94,7 +94,7 @@ export namespace TransactionDA {
       new Error("Transaction cannot be updated as there are no parents");
     }
     console.log(JSON.stringify(update));
-    const newRecord: TxnLog = await internalDa.updateTxn(txnId, update);
+    const newRecord: TxnLog = await txnDa.updateTxn(txnId, update);
     return newRecord.txnId;
   };
 }

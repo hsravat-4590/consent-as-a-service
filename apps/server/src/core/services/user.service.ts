@@ -52,7 +52,12 @@ export class UserService {
   async getUser(): Promise<UserModel> {
     // Get the user from AuthToken
     // Fetch
-    const mUser = await this.getUserFromAuth0();
+    const mUser = await this.getUserFromAuth0().catch((_) => {
+      throw new HttpException(
+        'Unable to Authenticate User',
+        HttpStatus.UNAUTHORIZED,
+      );
+    });
     const userModelPromise = await this.checkAndAddUserToDB(mUser);
     this.requestUser = userModelPromise;
     return userModelPromise;
@@ -111,15 +116,9 @@ export class UserService {
             Authorization: this.request.headers.authorization,
           },
         })
-        .subscribe(
-          (res) => {
-            resolve(this.userMapper.mapUserInfoToUserModel(res.data));
-          },
-          (error) => {
-            console.log('have an error :-(');
-            reject(error);
-          },
-        );
+        .subscribe((res) => {
+          resolve(this.userMapper.mapUserInfoToUserModel(res.data));
+        }, reject);
     });
   }
 

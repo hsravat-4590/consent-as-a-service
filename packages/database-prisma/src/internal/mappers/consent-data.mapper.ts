@@ -21,19 +21,16 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { OrgModel, UserModel } from '@consent-as-a-service/domain';
+import { ConsentData } from "@prisma/client";
+import { ConsentDataModel, JsonEncoder } from "@consent-as-a-service/domain";
+import { convertDateToLocalDateTime } from "./util-type.mapper";
 
-export type ElevateUserToCRRolesRequest = Pick<
-  OrgModel,
-  'displayName' | 'banner' | 'logo'
->;
-
-export type ElevateUserToCRRolesResponse = Pick<
-  UserModel,
-  'id' | 'consentCreator'
->;
-
-export type UpdateRequesterMetaRequest = Omit<
-  OrgModel,
-  'id' | 'displayName' | 'email'
->;
+export const mapConsentDataToModel = (consentData: ConsentData) => {
+  return {
+    id: consentData.id,
+    data: JsonEncoder.atob(consentData.data),
+    hash: consentData.hash,
+    schemaId: consentData.schemaId,
+    dateCreated: convertDateToLocalDateTime(consentData.dateCreated),
+  } as ConsentDataModel;
+};

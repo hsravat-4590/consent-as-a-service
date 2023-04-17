@@ -21,19 +21,19 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-export const atob = (str) => new Buffer(str, "base64").toString("binary");
-export const btoa = (str) => new Buffer(str, "binary").toString("base64");
+import { OrgModel, UserModel } from "../domain";
 
-export namespace JsonEncoder {
-  export const atob = <T>(str) => new Buffer(str, "base64").toJSON() as T;
+export type ElevateUserToCRRolesRequest = Pick<
+  OrgModel,
+  "displayName" | "banner" | "logo"
+>;
 
-  export const btoa = <T>(obj: T) =>
-    new Buffer(JSON.stringify(obj), "binary").toString("base64");
-}
-export const urlOfNullable = (str?: string) => {
-  if (str) {
-    return new URL(str);
-  } else {
-    return null;
-  }
-};
+export type ElevateUserToCRRolesResponse = Pick<
+  UserModel,
+  "id" | "consentCreator"
+>;
+
+export type UpdateRequesterMetaRequest = Omit<
+  OrgModel,
+  "id" | "displayName" | "email"
+>;

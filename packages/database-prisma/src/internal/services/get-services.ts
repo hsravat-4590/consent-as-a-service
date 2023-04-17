@@ -30,6 +30,7 @@ import { ConsentDataSchemaDaInternal } from "../prisma-da/consent-data-schema.da
 import { ConsentRequestDaInternal } from "../prisma-da/consent-request.da.internal";
 import { ConsentRequesterDaInternal } from "../prisma-da/consent-requester.da.internal";
 import { OrgDaInternal } from "../prisma-da/org.da.internal";
+import { ConsentDataDaInternal } from "../prisma-da/consent-data.da.internal";
 
 export default function getServices() {
   const prismaClientService = container.resolve(PrismaClientService);
@@ -40,6 +41,7 @@ export default function getServices() {
   const consentRequestDa = container.resolve(ConsentRequestDaInternal);
   const consentRequesterDa = container.resolve(ConsentRequesterDaInternal);
   const orgDa = container.resolve(OrgDaInternal);
+  const consentDataDa = container.resolve(ConsentDataDaInternal);
   return {
     prismaClientService,
     txnDa,
@@ -49,5 +51,6 @@ export default function getServices() {
     consentRequestDa,
     consentRequesterDa,
     orgDa,
+    consentDataDa,
   };
 }

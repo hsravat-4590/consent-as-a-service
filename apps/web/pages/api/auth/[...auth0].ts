@@ -28,7 +28,8 @@ export default handleAuth({
     authorizationParams: {
       audience: "http://localhost:3003", // or AUTH0_AUDIENCE
       // Add the `offline_access` scope to also get a Refresh Token
-      scope: "openid profile email", // or AUTH0_SCOPE
+      scope: "openid profile email offline_access", // or AUTH0_SCOPE
+      useRefreshTokens: true,
     },
   }),
 });

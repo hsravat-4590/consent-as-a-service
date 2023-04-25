@@ -25,25 +25,17 @@ import { Validate } from "../util";
 import ValidationException = Validate.ValidationException;
 
 export abstract class DomainPrimitive<T> {
-  private _it: T;
+  private readonly _it: T;
 
   protected get it() {
     return this._it;
   }
 
-  protected set it(newOne: T) {
-    this.checkAndSet(newOne);
-  }
-
   protected constructor(t: T) {
-    this.checkAndSet(t);
-  }
-
-  private checkAndSet(newOne: T) {
-    Validate.ValidateState(() => this.validationPredicate(newOne), {
+    Validate.ValidateState(() => this.validationPredicate(t), {
       errorException: this.getValidationException(),
     });
-    this._it = newOne;
+    this._it = t;
   }
 
   protected abstract validationPredicate(it: T): boolean;

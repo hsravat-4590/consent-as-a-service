@@ -21,7 +21,7 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import {
   ConsentDA,
   ConsentRequestDA,
@@ -50,5 +50,41 @@ export class ConsentVoidService {
     );
     transaction = await TransactionDA.ReadTransactionById(request.txn);
     return checkTxnVoidState(transaction);
+  }
+
+  async voidConsent(consentId: NonNullable<string>) {
+    const consent = await ConsentDA.ReadConsent(consentId);
+    const txn = await TransactionDA.ReadTransactionById(consent.transaction);
+    if (txn.txnStatus === 'VOIDED') {
+      return;
+    } else {
+      await TransactionDA.UpdateTransactionWithId(
+        {
+          txnStatus: 'VOIDED',
+        },
+        consent.transaction,
+      );
+    }
+  }
+
+  async voidConsentRequest(requestId: NonNullable<string>) {
+    const request = await ConsentRequestDA.ReadConsentRequest(requestId);
+    const unwrappedReq = request.orElseRunSync(() => {
+      throw new HttpException(
+        `Consent Request not found`,
+        HttpStatus.NOT_FOUND,
+      );
+    });
+    const txn = await TransactionDA.ReadTransactionById(unwrappedReq.txn);
+    if (txn.txnStatus === 'VOIDED') {
+      return;
+    } else {
+      await TransactionDA.UpdateTransactionWithId(
+        {
+          txnStatus: 'VOIDED',
+        },
+        unwrappedReq.txn,
+      );
+    }
   }
 }

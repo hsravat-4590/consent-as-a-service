@@ -21,44 +21,26 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { Validate } from "../util";
-import ValidationException = Validate.ValidationException;
+/* eslint-disable @typescript-eslint/no-var-requires */
+const nodeExternals = require('webpack-node-externals');
+const { RunScriptWebpackPlugin } = require('run-script-webpack-plugin');
 
-export abstract class DomainPrimitive<T> {
-  private readonly _it: T;
-
-  protected get it() {
-    return this._it;
-  }
-
-  protected constructor(t: T) {
-    Validate.ValidateState(() => this.validationPredicate(t), {
-      errorException: this.getValidationException(),
-    });
-    this._it = t;
-  }
-
-  protected abstract validationPredicate(it: T): boolean;
-
-  protected getValidationException(): Error {
-    return new ValidationException();
-  }
-}
-
-export abstract class StringPrimitive extends DomainPrimitive<
-  NonNullable<string>
-> {
-  protected constructor(primitive: NonNullable<string>) {
-    super(primitive);
-  }
-
-  protected validationPredicate(it: NonNullable<string>): boolean {
-    return this.getRegex().test(it);
-  }
-
-  abstract getRegex(): RegExp;
-
-  protected getValidationException(): Error {
-    return new ValidationException("Provided string does not match regex");
-  }
-}
+module.exports = function (options, webpack) {
+  return {
+    ...options,
+    entry: ['webpack/hot/poll?100', options.entry],
+    externals: [
+      nodeExternals({
+        allowlist: ['webpack/hot/poll?100'],
+      }),
+    ],
+    plugins: [
+      ...options.plugins,
+      new webpack.HotModuleReplacementPlugin(),
+      new webpack.WatchIgnorePlugin({
+        paths: [/\.js$/, /\.d\.ts$/],
+      }),
+      new RunScriptWebpackPlugin({ name: options.output.filename }),
+    ],
+  };
+};

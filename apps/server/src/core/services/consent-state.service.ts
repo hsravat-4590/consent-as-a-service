@@ -21,8 +21,12 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { Injectable } from '@nestjs/common';
-import { TxnStatus, Validate } from '@consent-as-a-service/domain';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import {
+  ConsentModel,
+  TxnStatus,
+  Validate,
+} from '@consent-as-a-service/domain';
 import {
   ConsentDA,
   ConsentRequestDA,
@@ -32,6 +36,39 @@ import ValidateOptional = Validate.ValidateOptional;
 
 @Injectable()
 export class ConsentStateService {
+  async readConsentAndRequestState(consentId: string) {
+    const consent = await this.getOrThrowConsent(consentId);
+    const states = await Promise.all([
+      this.readConsentState(consentId, consent),
+      this.readConsentRequestState(consent.consentRequest),
+    ]);
+    return {
+      consent: states[0],
+      consentRequest: states[1],
+    };
+  }
+  async readConsentState(
+    consentId: string,
+    consent?: ConsentModel,
+  ): Promise<TxnStatus> {
+    if (!consent) {
+      consent = await this.getOrThrowConsent(consentId);
+    }
+    const txn = await TransactionDA.ReadTransactionById(consent.transaction);
+    return txn.txnStatus;
+  }
+
+  async readConsentRequestState(requestId: string) {
+    const consentRequest = await ConsentRequestDA.ReadConsentRequest(requestId);
+    const unwrapped = consentRequest.orElseRunSync(() => {
+      throw new HttpException(
+        `Expected a ConsentRequest`,
+        HttpStatus.NOT_FOUND,
+      );
+    });
+    const txn = await TransactionDA.ReadTransactionById(unwrapped.txn);
+    return txn.txnStatus;
+  }
   async validateConsentInState({
     consentId,
     trackRequest = true,
@@ -41,10 +78,7 @@ export class ConsentStateService {
     trackRequest: boolean;
     blockedStates: TxnStatus[];
   }) {
-    const consent = await ConsentDA.ReadConsent(consentId);
-    if (!consent) {
-      throw new Error('Expected a consent');
-    }
+    const consent = await this.getOrThrowConsent(consentId);
     const txn = await TransactionDA.ReadTransactionById(consent.transaction);
     const status = txn.txnStatus;
     if (blockedStates.includes(status)) {
@@ -79,5 +113,13 @@ export class ConsentStateService {
     const txn = await TransactionDA.ReadTransactionById(unwrapped.txn);
     const status = txn.txnStatus;
     return !blockedStates.includes(status);
+  }
+
+  private async getOrThrowConsent(consentId: string) {
+    const consent = await ConsentDA.ReadConsent(consentId);
+    if (!consent) {
+      throw new HttpException(`Expected a Consent`, HttpStatus.NOT_FOUND);
+    }
+    return consent;
   }
 }

@@ -24,13 +24,17 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { UserService } from './user.service';
 import { ConsentDA } from '@consent-as-a-service/database-prisma';
+import { ConsentRequesterService } from './consent-requester.service';
 
 /**
  * This class manages claims for Consents and assures that uOrgs are honored for consent requests
  */
 @Injectable()
 export class ConsentClaimService {
-  constructor(private userService: UserService) {}
+  constructor(
+    private userService: UserService,
+    private consentRequesterService: ConsentRequesterService,
+  ) {}
   /**
    * Claims a consent on behalf of a user. Adds the user to the consent record. Once completed, no other users can take the consent
    * @param consentId
@@ -66,6 +70,22 @@ export class ConsentClaimService {
       } else {
         return 'UNOWNED';
       }
+    } else {
+      throw new HttpException(
+        `Cannot find consent with Id ${consentId}`,
+        HttpStatus.NOT_FOUND,
+      );
+    }
+  }
+
+  async validateConsentOrg(consentId: string, orgId: string) {
+    const consent = await ConsentDA.ReadConsent(consentId);
+    if (consent) {
+      const owner = await this.consentRequesterService.validateOrgOwner(
+        orgId,
+        consent.requester,
+      );
+      return owner === 'ORG_OWNED';
     } else {
       throw new HttpException(
         `Cannot find consent with Id ${consentId}`,

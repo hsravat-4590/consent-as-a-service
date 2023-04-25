@@ -65,6 +65,7 @@ import { ConsentStateController } from './service/consent/consent-state.controll
     RequestMetadataController,
     NewConsentController,
     UserConsentController,
+    ConsentStateController,
   ],
   providers: [
     HealthService,

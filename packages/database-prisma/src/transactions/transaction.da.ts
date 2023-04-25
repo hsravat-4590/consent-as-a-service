@@ -97,4 +97,13 @@ export namespace TransactionDA {
     const newRecord: TxnLog = await txnDa.updateTxn(txnId, update);
     return newRecord.txnId;
   };
+
+  export const UpdateTransactionWithId = async (
+    update: UpdateTransactionOptions,
+    txnId
+  ) => {
+    const { txnDa } = getServices();
+    const mTxn = await txnDa.readTxnsWithId(txnId);
+    return UpdateTransaction(update, mTxn.get().chainId);
+  };
 }

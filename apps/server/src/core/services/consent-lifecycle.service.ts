@@ -195,6 +195,34 @@ export class ConsentLifecycleService {
     await ConsentDA.RejectConsentRequest(consentId);
   }
 
+  async readFulfilledConsent(consentId: string) {
+    await this.validateConsentClaimsAndVoids(consentId);
+    const consent = await ConsentDA.ReadConsent(consentId);
+    const consentState = await this.consentStateService.readConsentState(
+      consentId,
+      consent,
+    );
+    if (consentState !== 'FULFILLED') {
+      throw new HttpException(
+        'Unable to read this consent. It has not been fulfilled',
+        HttpStatus.UNPROCESSABLE_ENTITY,
+      );
+    }
+    // Get Requester Details and Org Details
+    const org = await Optional.unwrapAsync(
+      this.orgService.getOrgForRequester(consent.requester),
+    );
+    // Get request details
+    const request = await Optional.unwrapAsync(
+      ConsentRequestDA.ReadConsentRequest(consent.consentRequest),
+    );
+    return {
+      consent,
+      org,
+      request,
+    };
+  }
+
   private async validateConsentAndRequestStateForCompletion(consentId: string) {
     const correctState = await this.consentStateService.validateConsentInState({
       trackRequest: true,

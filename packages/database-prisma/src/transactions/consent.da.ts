@@ -212,6 +212,7 @@ export namespace ConsentDA {
       },
       requester: requester.id,
       user,
+      data: consent.consentData,
     });
   };
 
@@ -229,7 +230,7 @@ export namespace ConsentDA {
 
   export type CreateConsentOptions = Omit<ConsentModel, "transaction">;
 
-  export type ReadConsentOptions = Pick<ConsentModel, "id">;
+  export type ReadConsentWithModelOptions = Pick<ConsentModel, "id">;
 
   export type ReadAllConsentOptions = Partial<
     Pick<ConsentModel, "id" | "consentRequest">

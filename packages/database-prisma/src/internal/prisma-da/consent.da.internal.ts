@@ -37,8 +37,8 @@ import { AsyncOptional, Optional } from "@consent-as-a-service/domain";
 import { convertLocalDateTimeToDate } from "../mappers/util-type.mapper";
 import { PrismaDa } from "./prisma.da";
 import { ConsentDA } from "../../transactions";
+import { ReadConsentOptions } from "../../../dist/internal/consent.da.internal";
 import CreateConsentOptions = ConsentDA.CreateConsentOptions;
-import ReadConsentOptions = ConsentDA.ReadConsentOptions;
 import ReadAllConsentOptions = ConsentDA.ReadAllConsentOptions;
 import UpdateConsentOptions = ConsentDA.UpdateConsentOptions;
 

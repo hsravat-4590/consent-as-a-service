@@ -44,9 +44,9 @@ import {
 @Controller('consent/user/v1')
 export class UserConsentController {
   constructor(private consentLifecycleService: ConsentLifecycleService) {}
-  @Get(':consentId')
+  @Get('request/:consentId')
   @Roles(Auth0Roles.USER)
-  async getConsent(@Param('consentId') consentId: string) {
+  async getConsentRequest(@Param('consentId') consentId: string) {
     const promise = await this.consentLifecycleService.readConsentForRequest(
       consentId,
     );
@@ -105,4 +105,28 @@ export class UserConsentController {
       callbackUrl: request.callbackUrl.toString(),
     };
   }
+
+  @Get(':consentId')
+  @Roles(Auth0Roles.USER)
+  async readWholeConsent(@Param('consentId') consentId) {
+    const { consent, org, request } =
+      await this.consentLifecycleService.readFulfilledConsent(consentId);
+
+    return {
+      title: request.title,
+      description: request.description,
+      org: {
+        logo: org.logo,
+        displayName: org.displayName,
+        banner: org.banner,
+      },
+      created: consent.consentData.dateCreated.toString(),
+      expiry: consent.expiry.toString(),
+      consentData: consent.consentData.data,
+    };
+  }
+
+  @Get()
+  @Roles(Auth0Roles.USER)
+  async getAllConsents() {}
 }

@@ -21,30 +21,13 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { Consent, ConsentData, User } from "@prisma/client";
-import { ConsentModel, mapNullable } from "@consent-as-a-service/domain";
-import { convertDateToLocalDateTime } from "./util-type.mapper";
-import { mapUserToModel } from "./user.mapper";
-import {
-  ConsentRequestMapperOptions,
-  mapConsentRequest,
-} from "./consent-request.mapper";
-import { mapConsentDataToModel } from "./consent-data.mapper";
+import { OrgModel } from "../domain";
 
-export const mapConsentToModel = (options: {
-  consent: Consent;
-  consentRequest: ConsentRequestMapperOptions;
-  requester: string;
-  user?: User;
-  data?: ConsentData;
-}) => {
-  return {
-    id: options.consent.consentId,
-    expiry: convertDateToLocalDateTime(options.consent.expiry),
-    consentRequest: mapConsentRequest(options.consentRequest).id,
-    user: mapNullable(mapUserToModel, options.user),
-    requester: options.requester,
-    transaction: options.consent.txnId,
-    consentData: mapNullable(mapConsentDataToModel, options.data),
-  } as ConsentModel;
-};
+export interface UserReadFulfilledNetworkModel {
+  title: NonNullable<string>;
+  description: NonNullable<string>;
+  org: Pick<OrgModel, "logo" | "displayName" | "banner">;
+  created: string;
+  expiry: string;
+  consentData: any;
+}

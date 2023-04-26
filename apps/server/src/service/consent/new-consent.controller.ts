@@ -58,6 +58,7 @@ export class NewConsentController {
     // Create the URL
     return {
       request_url: this.consentRequestUriService.buildRequestURL(consent),
+      consentId: consent.id,
     };
   }
 

@@ -22,10 +22,10 @@
  */
 
 import { DataType } from "@prisma/client";
-import { DataSchema } from "@consent-as-a-service/domain";
+import { DataSchema, JsonEncoder } from "@consent-as-a-service/domain";
 
 export const mapDataTypeToSchema = (data: DataType): DataSchema => {
-  const schema = JSON.parse(data.schema);
+  const schema = JsonEncoder.atob(data.schema);
   const model: DataSchema = {
     id: data.typeId,
     schema: schema,

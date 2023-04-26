@@ -25,6 +25,8 @@ import { EmailModel } from "./email.model";
 import { ConsentRequestModel } from "./consent-request.model";
 import { ConsentModel } from "./consent.model";
 import { NameModel } from "./name.model";
+import { OrgModel } from "./org.model";
+import { decryptString, encryptString } from "encrypt-string";
 
 export interface UserModel {
   id: NonNullable<string>;
@@ -60,5 +62,26 @@ export namespace UserModel {
       }
     }
     return returnStr;
+  };
+
+  export const encryptWithOrg = async (
+    userModel: UserModel,
+    orgModel: OrgModel,
+    key: NonNullable<string>
+  ) => {
+    const { id } = userModel;
+    const { orgId } = orgModel;
+    // Merge Strings together with Key
+    const merged = `${id}//${orgId}`;
+    return await encryptString(merged, key);
+  };
+
+  export const decryptWithKey = async (
+    encrypted: NonNullable<string>,
+    key: NonNullable<string>
+  ) => {
+    const decrypt = await decryptString(encrypted, key);
+    const [id, orgId] = decrypt.split("//");
+    return { userId: id, orgId: orgId };
   };
 }

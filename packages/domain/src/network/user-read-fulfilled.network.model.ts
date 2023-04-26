@@ -21,13 +21,37 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { OrgModel } from "../domain";
+import { DeepLinkedConsent } from "../domain";
+import { mapNullableUrl } from "../util";
 
 export interface UserReadFulfilledNetworkModel {
   title: NonNullable<string>;
   description: NonNullable<string>;
-  org: Pick<OrgModel, "logo" | "displayName" | "banner">;
+  org: {
+    banner?: string;
+    logo?: string;
+    displayName: string;
+    email: string;
+  };
   created: string;
   expiry: string;
   consentData: any;
+}
+
+export namespace UserReadFulfilledNetworkModel {
+  export const from = (deepLinkedConsent: DeepLinkedConsent) => {
+    return {
+      title: deepLinkedConsent.consentRequestModel.title,
+      description: deepLinkedConsent.consentRequestModel.description,
+      org: {
+        banner: mapNullableUrl(deepLinkedConsent.orgModel.banner),
+        logo: mapNullableUrl(deepLinkedConsent.orgModel.logo),
+        displayName: deepLinkedConsent.orgModel.displayName,
+        email: deepLinkedConsent.orgModel.email.email,
+      },
+      created: deepLinkedConsent.consentData.dateCreated.toString(),
+      expiry: deepLinkedConsent.expiry.toString(),
+      consentData: deepLinkedConsent.consentData,
+    } as UserReadFulfilledNetworkModel;
+  };
 }

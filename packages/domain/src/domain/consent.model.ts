@@ -21,9 +21,12 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { UserModel } from "./user.model";
+import { ConsentRequesterModel, UserModel } from "./user.model";
 import { LocalDateTime } from "@js-joda/core";
 import { ConsentDataModel } from "./consent-data.model";
+import { TransactionModel } from "./transaction.model";
+import { ConsentRequestModel } from "./consent-request.model";
+import { OrgModel } from "./org.model";
 
 export interface ConsentModel {
   id: NonNullable<string>;
@@ -33,4 +36,49 @@ export interface ConsentModel {
   requester: NonNullable<string>;
   transaction: NonNullable<string>;
   consentData?: ConsentDataModel;
+}
+
+export type ConsentModelTxnDeep = ConsentModel & {
+  transactionModel: TransactionModel;
+};
+
+export type DeepLinkedConsent = ConsentModel & {
+  transactionModel: TransactionModel;
+  userModel: UserModel;
+  consentRequestModel: ConsentRequestModel;
+  requesterModel: ConsentRequesterModel;
+  orgModel: OrgModel;
+};
+/**
+ * Alias for:
+ * Consent & {user: User, consentRequest: ConsentRequest & {dataType: DataType}, requester: ConsentRequester, consentData: ConsentData, txn: TxnLog
+ *
+ */
+export namespace ConsentModel {
+  export const applyDeepLinkToConsent = (
+    consentModel: ConsentModel,
+    transactionModel: TransactionModel,
+    userModel: UserModel,
+    consentRequestModel: ConsentRequestModel,
+    requesterModel: ConsentRequesterModel,
+    orgModel: OrgModel
+  ): DeepLinkedConsent => {
+    return {
+      ...consentModel,
+      transactionModel,
+      userModel,
+      consentRequestModel,
+      requesterModel,
+      orgModel,
+    };
+  };
+  export const applyDeepLinkTransaction = (
+    consentModel: ConsentModel,
+    transactionModel: TransactionModel
+  ): ConsentModelTxnDeep => {
+    return {
+      ...consentModel,
+      transactionModel,
+    };
+  };
 }

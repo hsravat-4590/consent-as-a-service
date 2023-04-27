@@ -135,7 +135,6 @@ export class ConsentLifecycleService {
     consentId: string,
     consentData: DataSubmission,
   ) {
-    console.log(`Data Submission is ${JSON.stringify(consentData)}`);
     await this.validateConsentClaimsAndVoids(consentId);
     await this.validateConsentAndRequestStateForCompletion(consentId);
 

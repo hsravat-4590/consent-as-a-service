@@ -2,6 +2,9 @@
 
 Monorepo for the Consent as a Service (CAAS) Platform
 
+## What is it?
+Consent as a Service (CAAS) is a web service designed to manage consents for user data. Its purpose is to act as an intermediary between an online service and the end user. The objective of this platform is to improve trust levels when using online services. This stems from the idea that if the user can trust the platform (CAAS) then by extension, they’re able to trust the service on the other end. This is done by providing the service with APIs which can be used to construct consent requests which consists of data types for the forms of data to be gathered. CAAS will then have a front-end UI which can be accessed by an end user to allow them to view, manage and rescind consents. For this project, the API has been constructed with Nest.JS and uses a MySQL database (vitess flavour, hosted on PlanetScale) to store data. The front-end has been built on top of the React Server-Side Rendering framework Next.JS. Additionally, frameworks such as Auth0 and Prisma.js have been used for Authentication and database management respectively.
+
 ## What's inside?
 Consent As A Service (CAAS) is an Open Platform designed to manage and store consents for users
 
@@ -35,7 +38,7 @@ pnpm run build
 
 ### Develop
 
-To develop all apps and packages, run the following command:
+To Start a live development environment run:
 
 ```
 cd consent-as-a-service

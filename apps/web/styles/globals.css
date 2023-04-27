@@ -21,40 +21,47 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-// pages/index.js
-import { useUser } from "@auth0/nextjs-auth0/client";
-import { useEffect, useState } from "react";
-import LandingPage from "../components/LandingPage";
+:root {
+    --max-width: 1100px;
+    --border-radius: 12px;
+    --font-mono: ui-monospace, Menlo, Monaco, 'Cascadia Mono', 'Segoe UI Mono',
+    'Roboto Mono', 'Oxygen Mono', 'Ubuntu Monospace', 'Source Code Pro',
+    'Fira Mono', 'Droid Sans Mono', 'Courier New', monospace;
 
-export default function Index() {
-  const { user, error, isLoading } = useUser();
-  const [data, setData] = useState(null);
+    --foreground-rgb: 0, 0, 0;
+    --background-start-rgb: 214, 219, 220;
+    --background-end-rgb: 255, 255, 255;
+}
 
-  useEffect(() => {
-    fetch("/api/service/health/server-health")
-      .then((res) => res.json())
-      .then((data) => {
-        setData(data);
-      });
-  }, []);
+* {
+    box-sizing: border-box;
+    padding: 0;
+    margin: 0;
+}
 
-  if (isLoading) return <div>Loading...</div>;
-  if (error) return <div>{error.message}</div>;
-  if (!data) {
-    return "Can't connect to Server";
-  }
-  if (user) {
-    return (
-      <div>
-        <div>
-          Welcome {user.name}! <a href="/api/auth/logout">Logout</a>
-        </div>
-        <div>{JSON.stringify(data)}</div>
-      </div>
-    );
-  } else {
-    return <LandingPage />;
-  }
+html,
+body {
+    max-width: 100vw;
+    overflow-x: hidden;
+}
 
-  return <a href="/api/auth/login">Login</a>;
+body {
+    /*color: rgb(var(--foreground-rgb));*/
+    /*background: linear-gradient(*/
+    /*        to bottom,*/
+    /*        transparent,*/
+    /*        rgb(var(--background-end-rgb))*/
+    /*)*/
+    /*rgb(var(--background-start-rgb));*/
+}
+
+a {
+    color: inherit;
+    text-decoration: none;
+}
+
+@media (prefers-color-scheme: dark) {
+    html {
+        color-scheme: dark;
+    }
 }

@@ -36,7 +36,6 @@ import { ConsentRequester, User } from "@prisma/client";
 import { mapTxnLogToModel } from "../internal/mappers/txn-log.mapper";
 import getServices from "../internal/services/get-services";
 import { mapUserToModel } from "../internal/mappers/user.mapper";
-import { mapRequesterToModel } from "../../dist/internal/mappers/requester.mapper";
 import { mapConsentRequest } from "../internal/mappers/consent-request.mapper";
 import { mapOrgToModel } from "../internal/mappers/org.mapper";
 
@@ -258,7 +257,9 @@ export namespace ConsentDA {
             owner: consent.requester.id,
             schema: consent.consentRequest.dataType,
           }),
-          mapRequesterToModel(consent.requester),
+          {
+            id: consent.requester.id,
+          },
           mapOrgToModel(consent.requester.user.org)
         );
       newArr.push(evenNewerModel);

@@ -97,7 +97,7 @@ const ConsentRequest = ({
   };
   return (
     <>
-      <Card elevation={0}>
+      <Card>
         <CardMedia sx={{ height: 200 }} title="Banner" image={banner} />
         <Container
           sx={{

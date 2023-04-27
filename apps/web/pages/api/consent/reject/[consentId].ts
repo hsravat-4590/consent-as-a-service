@@ -21,14 +21,22 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { Requester } from "@prisma/client";
-import { RequesterModel } from "@consent-as-a-service/domain";
+import { getAccessToken, withApiAuthRequired } from "@auth0/nextjs-auth0";
+import ServerConfig from "../../service/server.config";
+import completeCommon from "../complete-common";
 
-export const mapRequesterToModel = (requester: Requester): RequesterModel => {
-  return {
-    id: requester.id,
-    displayName: requester.displayname,
-    banner: requester.banner,
-    logo: requester.logo,
-  } as RequesterModel;
-};
+export default withApiAuthRequired(async function rejectConsent(req, res) {
+  const { accessToken } = await getAccessToken(req, res);
+  const { consentId } = req.query;
+  const response = await fetch(
+    `${ServerConfig.baseUrl}:${ServerConfig.port}/consent/user/v1/reject/${consentId}`,
+    {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    }
+  );
+  await completeCommon(res, response);
+  return Promise.resolve();
+});

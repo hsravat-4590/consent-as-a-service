@@ -34,12 +34,12 @@ export class ConsentDataSchemaDaInternal extends PrismaDa {
     super(prismaClientService);
   }
 
-  async createSchemaEntry(
-    entries: NonNullable<Array<DataEntry<any>>>
-  ): Promise<DataType> {
+  async createSchemaEntry(entry: DataEntry): Promise<DataType> {
     return await this.prismaClient.dataType.create({
       data: {
-        schema: JSON.stringify(entries),
+        schema: JSON.stringify(entry.schema),
+        uiSchema: JSON.stringify(entry.uiSchema),
+        data: JSON.stringify(entry.data),
       },
     });
   }

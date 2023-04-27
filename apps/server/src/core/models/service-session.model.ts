@@ -21,15 +21,16 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { Optional, UserModel } from '@consent-as-a-service/domain';
+import { ConsentModel, Optional } from '@consent-as-a-service/domain';
 import { LocalDateTime } from '@js-joda/core';
 
 export class ServiceSessionModel {
-  user: Optional<UserModel> = Optional.empty(); // If a user is registered for a particular session
-  expiry: Optional<LocalDateTime> = Optional.empty(); // If a session has a defined expiry
-  org: Optional<string> = Optional.empty(); // OrgId for organisation linked to the session
-  lastRequest: Optional<any> = Optional.empty(); // Last httpRequest made by this session
-  transaction: Optional<string> = Optional.empty();
+  completeConsentLookupCursor: Optional<ConsentModel> = Optional.empty();
+  fulfilledConsentLookupCursor: Optional<ConsentModel> = Optional.empty();
+
+  sessionExpiry: Optional<LocalDateTime> = Optional.of(
+    LocalDateTime.now().plusMinutes(60),
+  );
 
   clear() {
     Object.entries(this).forEach(([key]) => {
@@ -37,5 +38,21 @@ export class ServiceSessionModel {
         this[key] = Optional.empty();
       }
     });
+  }
+
+  clearSome<K extends keyof ServiceSessionModel>(...models: K[]) {
+    models.forEach((m) => {
+      if (this[m] instanceof Optional) {
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        this[m] = Optional.empty();
+      }
+    });
+  }
+}
+
+declare module 'express-session' {
+  interface SessionData {
+    sessionModel: ServiceSessionModel;
   }
 }

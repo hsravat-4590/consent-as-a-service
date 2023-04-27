@@ -21,14 +21,32 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { LocalDateTime } from '@js-joda/core';
+import { LocalDateTime } from "@js-joda/core";
+import { empty, JsonEncoder, mapNullable, Optional } from "../util";
 
 export interface ConsentDataModel {
   id: NonNullable<string>;
-  dataTypeRef: string;
-  dataRef: string;
+  data: any;
   hash: string;
-  sizeBytes: number;
-  name: string;
+  schemaId: string;
   dateCreated: LocalDateTime;
 }
+
+export const ConsentDataModel = (
+  dataSchemaId: string,
+  data: any,
+  id: Optional<string> = empty()
+): Omit<ConsentDataModel, "id"> | ConsentDataModel => {
+  const model: any = {
+    data: data,
+    hash: mapNullable(JsonEncoder.btoa, data),
+    schemaId: dataSchemaId,
+    dateCreated: LocalDateTime.now(),
+  };
+  if (id.isPresent()) {
+    model.id = id.get();
+    return model as ConsentDataModel;
+  } else {
+    return model as Omit<ConsentDataModel, "id">;
+  }
+};

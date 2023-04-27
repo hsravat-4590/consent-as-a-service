@@ -24,8 +24,13 @@
 import { applyDecorators, SetMetadata, UseGuards } from '@nestjs/common';
 import { Auth0Roles } from './auth0.roles';
 import { RolesGuard } from './roles.guard';
+import { RequireAuth } from '../../auth/require-auth.decorator';
 
 export const ROLES_KEY = 'roles';
 export const Roles = (...roles: Auth0Roles[]) => {
-  return applyDecorators(UseGuards(RolesGuard), SetMetadata(ROLES_KEY, roles));
+  return applyDecorators(
+    UseGuards(RolesGuard),
+    SetMetadata(ROLES_KEY, roles),
+    RequireAuth(),
+  );
 };

@@ -22,3 +22,10 @@
  */
 
 export * from "./health.status";
+export * from "./consent.network.model";
+export * from "./consent-request.network.model";
+export * from "./request-metadata.network.model";
+export * from "./user-permissions.network.model";
+export * from "./consent-complete.network.model";
+export * from "./user-read-fulfilled.network.model";
+export * from "./consent-data-request.network.model";

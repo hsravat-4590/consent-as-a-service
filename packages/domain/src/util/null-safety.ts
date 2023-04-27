@@ -21,24 +21,23 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { UserModel } from "./user.model";
+export const mapNullable = <Old, New>(
+  mapperFunction: MapperFunction<Old, New>,
+  old?: Old
+): Nullable<New> => {
+  if (old) {
+    return mapperFunction(old);
+  } else {
+    return null;
+  }
+};
 
-export interface RequesterModel {
-  id: NonNullable<string>;
-  /**
-   * UserModel linked with Requester
-   */
-  user: UserModel;
-  /**
-   * DisplayName for Requester
-   */
-  displayName: NonNullable<string>;
-  /**
-   * Url to Banner Resource
-   */
-  banner?: string;
-  /**
-   * URL to logo resource
-   */
-  logo?: string;
-}
+export const mapNullableUrl = (url?: URL): Nullable<string> => {
+  if (url) {
+    return url.toString();
+  }
+  return undefined;
+};
+
+export type MapperFunction<Old, New> = (oldType: Old) => New;
+export type Nullable<T> = T | null | undefined;

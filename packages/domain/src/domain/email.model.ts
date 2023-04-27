@@ -22,33 +22,29 @@
  */
 
 import { Validate } from "../util";
+import { StringPrimitive } from "./domain.primitive";
+import ValidationException = Validate.ValidationException;
 
-export class EmailModel {
-  _email: string;
-
-  private regexp = new RegExp(
+export class EmailModel extends StringPrimitive {
+  private static regexp = new RegExp(
     /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
   );
 
   constructor(email: string) {
-    this.checkAndSet(email);
-    this._email = email; //Re-set to prevent compiler error
+    super(email);
   }
 
   get email() {
-    return this._email;
+    return super.it;
   }
 
-  set email(email: string) {
-    this.checkAndSet(email);
+  getRegex(): RegExp {
+    return EmailModel.regexp;
   }
 
-  private checkAndSet(email: string) {
-    Validate.ValidateState(() => this.regexp.test(email), {
-      errorException: new InvalidEmailAddressError("Email Address Invalid"),
-    });
-    this._email = email;
+  protected getValidationException(): Error {
+    return new InvalidEmailAddressError();
   }
 }
 
-export class InvalidEmailAddressError extends Error {}
+export class InvalidEmailAddressError extends ValidationException {}

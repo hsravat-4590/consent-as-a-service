@@ -21,34 +21,21 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { ConsentRequests, TxnLog } from "@prisma/client";
+import { ConsentRequest, TxnLog } from "@prisma/client";
 import {
   AsyncOptional,
+  ConsentCreatorModel,
   ConsentRequestModel,
   DataEntry,
-  DataSchema,
   Optional,
 } from "@consent-as-a-service/domain";
-import { mapConsentRequestToModel } from "../internal/mappers/consent-request.mapper";
-import { container } from "tsyringe";
-import { PrismaClientService } from "../internal/services/prisma-client.service";
-import { TransactionDaInternal } from "../internal/prisma-da/transaction.da.internal";
-import {
-  ConsentRequestDaInternal,
-  CreateConsentRequestOptions,
-  CreateConsentResultType,
-} from "../internal/prisma-da/consent-request.da.internal";
-import { ConsentDataSchemaDaInternal } from "../internal/prisma-da/consent-data-schema.da.internal";
+import { mapConsentRequest } from "../internal/mappers/consent-request.mapper";
+import getServices from "../internal/services/get-services";
+import NotImplementedError from "@consent-as-a-service/domain/dist/errors/not-implemented.error";
+import { WholeConsentRequest } from "../internal/prisma-da/consent-request.da.internal";
+import { mapDataTypeToSchema } from "../internal/mappers/schema.mapper";
 
 export namespace ConsentRequestDA {
-  async function getServices() {
-    const prismaClientService = container.resolve(PrismaClientService);
-    const txnDa = container.resolve(TransactionDaInternal);
-    const internalDa = container.resolve(ConsentRequestDaInternal);
-    const schemaDa = container.resolve(ConsentDataSchemaDaInternal);
-    return { prismaClientService, txnDa, internalDa, schemaDa };
-  }
-
   /**
    * High Level abstraction for creating consent requests on the server.
    * Will take a Consent Model and will also handle setting up a new txn for this request
@@ -57,33 +44,26 @@ export namespace ConsentRequestDA {
    */
   export const CreateConsentRequestType = async (
     options: CreateConsentRequestOptions,
-    dataSchema: Array<DataEntry<any>>
+    dataSchema: DataEntry,
+    requester: ConsentCreatorModel
   ): Promise<CreateConsentResultType> => {
     console.log("Creating a new Consent Request Type");
-    const { prismaClientService, txnDa, internalDa, schemaDa } =
-      await getServices();
-    await prismaClientService.connect();
-    const txn = await txnDa.createTxn({
-      txnStatus: "CREATED",
-    });
-    const schemaEntry = await schemaDa.createSchemaEntry(dataSchema);
-    const schema = {
-      id: schemaEntry.typeId,
-      entries: dataSchema,
-    } as DataSchema;
+    const { consentRequestDa, consentDataSchemaDa } = getServices();
+    const schemaEntry = await consentDataSchemaDa.createSchemaEntry(dataSchema);
+    const schema = mapDataTypeToSchema(schemaEntry);
 
-    const dbR: ConsentRequests = await internalDa.createConsentRequestType(
-      txn.txnId,
-      {
-        title: options.title,
-        description: options.description,
-        schema: schema,
-        callbackUrl: options.callbackUrl,
-      }
-    );
-
+    const dbR: ConsentRequest & { txn: TxnLog } =
+      await consentRequestDa.createConsentRequestType(
+        {
+          title: options.title,
+          description: options.description,
+          callbackUrl: options.callbackUrl,
+        },
+        requester.id,
+        schema.id
+      );
     return {
-      txnId: txn.txnId,
+      txnId: dbR.txn.chainId,
       consentRequestId: dbR.consentRequestId,
       schemaId: schemaEntry.typeId,
     } as CreateConsentResultType;
@@ -92,28 +72,40 @@ export namespace ConsentRequestDA {
   /**
    * Reads out the txn with a deep link to a TxnModel
    * @param consentRequestId
+   * @param withConsents NOT Yet implemented. withConsents provides functionality to link in Consents with the ConsentRequest
    * @constructor
    */
   export const ReadConsentRequest = async (
-    consentRequestId: NonNullable<string>
+    consentRequestId: NonNullable<string>,
+    withConsents: boolean = false
   ): AsyncOptional<ConsentRequestModel> => {
-    console.log("Reading a ConsentRequest");
-    const { prismaClientService, txnDa, internalDa, schemaDa } =
-      await getServices();
-    await prismaClientService.connect();
-    const req: Optional<ConsentRequests> = await internalDa.readConsentRequest(
-      consentRequestId
-    );
-
+    if (withConsents) {
+      throw new NotImplementedError(
+        "Read ConsentRequest with consents has not been implemented"
+      );
+    }
+    const { consentRequestDa, userDa } = getServices();
+    const req: Optional<WholeConsentRequest> =
+      await consentRequestDa.readWholeConsentRequest(
+        consentRequestId,
+        withConsents
+      );
+    let requester = null;
     if (!req.isPresent()) {
       return Optional.empty();
     }
-    //Get the Data
-    const schema = await schemaDa.readSchema(req.get().dataId);
-    const txnModel: Optional<TxnLog> = await txnDa.readTxn(req.get().txnId);
+    requester = req.get();
+    const owner = await Optional.unwrapAsync(
+      userDa.readRequester(requester.id)
+    );
+
     //Map to Domain
     return Optional.of(
-      mapConsentRequestToModel(req.get(), txnModel.get(), schema.get())
+      mapConsentRequest({
+        request: req.get(),
+        owner: owner.userId,
+        schema: requester.dataType,
+      })
     );
   };
 
@@ -125,10 +117,9 @@ export namespace ConsentRequestDA {
   export const VoidConsentRequest = async (
     consentRequestId: NonNullable<string>
   ): Promise<string> => {
-    const { prismaClientService, txnDa, internalDa } = await getServices();
-    await prismaClientService.connect();
-    const consentRequestModel: Optional<ConsentRequests> =
-      await internalDa.readConsentRequest(consentRequestId);
+    const { txnDa, consentRequestDa } = getServices();
+    const consentRequestModel: Optional<ConsentRequest> =
+      await consentRequestDa.readConsentRequest(consentRequestId);
 
     if (consentRequestModel.isPresent()) {
       const txnId = consentRequestModel.get().txnId;
@@ -141,5 +132,15 @@ export namespace ConsentRequestDA {
         "Unable to void request, no matching transaction present"
       );
     }
+  };
+
+  export type CreateConsentRequestOptions = Pick<
+    ConsentRequestModel,
+    "title" | "description" | "callbackUrl"
+  >;
+  export type CreateConsentResultType = {
+    txnId: string;
+    consentRequestId: string;
+    schemaId: string;
   };
 }

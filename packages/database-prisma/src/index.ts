@@ -21,5 +21,24 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 import "reflect-metadata";
+import { container } from "tsyringe";
+import { PrismaClientService } from "./internal/services/prisma-client.service";
 
 export * from "./transactions";
+
+export const bootstrap = () => {
+  const prismaClientService = container.resolve(PrismaClientService);
+
+  const onStart = async () => {
+    await prismaClientService.connect();
+  };
+
+  const onExit = (appExitRunner: () => Promise<void>) => {
+    prismaClientService.prismaClient.$on(
+      "beforeExit",
+      async () => await appExitRunner()
+    );
+  };
+
+  return { onStart, onExit };
+};

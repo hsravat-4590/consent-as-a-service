@@ -71,7 +71,29 @@ export class Optional<T> {
       await runnable();
     }
   }
+  orElseRunSync(runnable: () => void): T {
+    if (this.isPresent()) {
+      return this.value;
+    } else {
+      runnable();
+    }
+  }
 
+  orElseGetSync(supplier: () => NonNullable<T>): T {
+    if (this.isPresent()) {
+      return this.value;
+    } else {
+      return supplier();
+    }
+  }
+
+  map<New>(mapperFunc: (it: T) => New): Optional<New> {
+    if (this.isPresent()) {
+      return Optional.of(mapperFunc(this.value));
+    } else {
+      return Optional.EMPTY;
+    }
+  }
   static of<T>(item: T): Optional<T> {
     if (!!!item) {
       throw new NullPointerException("Item provided must not be null!");
@@ -86,7 +108,14 @@ export class Optional<T> {
   static empty<T>(): Optional<T> {
     return Optional.EMPTY;
   }
+
+  static async unwrapAsync<T>(asyncOptional: AsyncOptional<T>): Promise<T> {
+    const optional = await asyncOptional;
+    return optional.get();
+  }
 }
+
+export const empty = <T>() => Optional.empty<T>();
 
 /**
  * This type wraps an optional in a promise for Asynchronous uses

@@ -2,14 +2,17 @@
   "name": "@consent-as-a-service/domain",
   "version": "1.0.0",
   "description": "Domain Models and Primitives for ConsentAsAService",
+  "main": "./dist/index",
+  "types": "./dist/index",
   "scripts": {
-    "build": "tsc -p tsconfig.json",
+    "build": "tsc --build --force tsconfig.json",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage"
   },
   "dependencies": {
-    "@js-joda/core": "^5.5.2"
+    "@js-joda/core": "^5.5.2",
+    "encrypt-string": "1.0.0"
   },
   "devDependencies": {
     "tsconfig": "workspace:*",

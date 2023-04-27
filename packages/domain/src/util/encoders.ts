@@ -21,35 +21,19 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { Controller, Get, Param, Post, Query, UseGuards } from '@nestjs/common';
-import { TransactionService } from '../core/services/transaction.service';
-import { TransactionModel, TxnStatus } from '@consent-as-a-service/domain';
-import { AuthGuard } from '@nestjs/passport';
+export const atob = (str) => new Buffer(str, "base64").toString("binary");
+export const btoa = (str) => new Buffer(str, "binary").toString("base64");
 
-/**
- * FOR DEVELOPMENT PROCESS ONLY. WON'T BE INCLUDED AFTER PROD
- */
-@Controller('transaction')
-export class TransactionController {
-  constructor(private transactionService: TransactionService) {}
+export namespace JsonEncoder {
+  export const atob = <T>(str) => new Buffer(str, "base64").toJSON() as T;
 
-  @Post()
-  @UseGuards(AuthGuard('jwt'))
-  async createNew(): Promise<string> {
-    return await this.transactionService.createTransaction(false);
-  }
-
-  @Post('update')
-  async updateTxn(
-    @Query('txnId')
-    id: string,
-    @Query('status') updatedStatus: TxnStatus,
-  ) {
-    return await this.transactionService.updateTransaction(id, updatedStatus);
-  }
-
-  @Get()
-  async getTransaction(@Param('txnId') id: string): Promise<TransactionModel> {
-    return await this.transactionService.readTransaction(id);
-  }
+  export const btoa = <T>(obj: T) =>
+    new Buffer(JSON.stringify(obj), "binary").toString("base64");
 }
+export const urlOfNullable = (str?: string) => {
+  if (str) {
+    return new URL(str);
+  } else {
+    return null;
+  }
+};

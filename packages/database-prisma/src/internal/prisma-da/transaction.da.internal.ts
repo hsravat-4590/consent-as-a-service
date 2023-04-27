@@ -58,13 +58,23 @@ export class TransactionDaInternal extends PrismaDa {
     );
   }
 
+  async readTxnsWithId(txnId: NonNullable<string>): AsyncOptional<TxnLog> {
+    return Optional.ofNullable(
+      await this.prismaClient.txnLog.findFirst({
+        where: {
+          txnId: txnId,
+        },
+      })
+    );
+  }
+
   async readWholeTxn(
     txnId: NonNullable<string>,
     order: TxnOrderStrategy
   ): Promise<TxnLog[]> {
     return await this.prismaClient.txnLog.findMany({
       where: {
-        txnId: txnId,
+        chainId: txnId,
       },
       orderBy: {
         datetime: order,
@@ -76,9 +86,23 @@ export class TransactionDaInternal extends PrismaDa {
     txnId: NonNullable<string>,
     options: UpdateTransactionOptions
   ): Promise<TxnLog> {
+    // Find the parent
+    const allTxnsInChain = await this.prismaClient.txnLog.findMany({
+      where: {
+        chainId: txnId,
+      },
+    });
+    const newest = allTxnsInChain.sort((a, b) => {
+      return b.datetime.getMilliseconds() - a.datetime.getMilliseconds();
+    })[0];
     return await this.prismaClient.txnLog.create({
       data: {
-        parent: txnId,
+        chainId: txnId,
+        parentTxn: {
+          connect: {
+            txnId: newest.txnId,
+          },
+        },
         TxnStatus: TxnLog_TxnStatus[options.txnStatus],
       },
     });

@@ -65,6 +65,7 @@ import { ConsentDataController } from './service/consent/consent-data.controller
     NewConsentController,
     UserConsentController,
     ConsentStateController,
+    ConsentDataController,
   ],
   providers: [
     HealthService,

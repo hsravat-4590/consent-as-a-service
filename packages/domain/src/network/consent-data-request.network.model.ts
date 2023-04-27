@@ -21,11 +21,10 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-export * from "./health.status";
-export * from "./consent.network.model";
-export * from "./consent-request.network.model";
-export * from "./request-metadata.network.model";
-export * from "./user-permissions.network.model";
-export * from "./consent-complete.network.model";
-export * from "./user-read-fulfilled.network.model";
-export * from "./consent-data-request.network.model";
+export interface ConsentDataRequestNetworkModel {
+  consentId: string;
+  requestId: string;
+  data: any;
+  expiry: string;
+  lease: string;
+}

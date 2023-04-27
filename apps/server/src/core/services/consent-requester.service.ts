@@ -21,15 +21,30 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import {
+  ForbiddenException,
+  HttpException,
+  HttpStatus,
+  Injectable,
+} from '@nestjs/common';
 import { UserService } from './user.service';
-import { ConsentRequestDA } from '@consent-as-a-service/database-prisma';
+import {
+  ConsentDA,
+  ConsentRequestDA,
+  UserDA,
+} from '@consent-as-a-service/database-prisma';
 import { OrgDa } from '@consent-as-a-service/database-prisma/dist/transactions/org.da';
 import { ConsentRequestModel, Optional } from '@consent-as-a-service/domain';
+import { OrgService } from './org.service';
+import { ConsentVoidService } from './consent-void.service';
 
 @Injectable()
 export class ConsentRequesterService {
-  constructor(private userService: UserService) {}
+  constructor(
+    private userService: UserService,
+    private orgService: OrgService,
+    private consentVoidService: ConsentVoidService,
+  ) {}
 
   async checkConsentOwnerMatches(
     requestId: NonNullable<string>,
@@ -75,13 +90,47 @@ export class ConsentRequesterService {
     } else {
       requestActual = request;
     }
-    const [orgOfRequest] = await Promise.all([
-      Optional.unwrapAsync(OrgDa.GetOrg(requestActual.ownerId)),
-    ]);
+    const requester = await Optional.unwrapAsync(
+      UserDA.GetUser(requestActual.ownerId),
+    );
+
+    const orgOfRequest = await Optional.unwrapAsync(
+      OrgDa.GetOrgByRequester(requester.orgId),
+    );
     if (orgOfRequest.orgId === orgId) {
       return 'ORG_OWNED';
     } else {
       return 'OTHER_OWNER';
+    }
+  }
+
+  async readConsentForRequester(consentId: string) {
+    const requesterUser = await this.userService.hydrateUserWithPrivilege();
+    const consent = await ConsentDA.ReadConsent(consentId, true);
+    const myOrg = await Optional.unwrapAsync(
+      this.orgService.getOrg(requesterUser.orgId),
+    );
+    console.log(`MyOrg is ${JSON.stringify(myOrg)}`);
+    const owner = await this.validateOrgOwner(
+      myOrg.orgId,
+      consent.consentRequest,
+    );
+    switch (owner) {
+      case 'ORG_OWNED':
+        // Allow Reads
+        const expired = await this.consentVoidService.checkConsentVoided(
+          consent.id,
+        );
+        if (expired) {
+          throw new HttpException(
+            'Consent has expired or has been voided',
+            HttpStatus.UNPROCESSABLE_ENTITY,
+          );
+        }
+        // Check and return data
+        return consent;
+      case 'OTHER_OWNER':
+        throw new ForbiddenException('Consent not linked with this Org');
     }
   }
 }

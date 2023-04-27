@@ -276,6 +276,7 @@ export namespace ConsentDA {
   export type UpdateConsentOptions = Partial<
     Pick<ConsentModel, "expiry" | "user" | "consentData">
   >;
+  export type ReadConsentOptions = Pick<ConsentModel, "id">;
 
   export type CreateConsentOptions = Omit<ConsentModel, "transaction">;
 

@@ -22,16 +22,22 @@
  */
 
 import { AppProps } from "next/app";
-import { Component } from "react";
+import { Component, useMemo } from "react";
 import { UserProvider } from "@auth0/nextjs-auth0/client";
 import Layout from "../components/Layout";
-import { ThemeProvider } from "@mui/material";
-import { lightTheme } from "../components/Theme";
+import { ThemeProvider, useMediaQuery } from "@mui/material";
+import { darkTheme, lightTheme } from "../components/Theme";
 import "../styles/fonts.css";
+import "../styles/globals.css";
 
 export default function App({ Component, pageProps }: AppProps) {
+  const prefersDarkMode = useMediaQuery("(prefers-color-scheme: dark)");
+  const theme = useMemo(
+    () => (prefersDarkMode ? darkTheme : lightTheme),
+    [prefersDarkMode]
+  );
   return (
-    <ThemeProvider theme={lightTheme}>
+    <ThemeProvider theme={theme}>
       <UserProvider>
         <Layout>
           <Component {...pageProps} />

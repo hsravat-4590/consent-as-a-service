@@ -11,7 +11,8 @@
     "test:cov": "jest --coverage"
   },
   "dependencies": {
-    "@js-joda/core": "^5.5.2"
+    "@js-joda/core": "^5.5.2",
+    "encrypt-string": "1.0.0"
   },
   "devDependencies": {
     "tsconfig": "workspace:*",

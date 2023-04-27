@@ -25,9 +25,7 @@ import { Module } from '@nestjs/common';
 import { HealthController } from './service/health/health.controller';
 import { HealthService } from './core/services/health.service';
 import { SessionManagementService } from './core/services/session/session-management.service';
-import { TransactionService } from './core/services/transaction.service';
 import { DataModelService } from './core/services/datamodel.service';
-import { TransactionController } from './service/transaction.controller';
 import { AuthModule } from './core/auth/auth.module';
 import { UserService } from './core/services/user.service';
 import { HttpModule } from '@nestjs/axios';
@@ -54,11 +52,11 @@ import { ConsentStateService } from './core/services/consent-state.service';
 import { ConsentRequesterService } from './core/services/consent-requester.service';
 import { ConsentStateController } from './service/consent/consent-state.controller';
 import { UserConsentService } from './core/services/user-consent.service';
+import { ConsentDataController } from './service/consent/consent-data.controller';
 
 @Module({
   imports: [AuthModule, HttpModule, ConfigModule.forRoot()],
   controllers: [
-    TransactionController,
     HealthController,
     LoginController,
     ConsentRequestController,
@@ -71,7 +69,6 @@ import { UserConsentService } from './core/services/user-consent.service';
   providers: [
     HealthService,
     SessionManagementService,
-    TransactionService,
     DataModelService,
     UserService,
     Auth0Guard,

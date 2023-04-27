@@ -28,11 +28,12 @@ import {
   TransactionDA,
 } from '@consent-as-a-service/database-prisma';
 import { Optional, TransactionModel } from '@consent-as-a-service/domain';
+import { LocalDateTime } from '@js-joda/core';
 
 @Injectable()
 export class ConsentVoidService {
   /**
-   * Checks if a consent has any need to be voided
+   * Checks if a consent has any need to be voided. Includes Expiry targets
    * @param consentId
    */
   async checkConsentVoided(consentId: NonNullable<string>) {
@@ -43,6 +44,10 @@ export class ConsentVoidService {
       consent.transaction,
     );
     if (checkTxnVoidState(transaction)) {
+      return true;
+    }
+    if (consent.expiry.isBefore(LocalDateTime.now())) {
+      await this.voidConsent(consentId);
       return true;
     }
     const request = await Optional.unwrapAsync(

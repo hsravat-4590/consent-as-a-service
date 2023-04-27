@@ -35,18 +35,28 @@ import { Roles } from '../../core/authorisation/rbac/roles.decorator';
 import { ConsentLifecycleService } from '../../core/services/consent-lifecycle.service';
 import {
   ConsentCompleteNetworkModel,
+  ConsentModel,
+  ConsentRequestModel,
   DataSubmission,
   mapNullable,
   mapNullableUrl,
+  OrgModel,
   UserConsentReadNetworkResponse,
+  UserReadFulfilledNetworkModel,
 } from '@consent-as-a-service/domain';
+import { UserConsentService } from '../../core/services/user-consent.service';
+import { UserService } from '../../core/services/user.service';
 
 @Controller('consent/user/v1')
 export class UserConsentController {
-  constructor(private consentLifecycleService: ConsentLifecycleService) {}
-  @Get(':consentId')
+  constructor(
+    private consentLifecycleService: ConsentLifecycleService,
+    private userConsentService: UserConsentService,
+    private userService: UserService,
+  ) {}
+  @Get('request/:consentId')
   @Roles(Auth0Roles.USER)
-  async getConsent(@Param('consentId') consentId: string) {
+  async getConsentRequest(@Param('consentId') consentId: string) {
     const promise = await this.consentLifecycleService.readConsentForRequest(
       consentId,
     );
@@ -103,6 +113,46 @@ export class UserConsentController {
     await this.consentLifecycleService.rejectConsent(consentId);
     return {
       callbackUrl: request.callbackUrl.toString(),
+    };
+  }
+
+  @Get('/all')
+  @Roles(Auth0Roles.USER)
+  async getAllFulfilledConsents() {
+    const user = await this.userService.getUser();
+    const fulfilledConsents =
+      await this.userConsentService.getNextFulfilledConsentsForUser(user.id);
+    return fulfilledConsents.map((it) =>
+      UserReadFulfilledNetworkModel.from(it),
+    );
+  }
+
+  @Get(':consentId')
+  @Roles(Auth0Roles.USER)
+  async readWholeConsent(@Param('consentId') consentId) {
+    const { consent, org, request } =
+      await this.consentLifecycleService.readFulfilledConsent(consentId);
+    return this.getReadResponseType(request, org, consent);
+  }
+
+  private getReadResponseType(
+    request: ConsentRequestModel,
+    org: OrgModel,
+    consent: ConsentModel,
+  ): UserReadFulfilledNetworkModel {
+    return {
+      consentId: consent.id,
+      title: request.title,
+      description: request.description,
+      org: {
+        logo: mapNullableUrl(org.logo),
+        displayName: org.displayName,
+        banner: mapNullableUrl(org.banner),
+        email: org.email.email,
+      },
+      created: consent.consentData.dateCreated.toString(),
+      expiry: consent.expiry.toString(),
+      consentData: consent.consentData.data,
     };
   }
 }

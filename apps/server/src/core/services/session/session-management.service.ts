@@ -23,7 +23,6 @@
 
 import { Inject, Injectable, Scope } from '@nestjs/common';
 import { Request } from 'express';
-import { Optional, UserModel } from '@consent-as-a-service/domain';
 import { Session, SessionData } from 'express-session';
 import { LocalDateTime } from '@js-joda/core';
 import { ServiceSessionModel } from '../../models/service-session.model';
@@ -39,30 +38,22 @@ export class SessionManagementService {
     this.serviceSessionModel = this.session.serviceSessionModel;
   }
 
-  getUserForRequest(): UserModel {
-    const userModel: Optional<UserModel> = this.serviceSessionModel.user;
-    return userModel.get();
-  }
-
-  isUserPresentOnRequest(): boolean {
-    return this.serviceSessionModel.user.isPresent();
-  }
-
-  isOrgOnRequest(): boolean {
-    return this.serviceSessionModel.org.isPresent();
-  }
-
   validateSession(): Promise<ValidateSessionResponse> {
     return new Promise<ValidateSessionResponse>((resolve, reject) => {
       const now = LocalDateTime.now();
-      const expiry = this.serviceSessionModel.expiry.orElse(LocalDateTime.MIN); // Expire by default
+      const expiry = this.serviceSessionModel.sessionExpiry.orElse(
+        LocalDateTime.MIN,
+      ); // Expire by default
       now.isBefore(expiry) ? resolve('OK') : reject('EXPIRED');
     });
   }
 
+  async validateAndRespawn() {
+    await this.validateSession().catch(this.getSessionForRequest);
+  }
+
   private getSessionForRequest(): Session & Partial<SessionData> {
     const session = this.request.session;
-    console.log(`Session is ${JSON.stringify(session)}`); //TODO Remove
     if (!Object.hasOwn(session, 'serviceSessionModel')) {
       session.serviceSessionModel = new ServiceSessionModel();
     }

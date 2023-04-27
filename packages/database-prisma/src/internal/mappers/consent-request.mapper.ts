@@ -21,11 +21,10 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { Consent, ConsentRequest, DataType } from "@prisma/client";
+import { ConsentRequest, DataType } from "@prisma/client";
 import { ConsentRequestModel } from "@consent-as-a-service/domain";
 import { mapDataTypeToSchema } from "./schema.mapper";
 import { WholeConsentRequest } from "../prisma-da/consent-request.da.internal";
-import { mapConsentToModel } from "./consent.mapper";
 
 export const mapConsentRequest = (opt: ConsentRequestMapperOptions) => {
   const requestModel: ConsentRequestModel = {
@@ -49,24 +48,11 @@ export const mapWholeConsentRequest = (req: WholeConsentRequest) => {
     description: req.description,
     schema: mapDataTypeToSchema(req.dataType),
     callbackUrl: new URL(req.callbackUrl),
-    consents: req.consents.map((it) =>
-      mapConsentToModel({
-        requester: it.requesterId,
-        user: undefined,
-        consent: it,
-        consentRequest: {
-          request: req,
-          owner: req.ownerId,
-          schema: req.dataType,
-        },
-      })
-    ),
   };
 };
 
 export type ConsentRequestMapperOptions = {
   request: ConsentRequest;
   owner: string;
-  consents?: Array<Consent>;
   schema: DataType;
 };

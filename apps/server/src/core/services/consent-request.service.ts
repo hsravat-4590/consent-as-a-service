@@ -74,7 +74,6 @@ export class ConsentRequestService {
     });
     const request = consentRequestModelOptional.get();
     return {
-      consents: undefined,
       ownerId: '',
       description: request.description,
       schema: request.schema,

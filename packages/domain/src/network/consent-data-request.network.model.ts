@@ -21,35 +21,10 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { Controller, Get, Param, Post, Query, UseGuards } from '@nestjs/common';
-import { TransactionService } from '../core/services/transaction.service';
-import { TransactionModel, TxnStatus } from '@consent-as-a-service/domain';
-import { AuthGuard } from '@nestjs/passport';
-
-/**
- * FOR DEVELOPMENT PROCESS ONLY. WON'T BE INCLUDED AFTER PROD
- */
-@Controller('transaction')
-export class TransactionController {
-  constructor(private transactionService: TransactionService) {}
-
-  @Post()
-  @UseGuards(AuthGuard('jwt'))
-  async createNew(): Promise<string> {
-    return await this.transactionService.createTransaction(false);
-  }
-
-  @Post('update')
-  async updateTxn(
-    @Query('txnId')
-    id: string,
-    @Query('status') updatedStatus: TxnStatus,
-  ) {
-    return await this.transactionService.updateTransaction(id, updatedStatus);
-  }
-
-  @Get()
-  async getTransaction(@Param('txnId') id: string): Promise<TransactionModel> {
-    return await this.transactionService.readTransaction(id);
-  }
+export interface ConsentDataRequestNetworkModel {
+  consentId: string;
+  requestId: string;
+  data: any;
+  expiry: string;
+  lease: string;
 }

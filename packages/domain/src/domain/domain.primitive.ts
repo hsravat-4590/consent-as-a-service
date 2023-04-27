@@ -61,4 +61,8 @@ export abstract class StringPrimitive extends DomainPrimitive<
   protected getValidationException(): Error {
     return new ValidationException("Provided string does not match regex");
   }
+
+  toJSON() {
+    return this.it;
+  }
 }

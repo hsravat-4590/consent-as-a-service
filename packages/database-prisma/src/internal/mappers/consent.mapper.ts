@@ -21,7 +21,7 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { Consent, User } from "@prisma/client";
+import { Consent, ConsentData, User } from "@prisma/client";
 import { ConsentModel, mapNullable } from "@consent-as-a-service/domain";
 import { convertDateToLocalDateTime } from "./util-type.mapper";
 import { mapUserToModel } from "./user.mapper";
@@ -29,12 +29,14 @@ import {
   ConsentRequestMapperOptions,
   mapConsentRequest,
 } from "./consent-request.mapper";
+import { mapConsentDataToModel } from "./consent-data.mapper";
 
 export const mapConsentToModel = (options: {
   consent: Consent;
   consentRequest: ConsentRequestMapperOptions;
   requester: string;
   user?: User;
+  data?: ConsentData;
 }) => {
   return {
     id: options.consent.consentId,
@@ -43,5 +45,6 @@ export const mapConsentToModel = (options: {
     user: mapNullable(mapUserToModel, options.user),
     requester: options.requester,
     transaction: options.consent.txnId,
+    consentData: mapNullable(mapConsentDataToModel, options.data),
   } as ConsentModel;
 };

@@ -26,6 +26,7 @@ import { mapConsentToModel } from "../internal/mappers/consent.mapper";
 import {
   ConsentModel,
   ConsentRequesterModel,
+  DeepLinkedConsent,
   Optional,
   TransactionModel,
   TxnStatus,
@@ -34,6 +35,9 @@ import {
 import { ConsentRequester, User } from "@prisma/client";
 import { mapTxnLogToModel } from "../internal/mappers/txn-log.mapper";
 import getServices from "../internal/services/get-services";
+import { mapUserToModel } from "../internal/mappers/user.mapper";
+import { mapConsentRequest } from "../internal/mappers/consent-request.mapper";
+import { mapOrgToModel } from "../internal/mappers/org.mapper";
 
 export namespace ConsentDA {
   /**
@@ -212,9 +216,56 @@ export namespace ConsentDA {
       },
       requester: requester.id,
       user,
+      data: consent.consentData,
     });
   };
 
+  export const ReadAllConsentsForUser = async (
+    mdl: UserModel,
+    cursor?: string
+  ): Promise<DeepLinkedConsent[]> => {
+    const { consentDa, txnDa } = getServices();
+    const consents = await consentDa.readConsentsForUserWithPagination(mdl.id, {
+      take: 10,
+      cursor: !!cursor
+        ? {
+            consentId: cursor,
+          }
+        : undefined,
+    });
+    let newArr = [];
+    for (const consent of consents) {
+      const evenNewerModel: DeepLinkedConsent =
+        ConsentModel.applyDeepLinkToConsent(
+          mapConsentToModel({
+            consent,
+            consentRequest: {
+              request: consent.consentRequest,
+              owner: consent.consentRequest.ownerId,
+              schema: consent.consentRequest.dataType,
+            },
+            requester: consent.requester.id,
+            user: consent.user,
+            data: consent.consentData,
+          }),
+          mapTxnLogToModel(
+            await Optional.unwrapAsync(txnDa.readTxn(consent.txn.chainId))
+          ),
+          mapUserToModel(consent.user),
+          mapConsentRequest({
+            request: consent.consentRequest,
+            owner: consent.requester.id,
+            schema: consent.consentRequest.dataType,
+          }),
+          {
+            id: consent.requester.id,
+          },
+          mapOrgToModel(consent.requester.user.org)
+        );
+      newArr.push(evenNewerModel);
+    }
+    return newArr;
+  };
   export type AcceptConsentWithDataOptions = Pick<
     ConsentModel,
     "id" | "user" | "expiry" | "consentData" // ConsentData isn't handled here but still checked for state validity
@@ -226,12 +277,13 @@ export namespace ConsentDA {
   export type UpdateConsentOptions = Partial<
     Pick<ConsentModel, "expiry" | "user" | "consentData">
   >;
+  export type ReadConsentOptions = Pick<ConsentModel, "id">;
 
   export type CreateConsentOptions = Omit<ConsentModel, "transaction">;
 
-  export type ReadConsentOptions = Pick<ConsentModel, "id">;
+  export type ReadConsentWithModelOptions = Pick<ConsentModel, "id">;
 
   export type ReadAllConsentOptions = Partial<
-    Pick<ConsentModel, "id" | "consentRequest">
+    Partial<Pick<ConsentModel, "id" | "consentRequest" | "user">>
   >;
 }

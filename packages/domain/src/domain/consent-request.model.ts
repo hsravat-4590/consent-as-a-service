@@ -32,5 +32,11 @@ export interface ConsentRequestModel {
   description: string;
   schema?: DataSchema;
   callbackUrl: URL;
-  consents?: Array<string | ConsentModel>;
 }
+
+export type ConsentRequestModelWithConsentIds = ConsentRequestModel & {
+  consents: Array<string>;
+};
+export type ConsentRequestModelWithConsents = ConsentRequestModel & {
+  consents: Array<ConsentModel>;
+};

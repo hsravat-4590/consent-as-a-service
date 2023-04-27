@@ -22,13 +22,13 @@
  */
 
 import { ConsentData } from "@prisma/client";
-import { ConsentDataModel, JsonEncoder } from "@consent-as-a-service/domain";
+import { ConsentDataModel } from "@consent-as-a-service/domain";
 import { convertDateToLocalDateTime } from "./util-type.mapper";
 
 export const mapConsentDataToModel = (consentData: ConsentData) => {
   return {
     id: consentData.id,
-    data: JsonEncoder.atob(consentData.data),
+    data: consentData.data,
     hash: consentData.hash,
     schemaId: consentData.schemaId,
     dateCreated: convertDateToLocalDateTime(consentData.dateCreated),

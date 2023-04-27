@@ -60,7 +60,7 @@ const typography: Pick<ThemeOptions, "typography"> = {
       font: headingFont,
     },
     subtitle1: {
-      fontFamily: "Open Sans",
+      fontFamily: "Roboto",
     },
     fontFamily: "Roboto",
   },
@@ -79,6 +79,13 @@ const components: Pick<ThemeOptions, "components"> = {
         elevation: 0,
       },
       styleOverrides: {},
+    },
+    MuiChip: {
+      defaultProps: {
+        sx: {
+          p: 2.25,
+        },
+      },
     },
     MuiButton: {
       defaultProps: {

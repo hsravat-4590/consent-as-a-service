@@ -25,36 +25,56 @@
 import { useUser } from "@auth0/nextjs-auth0/client";
 import { useEffect, useState } from "react";
 import LandingPage from "../components/LandingPage";
+import { HealthStatus } from "@consent-as-a-service/domain";
+import Typography from "@mui/material/Typography";
+import { Box, Chip } from "@mui/material";
+import { Wifi, WifiOff } from "@mui/icons-material";
+import UserConsentsGrid from "../components/UserConsentsGrid";
 
 export default function Index() {
   const { user, error, isLoading } = useUser();
-  const [data, setData] = useState(null);
-
+  const [serverHealth, setServerHealth] = useState({
+    serverStatus: "DOWN",
+    authenticated: false,
+  } as HealthStatus);
   useEffect(() => {
     fetch("/api/service/health/server-health")
       .then((res) => res.json())
-      .then((data) => {
-        setData(data);
+      .then((data: HealthStatus) => {
+        setServerHealth(data);
       });
   }, []);
 
   if (isLoading) return <div>Loading...</div>;
   if (error) return <div>{error.message}</div>;
-  if (!data) {
-    return "Can't connect to Server";
+  if (serverHealth.serverStatus === "DOWN") {
+    return <ConnectionChip healthStatus={serverHealth} />;
   }
   if (user) {
     return (
-      <div>
-        <div>
-          Welcome {user.name}! <a href="/api/auth/logout">Logout</a>
-        </div>
-        <div>{JSON.stringify(data)}</div>
-      </div>
+      <>
+        <Box
+          sx={{
+            m: 2.5,
+          }}
+        >
+          <Typography variant="h2">Welcome {user.name}!</Typography>
+          <ConnectionChip healthStatus={serverHealth} />
+          <Box sx={{ my: 2 }}>
+            <UserConsentsGrid />
+          </Box>
+        </Box>
+      </>
     );
   } else {
     return <LandingPage />;
   }
+}
 
-  return <a href="/api/auth/login">Login</a>;
+function ConnectionChip({ healthStatus }: { healthStatus: HealthStatus }) {
+  if (healthStatus.serverStatus === "UP") {
+    return <Chip icon={<Wifi />} label="Connected to Server" />;
+  } else {
+    return <Chip icon={<WifiOff />} label="Can't connect to server" />;
+  }
 }

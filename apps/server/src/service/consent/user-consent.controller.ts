@@ -141,6 +141,7 @@ export class UserConsentController {
     consent: ConsentModel,
   ): UserReadFulfilledNetworkModel {
     return {
+      consentId: consent.id,
       title: request.title,
       description: request.description,
       org: {

@@ -25,6 +25,7 @@ import { DeepLinkedConsent } from "../domain";
 import { mapNullableUrl } from "../util";
 
 export interface UserReadFulfilledNetworkModel {
+  consentId: string;
   title: NonNullable<string>;
   description: NonNullable<string>;
   org: {
@@ -41,6 +42,7 @@ export interface UserReadFulfilledNetworkModel {
 export namespace UserReadFulfilledNetworkModel {
   export const from = (deepLinkedConsent: DeepLinkedConsent) => {
     return {
+      consentId: deepLinkedConsent.id,
       title: deepLinkedConsent.consentRequestModel.title,
       description: deepLinkedConsent.consentRequestModel.description,
       org: {

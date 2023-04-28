@@ -41,16 +41,20 @@ import {
   mapNullable,
   mapNullableUrl,
   OrgModel,
+  TxnStatus,
   UserConsentReadNetworkResponse,
-  UserReadFulfilledNetworkModel,
+  UserReadConsentNetworkModel,
+  UserReadConsentNetworkModelWithStatus,
 } from '@consent-as-a-service/domain';
 import { UserConsentService } from '../../core/services/user-consent.service';
 import { UserService } from '../../core/services/user.service';
+import { ConsentStateService } from '../../core/services/consent-state.service';
 
 @Controller('consent/user/v1')
 export class UserConsentController {
   constructor(
     private consentLifecycleService: ConsentLifecycleService,
+    private consentStateService: ConsentStateService,
     private userConsentService: UserConsentService,
     private userService: UserService,
   ) {}
@@ -122,9 +126,7 @@ export class UserConsentController {
     const user = await this.userService.getUser();
     const fulfilledConsents =
       await this.userConsentService.getNextFulfilledConsentsForUser(user.id);
-    return fulfilledConsents.map((it) =>
-      UserReadFulfilledNetworkModel.from(it),
-    );
+    return fulfilledConsents.map((it) => UserReadConsentNetworkModel.from(it));
   }
 
   @Get(':consentId')
@@ -132,14 +134,16 @@ export class UserConsentController {
   async readWholeConsent(@Param('consentId') consentId) {
     const { consent, org, request } =
       await this.consentLifecycleService.readFulfilledConsent(consentId);
-    return this.getReadResponseType(request, org, consent);
+    const state = await this.consentStateService.readConsentState(consentId);
+    return this.getReadResponseType(request, org, consent, state);
   }
 
   private getReadResponseType(
     request: ConsentRequestModel,
     org: OrgModel,
     consent: ConsentModel,
-  ): UserReadFulfilledNetworkModel {
+    status: TxnStatus,
+  ): UserReadConsentNetworkModelWithStatus {
     return {
       consentId: consent.id,
       title: request.title,
@@ -153,6 +157,7 @@ export class UserConsentController {
       created: consent.consentData.dateCreated.toString(),
       expiry: consent.expiry.toString(),
       consentData: consent.consentData.data,
+      status,
     };
   }
 }

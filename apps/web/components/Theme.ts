@@ -120,8 +120,8 @@ export const lightTheme = createTheme(baseTheme, {
       dark: "#0c1d29",
     },
     error: {
-      main: "#ffdad6",
-      light: "#ba1a1a",
+      main: "#ba1a1a",
+      light: "#ffdad6",
       dark: "#410002",
     },
     background: {

@@ -29,7 +29,11 @@
     "@jsonforms/core": "^3.0.0",
     "@jsonforms/react": "^3.0.0",
     "@jsonforms/material-renderers": "^3.0.0",
-    "react-window": "^1.8.9"
+    "react-window": "^1.8.9",
+    "react-json-view-2": "^1.23.2",
+    "@js-joda/core": "^5.5.3",
+    "@js-joda/locale": "^4.8.10",
+    "@js-joda/locale_en": "^4.8.10"
   },
   "devDependencies": {
     "@babel/core": "^7.0.0",

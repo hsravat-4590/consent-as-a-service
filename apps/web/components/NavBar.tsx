@@ -15,7 +15,7 @@ import { UserProfile, useUser } from "@auth0/nextjs-auth0/client";
 import { Strings } from "../resources/strings";
 import { useRouter } from "next/router";
 
-const pages = ["Consents", "Manage", "Docs"];
+const pages: string[] = [];
 // const settings = ["Profile", "Logout"];
 let router;
 

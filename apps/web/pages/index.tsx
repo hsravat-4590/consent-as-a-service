@@ -24,34 +24,83 @@
 // pages/index.js
 import { useUser } from "@auth0/nextjs-auth0/client";
 import { useEffect, useState } from "react";
+import LandingPage from "../components/LandingPage";
+import { HealthStatus } from "@consent-as-a-service/domain";
+import Typography from "@mui/material/Typography";
+import { Box, Chip, Grid } from "@mui/material";
+import { WifiOffRounded, WifiRounded } from "@mui/icons-material";
+import UserConsentsGrid from "../components/UserConsentsGrid";
+import NewConsentsGrid from "../components/NewConsentsGrid";
 
 export default function Index() {
   const { user, error, isLoading } = useUser();
-  const [data, setData] = useState(null);
+  const [serverHealth, setServerHealth] = useState({
+    serverStatus: "DOWN",
+    authenticated: false,
+  } as HealthStatus);
 
-  useEffect(() => {
+  function getServerHealth() {
     fetch("/api/service/health/server-health")
       .then((res) => res.json())
-      .then((data) => {
-        setData(data);
+      .then((data: HealthStatus) => {
+        setServerHealth(data);
       });
-  }, []);
+  }
+
+  useEffect(getServerHealth, []);
 
   if (isLoading) return <div>Loading...</div>;
   if (error) return <div>{error.message}</div>;
-  if (!data) {
-    return "Can't connect to Server";
-  }
-  if (user) {
+  if (serverHealth.serverStatus === "DOWN") {
     return (
-      <div>
-        <div>
-          Welcome {user.name}! <a href="/api/auth/logout">Logout</a>
-        </div>
-        <div>{JSON.stringify(data)}</div>
-      </div>
+      <ConnectionChip healthStatus={serverHealth} retry={getServerHealth} />
+    );
+  } else if (user) {
+    return (
+      <>
+        <Box
+          sx={{
+            m: 2.5,
+          }}
+        >
+          <Typography variant="h2">Welcome {user.name}!</Typography>
+          <ConnectionChip healthStatus={serverHealth} />
+          <Grid
+            container
+            width="100%"
+            sx={{ my: 2, flexDirection: { xs: "column", md: "row" } }}
+          >
+            <Grid item xs={12} sm={6}>
+              <UserConsentsGrid />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <NewConsentsGrid />
+            </Grid>
+          </Grid>
+        </Box>
+      </>
+    );
+  } else {
+    return <LandingPage />;
+  }
+}
+
+function ConnectionChip({
+  healthStatus,
+  retry,
+}: {
+  healthStatus: HealthStatus;
+  retry?: () => void;
+}) {
+  if (healthStatus.serverStatus === "UP") {
+    return <Chip icon={<WifiRounded />} label="Connected to Server" />;
+  } else {
+    return (
+      <Chip
+        icon={<WifiOffRounded />}
+        label="Can't connect to server. Tap to retry"
+        onClick={retry}
+      />
     );
   }
-
-  return <a href="/api/auth/login">Login</a>;
 }

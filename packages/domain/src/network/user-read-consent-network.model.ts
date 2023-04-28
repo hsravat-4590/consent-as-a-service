@@ -21,10 +21,10 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { DeepLinkedConsent } from "../domain";
+import { DeepLinkedConsent, TxnStatus } from "../domain";
 import { mapNullableUrl } from "../util";
 
-export interface UserReadFulfilledNetworkModel {
+export interface UserReadConsentNetworkModel {
   consentId: string;
   title: NonNullable<string>;
   description: NonNullable<string>;
@@ -39,7 +39,10 @@ export interface UserReadFulfilledNetworkModel {
   consentData: any;
 }
 
-export namespace UserReadFulfilledNetworkModel {
+export type UserReadConsentNetworkModelWithStatus =
+  UserReadConsentNetworkModel & { status: TxnStatus };
+
+export namespace UserReadConsentNetworkModel {
   export const from = (deepLinkedConsent: DeepLinkedConsent) => {
     return {
       consentId: deepLinkedConsent.id,
@@ -54,6 +57,6 @@ export namespace UserReadFulfilledNetworkModel {
       created: deepLinkedConsent.consentData.dateCreated.toString(),
       expiry: deepLinkedConsent.expiry.toString(),
       consentData: deepLinkedConsent.consentData,
-    } as UserReadFulfilledNetworkModel;
+    } as UserReadConsentNetworkModel;
   };
 }

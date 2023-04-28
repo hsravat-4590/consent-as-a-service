@@ -32,6 +32,7 @@ import { UserDA } from '@consent-as-a-service/database-prisma';
 import { Auth0Roles } from '../authorisation/rbac/auth0.roles';
 import { Auth0RolesService } from './auth0/auth0-roles.service';
 import { Role } from 'auth0';
+import { AxiosError } from 'axios';
 
 @Injectable()
 export class UserService {
@@ -52,7 +53,13 @@ export class UserService {
   async getUser(): Promise<UserModel> {
     // Get the user from AuthToken
     // Fetch
-    const mUser = await this.getUserFromAuth0().catch((_) => {
+    const mUser = await this.getUserFromAuth0().catch((error: AxiosError) => {
+      if (error.status === 429) {
+        throw new HttpException(
+          `Damn Rate Limts!`,
+          HttpStatus.TOO_MANY_REQUESTS,
+        );
+      }
       throw new HttpException(
         'Unable to Authenticate User',
         HttpStatus.UNAUTHORIZED,

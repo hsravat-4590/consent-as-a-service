@@ -34,7 +34,7 @@ async function bootstrap() {
     // this is only called on ctrl+c, not restart
     process.kill(process.pid, 'SIGINT');
   });
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, { cors: true });
   app.use(
     session({
       secret: 'dev-secret-session-key',

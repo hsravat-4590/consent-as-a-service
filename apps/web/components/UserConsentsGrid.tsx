@@ -22,7 +22,7 @@
  */
 
 import { useEffect, useState } from "react";
-import { UserReadFulfilledNetworkModel } from "@consent-as-a-service/domain";
+import { UserReadConsentNetworkModel } from "@consent-as-a-service/domain";
 import {
   Box,
   Card,
@@ -34,24 +34,26 @@ import {
 import Typography from "@mui/material/Typography";
 import { FixedSizeList, ListChildComponentProps } from "react-window";
 import Avatar from "@mui/material/Avatar";
+import { useRouter } from "next/router";
+import { DateTimeFormatter, LocalDateTime } from "@js-joda/core";
+import { Locale } from "@js-joda/locale_en";
 
 /**
  * Uses Lazy loading to slowly load in all fulfilled consents into a responsive grid view
  * @constructor
  */
 export default function UserConsentsGrid() {
+  const router = useRouter();
   const [fulfilledConsents, setFulfilledConsents] = useState<
-    UserReadFulfilledNetworkModel[] | null
-  >(null);
+    UserReadConsentNetworkModel[] | undefined
+  >(undefined);
   const [isLoading, setLoading] = useState(false);
   useEffect(() => {
-    if (fulfilledConsents) {
-      return;
-    }
     setLoading(true);
     fetch("/api/consent/get-all")
       .then((res) => res.json())
       .then((data) => {
+        console.log(`Got the data, its size is ${data.length}`);
         setFulfilledConsents(data);
         setLoading(false);
       });
@@ -59,36 +61,37 @@ export default function UserConsentsGrid() {
 
   return (
     <>
-      <Card sx={{ p: 2 }}>
+      <Card sx={{ p: 2, m: 1 }}>
         <Typography variant="h3">Your Consents</Typography>
-        <GetLoadingOrContent
-          isLoading={isLoading}
-          content={fulfilledConsents as UserReadFulfilledNetworkModel[]}
-        />
+        {isLoading ? (
+          <ContentLoading />
+        ) : (
+          <ContentList content={fulfilledConsents} />
+        )}
       </Card>
     </>
   );
 }
 
-function GetLoadingOrContent({
-  isLoading,
+function ContentLoading() {
+  return (
+    <Box display="flex" sx={{ flexDirection: "column" }}>
+      <Box margin="auto">
+        <CircularProgress />
+      </Box>
+      <Typography variant="body1" margin="auto">
+        Loading... Please Wait
+      </Typography>
+    </Box>
+  );
+}
+
+function ContentList({
   content,
 }: {
-  isLoading: boolean;
-  content: UserReadFulfilledNetworkModel[];
+  content: UserReadConsentNetworkModel[] | undefined;
 }) {
-  if (isLoading) {
-    return (
-      <Box display="flex" sx={{ flexDirection: "column" }}>
-        <Box margin="auto">
-          <CircularProgress />
-        </Box>
-        <Typography variant="body1" margin="auto">
-          Loading... Please Wait
-        </Typography>
-      </Box>
-    );
-  } else if (!content || content.length === 0) {
+  if (!content || !content.length || content.length === 0) {
     return (
       <Box display="flex" sx={{ flexDirection: "column" }}>
         <Typography variant="body1" margin="auto">
@@ -97,14 +100,14 @@ function GetLoadingOrContent({
       </Box>
     );
   } else {
+    console.log(`List has ${content.length}`);
     return (
       <FixedSizeList
-        height={400}
+        height={500}
         width="100%"
-        itemSize={100}
+        itemSize={200}
         itemData={content}
         itemCount={content.length}
-        overscanCount={5}
       >
         {renderRow}
       </FixedSizeList>
@@ -112,11 +115,17 @@ function GetLoadingOrContent({
   }
 }
 
-function ConsentPreviewCard(detail: { detail: UserReadFulfilledNetworkModel }) {
+function ConsentPreviewCard(detail: { detail: UserReadConsentNetworkModel }) {
+  const router = useRouter();
   return (
     <>
-      <Card sx={{ width: "100%", bgcolor: "secondary.light" }} component="div">
-        <CardActionArea>
+      <Card
+        sx={{ width: "100%", bgcolor: "secondary.light", my: 2 }}
+        component="div"
+      >
+        <CardActionArea
+          onClick={() => router.push(`/consent/${detail.detail.consentId}`)}
+        >
           <Box display="flex" sx={{ flexDirection: "row" }}>
             {detail.detail.org.logo && (
               <Avatar
@@ -135,6 +144,14 @@ function ConsentPreviewCard(detail: { detail: UserReadFulfilledNetworkModel }) {
                 <Typography variant="subtitle1" color="text.secondary">
                   {detail.detail.org.displayName}
                 </Typography>
+                <Typography variant="subtitle1" color="text.secondary">
+                  Created{" "}
+                  {dateToString(LocalDateTime.parse(detail.detail.created))},{" "}
+                </Typography>
+                <Typography variant="subtitle1" color="text.secondary">
+                  Expires:{" "}
+                  {dateToString(LocalDateTime.parse(detail.detail.expiry))}
+                </Typography>
               </CardContent>
             </Box>
           </Box>
@@ -144,11 +161,19 @@ function ConsentPreviewCard(detail: { detail: UserReadFulfilledNetworkModel }) {
   );
 }
 
+const dateTimeFormatter = DateTimeFormatter.ofPattern(
+  "hh:mm, dd-MM-YYYY"
+).withLocale(Locale.UK);
+
+function dateToString(localDateTime: LocalDateTime) {
+  return localDateTime.format(dateTimeFormatter);
+}
+
 function renderRow(props: ListChildComponentProps) {
-  const { data, index } = props;
+  const { data, index, style } = props;
 
   return (
-    <ListItem key={index}>
+    <ListItem style={style} key={index}>
       <ConsentPreviewCard detail={data[index]} />
     </ListItem>
   );

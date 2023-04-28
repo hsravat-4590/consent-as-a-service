@@ -27,9 +27,10 @@ import { useEffect, useState } from "react";
 import LandingPage from "../components/LandingPage";
 import { HealthStatus } from "@consent-as-a-service/domain";
 import Typography from "@mui/material/Typography";
-import { Box, Chip } from "@mui/material";
-import { Wifi, WifiOff } from "@mui/icons-material";
+import { Box, Chip, Grid } from "@mui/material";
+import { WifiOffRounded, WifiRounded } from "@mui/icons-material";
 import UserConsentsGrid from "../components/UserConsentsGrid";
+import NewConsentsGrid from "../components/NewConsentsGrid";
 
 export default function Index() {
   const { user, error, isLoading } = useUser();
@@ -37,20 +38,24 @@ export default function Index() {
     serverStatus: "DOWN",
     authenticated: false,
   } as HealthStatus);
-  useEffect(() => {
+
+  function getServerHealth() {
     fetch("/api/service/health/server-health")
       .then((res) => res.json())
       .then((data: HealthStatus) => {
         setServerHealth(data);
       });
-  }, []);
+  }
+
+  useEffect(getServerHealth, []);
 
   if (isLoading) return <div>Loading...</div>;
   if (error) return <div>{error.message}</div>;
   if (serverHealth.serverStatus === "DOWN") {
-    return <ConnectionChip healthStatus={serverHealth} />;
-  }
-  if (user) {
+    return (
+      <ConnectionChip healthStatus={serverHealth} retry={getServerHealth} />
+    );
+  } else if (user) {
     return (
       <>
         <Box
@@ -60,9 +65,18 @@ export default function Index() {
         >
           <Typography variant="h2">Welcome {user.name}!</Typography>
           <ConnectionChip healthStatus={serverHealth} />
-          <Box sx={{ my: 2 }}>
-            <UserConsentsGrid />
-          </Box>
+          <Grid
+            container
+            width="100%"
+            sx={{ my: 2, flexDirection: { xs: "column", md: "row" } }}
+          >
+            <Grid item xs={12} sm={6}>
+              <UserConsentsGrid />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <NewConsentsGrid />
+            </Grid>
+          </Grid>
         </Box>
       </>
     );
@@ -71,10 +85,22 @@ export default function Index() {
   }
 }
 
-function ConnectionChip({ healthStatus }: { healthStatus: HealthStatus }) {
+function ConnectionChip({
+  healthStatus,
+  retry,
+}: {
+  healthStatus: HealthStatus;
+  retry?: () => void;
+}) {
   if (healthStatus.serverStatus === "UP") {
-    return <Chip icon={<Wifi />} label="Connected to Server" />;
+    return <Chip icon={<WifiRounded />} label="Connected to Server" />;
   } else {
-    return <Chip icon={<WifiOff />} label="Can't connect to server" />;
+    return (
+      <Chip
+        icon={<WifiOffRounded />}
+        label="Can't connect to server. Tap to retry"
+        onClick={retry}
+      />
+    );
   }
 }

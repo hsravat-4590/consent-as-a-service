@@ -97,7 +97,7 @@ const ConsentRequest = ({
   };
   return (
     <>
-      <Card>
+      <Card sx={{ m: 2 }}>
         <CardMedia sx={{ height: 200 }} title="Banner" image={banner} />
         <Container
           sx={{
@@ -139,15 +139,17 @@ const ConsentRequest = ({
 export default ConsentRequest;
 export const getServerSideProps = withPageAuthRequired({
   async getServerSideProps(ctx): Promise<GetSSPType> {
-    console.info(`In GetSSP`);
     const { accessToken } = await getAccessToken(ctx.req, ctx.res);
     const response = await fetch(
-      `${ServerConfig.baseUrl}:${ServerConfig.port}/consent/user/v1/${ctx.query.id}`,
+      `${ServerConfig.baseUrl}:${ServerConfig.port}/consent/user/v1/request/${ctx.query.id}`,
       {
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },
       }
+    );
+    console.log(
+      `Response ${response.status} and Message ${response.statusText}`
     );
     if (response.status !== 200) {
       return {

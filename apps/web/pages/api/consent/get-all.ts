@@ -23,6 +23,7 @@
 
 import { getAccessToken, withApiAuthRequired } from "@auth0/nextjs-auth0";
 import ServerConfig from "../service/server.config";
+import { LocalDateTime } from "@js-joda/core";
 
 export default withApiAuthRequired(async function getAllConsents(req, res) {
   const { accessToken } = await getAccessToken(req, res);
@@ -36,5 +37,8 @@ export default withApiAuthRequired(async function getAllConsents(req, res) {
     }
   );
   const json = await response.json();
+  console.log(
+    `${LocalDateTime.now().toString()}: Got Status ${response.status}`
+  );
   res.status(201).json(json);
 });

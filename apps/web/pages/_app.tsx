@@ -29,6 +29,8 @@ import { ThemeProvider, useMediaQuery } from "@mui/material";
 import { darkTheme, lightTheme } from "../components/Theme";
 import "../styles/fonts.css";
 import "../styles/globals.css";
+import { LocalizationProvider } from "@mui/x-date-pickers";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 
 export default function App({ Component, pageProps }: AppProps) {
   const prefersDarkMode = useMediaQuery("(prefers-color-scheme: dark)");
@@ -37,12 +39,14 @@ export default function App({ Component, pageProps }: AppProps) {
     [prefersDarkMode]
   );
   return (
-    <ThemeProvider theme={theme}>
-      <UserProvider>
-        <Layout>
-          <Component {...pageProps} />
-        </Layout>
-      </UserProvider>
-    </ThemeProvider>
+    <LocalizationProvider dateAdapter={AdapterDayjs}>
+      <ThemeProvider theme={theme}>
+        <UserProvider>
+          <Layout>
+            <Component {...pageProps} />
+          </Layout>
+        </UserProvider>
+      </ThemeProvider>
+    </LocalizationProvider>
   );
 }

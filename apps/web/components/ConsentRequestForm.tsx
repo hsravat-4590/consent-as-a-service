@@ -141,7 +141,11 @@ const ConsentRequestForm = ({
             <Alert
               onClose={handleSnackbarClose}
               severity="error"
-              sx={{ width: "100%" }}
+              sx={{
+                width: "100%",
+                color: "error.light",
+                bgcolor: "error.main",
+              }}
             >
               Form Incomplete. Complete required fields before submitting
             </Alert>

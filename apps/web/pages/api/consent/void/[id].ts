@@ -21,11 +21,22 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-export * from "./health.status";
-export * from "./consent.network.model";
-export * from "./consent-request.network.model";
-export * from "./request-metadata.network.model";
-export * from "./user-permissions.network.model";
-export * from "./consent-complete.network.model";
-export * from "./user-read-consent-network.model";
-export * from "./consent-data-request.network.model";
+import { getAccessToken, withApiAuthRequired } from "@auth0/nextjs-auth0";
+import ServerConfig from "../../service/server.config";
+
+export default withApiAuthRequired(async function voidConsent(req, res) {
+  const { accessToken } = await getAccessToken(req, res);
+  const { id } = req.query;
+  const response = await fetch(
+    `${ServerConfig.baseUrl}:${ServerConfig.port}/consent/state/v1/void/consent/${id}`,
+    {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    }
+  );
+  res.status(response.status).send({
+    statusText: response.statusText,
+  });
+});

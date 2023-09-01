@@ -37,11 +37,15 @@ import {
   Dialog,
   DialogContent,
   DialogTitle,
+  TextField,
 } from "@mui/material";
 import Container from "@mui/material/Container";
 import ConsentRequestForm from "../../components/ConsentRequestForm";
 import { useState } from "react";
 import Box from "@mui/material/Box";
+import { DateTimePicker } from "@mui/x-date-pickers";
+import dayjs, { Dayjs } from "dayjs";
+import { nativeJs } from "@js-joda/core";
 
 const ConsentRequest = ({
   resultCode,
@@ -52,8 +56,11 @@ const ConsentRequest = ({
   resultMsg: string;
   consentRequest: UserConsentReadNetworkResponse;
 }) => {
+  console.log(`Request Expiry in String is ${consentRequest.expiry}`);
   const router = useRouter();
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [expiry, setExpiry] = useState<Dayjs>(dayjs(consentRequest.expiry));
+
   const { id } = router.query;
   let banner = "";
   if (consentRequest.requester.banner) {
@@ -85,7 +92,7 @@ const ConsentRequest = ({
       body: JSON.stringify({
         consentRequestId: consentRequest.consentRequestId,
         submitData: data,
-        expiry: consentRequest.expiry,
+        expiry: nativeJs(expiry.toDate()).toLocalDateTime().toString(),
       } as DataSubmission),
     });
     if (response.status === 201) {
@@ -97,7 +104,7 @@ const ConsentRequest = ({
   };
   return (
     <>
-      <Card elevation={0}>
+      <Card sx={{ m: 2 }}>
         <CardMedia sx={{ height: 200 }} title="Banner" image={banner} />
         <Container
           sx={{
@@ -110,6 +117,16 @@ const ConsentRequest = ({
           </Typography>
           <Typography variant="h2">{consentRequest.ui.title}</Typography>
           <Typography variant="h6">{consentRequest.ui.description}</Typography>
+          <Box sx={{ m: 2 }}>
+            <DateTimePicker
+              label="Expiry"
+              value={expiry}
+              onChange={(newValue) => {
+                setExpiry(newValue as Dayjs);
+              }}
+              renderInput={(params) => <TextField {...params} />}
+            />
+          </Box>
           <ConsentRequestForm
             schema={consentRequest.dataSchema}
             onSubmit={onSubmitCalled}
@@ -139,15 +156,17 @@ const ConsentRequest = ({
 export default ConsentRequest;
 export const getServerSideProps = withPageAuthRequired({
   async getServerSideProps(ctx): Promise<GetSSPType> {
-    console.info(`In GetSSP`);
     const { accessToken } = await getAccessToken(ctx.req, ctx.res);
     const response = await fetch(
-      `${ServerConfig.baseUrl}:${ServerConfig.port}/consent/user/v1/${ctx.query.id}`,
+      `${ServerConfig.baseUrl}:${ServerConfig.port}/consent/user/v1/request/${ctx.query.id}`,
       {
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },
       }
+    );
+    console.log(
+      `Response ${response.status} and Message ${response.statusText}`
     );
     if (response.status !== 200) {
       return {

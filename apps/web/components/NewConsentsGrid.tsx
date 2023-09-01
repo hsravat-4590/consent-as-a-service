@@ -21,11 +21,18 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-export * from "./health.status";
-export * from "./consent.network.model";
-export * from "./consent-request.network.model";
-export * from "./request-metadata.network.model";
-export * from "./user-permissions.network.model";
-export * from "./consent-complete.network.model";
-export * from "./user-read-consent-network.model";
-export * from "./consent-data-request.network.model";
+import { Card } from "@mui/material";
+import Typography from "@mui/material/Typography";
+
+export default function NewConsentsGrid() {
+  return (
+    <>
+      <Card sx={{ p: 2, m: 1 }}>
+        <Typography variant="h3">New Requests</Typography>
+        <Typography variant="body1" margin="auto">
+          No Requests Found
+        </Typography>
+      </Card>
+    </>
+  );
+}

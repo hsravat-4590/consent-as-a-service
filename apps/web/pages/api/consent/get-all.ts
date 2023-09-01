@@ -21,11 +21,24 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-export * from "./health.status";
-export * from "./consent.network.model";
-export * from "./consent-request.network.model";
-export * from "./request-metadata.network.model";
-export * from "./user-permissions.network.model";
-export * from "./consent-complete.network.model";
-export * from "./user-read-consent-network.model";
-export * from "./consent-data-request.network.model";
+import { getAccessToken, withApiAuthRequired } from "@auth0/nextjs-auth0";
+import ServerConfig from "../service/server.config";
+import { LocalDateTime } from "@js-joda/core";
+
+export default withApiAuthRequired(async function getAllConsents(req, res) {
+  const { accessToken } = await getAccessToken(req, res);
+  const response = await fetch(
+    `${ServerConfig.baseUrl}:${ServerConfig.port}/consent/user/v1/all`,
+    {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    }
+  );
+  const json = await response.json();
+  console.log(
+    `${LocalDateTime.now().toString()}: Got Status ${response.status}`
+  );
+  res.status(201).json(json);
+});

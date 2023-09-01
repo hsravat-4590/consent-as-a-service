@@ -20,7 +20,7 @@
  * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-import { createTheme } from "@mui/material/styles";
+import { createTheme, ThemeOptions } from "@mui/material/styles";
 
 declare module "@mui/material/styles" {
   interface Theme {
@@ -36,10 +36,76 @@ declare module "@mui/material/styles" {
     };
   }
 }
-
 const headingFont = "'Quicksand', sans-serif";
 
-export const lightTheme = createTheme({
+const typography: Pick<ThemeOptions, "typography"> = {
+  typography: {
+    h1: {
+      fontSize: "5.1rem",
+      font: headingFont,
+    },
+    h2: {
+      fontSize: "4.7rem",
+      font: headingFont,
+    },
+    h3: {
+      font: headingFont,
+      fontSize: "3.6rem",
+    },
+    h5: {
+      font: headingFont,
+      fontWeight: 400,
+    },
+    h6: {
+      font: headingFont,
+    },
+    subtitle1: {
+      fontFamily: "Roboto",
+    },
+    fontFamily: "Roboto",
+  },
+};
+
+const components: Pick<ThemeOptions, "components"> = {
+  components: {
+    MuiAppBar: {
+      defaultProps: {
+        color: "transparent",
+      },
+    },
+    MuiCard: {
+      defaultProps: {
+        raised: false,
+        elevation: 0,
+      },
+      styleOverrides: {},
+    },
+    MuiChip: {
+      defaultProps: {
+        sx: {
+          p: 2.25,
+        },
+      },
+    },
+    MuiButton: {
+      defaultProps: {
+        disableElevation: true,
+      },
+    },
+  },
+};
+const shape = {
+  borderRadius: 24,
+};
+const spacing = 10;
+
+export const baseTheme = createTheme({
+  shape,
+  spacing,
+  ...components,
+  ...typography,
+});
+export const lightTheme = createTheme(baseTheme, {
   palette: {
     mode: "light",
     primary: {
@@ -54,8 +120,8 @@ export const lightTheme = createTheme({
       dark: "#0c1d29",
     },
     error: {
-      main: "#ffdad6",
-      light: "#ba1a1a",
+      main: "#ba1a1a",
+      light: "#ffdad6",
       dark: "#410002",
     },
     background: {
@@ -63,61 +129,14 @@ export const lightTheme = createTheme({
       paper: "#eff3f9",
     },
   },
-  shape: {
-    borderRadius: 24,
-  },
-  spacing: 10,
-  components: {
-    MuiAppBar: {
-      defaultProps: {
-        color: "transparent",
-      },
-    },
-    MuiCard: {
-      defaultProps: {
-        raised: false,
-      },
-    },
-    MuiButton: {
-      defaultProps: {
-        disableElevation: true,
-      },
-    },
-  },
-  typography: {
-    h1: {
-      fontSize: "5.1rem",
-      font: headingFont,
-    },
-    h2: {
-      fontSize: "4.7rem",
-      font: headingFont,
-    },
-    h3: {
-      font: headingFont,
-      fontWeight: 700,
-      fontSize: "3.6rem",
-    },
-    h5: {
-      font: headingFont,
-      fontWeight: 400,
-    },
-    h6: {
-      font: headingFont,
-    },
-    subtitle1: {
-      fontFamily: "Open Sans",
-    },
-    fontFamily: "Roboto",
-  },
 });
 
-export const darkModeTheme = createTheme({
+export const darkTheme = createTheme(baseTheme, {
   palette: {
     mode: "dark",
     primary: {
-      main: "#8dcdff",
-      light: "#004b70",
+      main: "#004b70",
+      light: "#8dcdff",
       dark: "#cae6ff",
       contrastText: "#ffffff",
     },
@@ -128,58 +147,12 @@ export const darkModeTheme = createTheme({
     },
     error: {
       main: "#ffb4ab",
-      light: "#93000a",
-      dark: "#ffdad6",
+      light: "#ffdad6",
+      dark: "#93000a",
     },
     background: {
       default: "#1a1c1e",
       paper: "#1a1c1e",
     },
-  },
-  shape: {
-    borderRadius: 24,
-  },
-  spacing: 10,
-  components: {
-    MuiAppBar: {
-      defaultProps: {
-        color: "transparent",
-      },
-    },
-    MuiCard: {
-      defaultProps: {
-        raised: false,
-      },
-    },
-    MuiButton: {
-      defaultProps: {
-        disableElevation: true,
-      },
-    },
-  },
-  typography: {
-    h1: {
-      fontSize: "5.1rem",
-      font: headingFont,
-    },
-    h2: {
-      fontSize: "4.7rem",
-      font: headingFont,
-    },
-    h3: {
-      font: headingFont,
-      fontSize: "3.6rem",
-    },
-    h5: {
-      font: headingFont,
-      fontWeight: 400,
-    },
-    h6: {
-      font: headingFont,
-    },
-    subtitle1: {
-      fontFamily: "Open Sans",
-    },
-    fontFamily: "Roboto",
   },
 });
